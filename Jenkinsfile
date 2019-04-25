@@ -28,7 +28,7 @@ pipeline {
         stage('Full Build') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
-                    sh './gradlew clean build'
+                    sh './gradlew build'
                 }
             }
         }
