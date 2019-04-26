@@ -1,4 +1,4 @@
-# Multi-INT Store
+# Multi-Int Store
 
 ## Building
 `./gradlew build`
