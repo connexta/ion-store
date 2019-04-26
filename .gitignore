@@ -1,15 +1,21 @@
+# VS code
+*.project
+*.settings/
+*.vscode/
+
+# IntelliJ
 *.iml
 *.idea
+
 *.DS_Store
 .history
-.vscode/
 
 .gradle
 **/build/
 **/out/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jarbuild/
+!gradle-wrapper.jar
 
 # Ignore Gradle GUI config
 gradle-app.setting
