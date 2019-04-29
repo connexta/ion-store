@@ -50,3 +50,11 @@ allprojects {
         }
     }
 }
+
+apply plugin: 'org.owasp.dependencycheck'
+dependencyCheck {
+  failBuildOnCVSS = 4
+  failOnError = true
+  // To configure a suppression file once we start adding in dependencies:
+  //suppressionFile = 'config/dependencyCheck/suppressions.xml'
+}
