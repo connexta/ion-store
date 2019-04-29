@@ -14,8 +14,12 @@
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
 
-package com.multiintstore.indexing;
+package com.multiintstore.controllers;
 
-public class IndexingService {
-    //Todo: Base class for the IndexingService
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController()
+@RequestMapping("/index")
+public class IndexingController {
 }

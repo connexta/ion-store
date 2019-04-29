@@ -8,9 +8,6 @@ pipeline {
             customWorkspace "/jenkins/workspace/${JOB_NAME}/${BUILD_NUMBER}"
         }
     }
-    tools {
-        jdk 'jdk11'
-    }
     options {
         buildDiscarder(logRotator(numToKeepStr: '15'))
         disableConcurrentBuilds()

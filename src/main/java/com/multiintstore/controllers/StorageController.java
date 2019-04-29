@@ -16,9 +16,11 @@
 
 package com.multiintstore.controllers;
 
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/store")
 public class StorageController {
     // Todo: Implement path for requesting data from the Transformation Service
 
