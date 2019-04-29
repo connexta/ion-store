@@ -4,7 +4,7 @@ library 'github-utils-shared-library@master'
 pipeline {
     agent {
         node {
-            label 'linux-large'
+            label 'linux-small'
             customWorkspace "/jenkins/workspace/${JOB_NAME}/${BUILD_NUMBER}"
         }
     }
