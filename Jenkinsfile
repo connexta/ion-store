@@ -31,11 +31,11 @@ pipeline {
                             sh(script: 'if [ `git cat-file -p HEAD | head -n 3 | grep parent | wc -l` -gt 1 ]; then exit 1; else exit 0; fi')
                             //  No error was thrown -> we called exit 0 -> HEAD is not a merge commit/doesn't have multiple parents
                             env.PR_COMMIT = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
-                            sh "echo Success hash: ${env.PR_COMMIT}"
+                            echo "Success hash: ${env.PR_COMMIT}"
                         } catch (err) {
                             //  An error was thrown -> we called exit 1 -> HEAD is a merge commit/has multiple parents
                             env.PR_COMMIT = sh(returnStdout: true, script: 'git rev-parse HEAD~1').trim()
-                            sh "echo Caught hash: ${env.PR_COMMIT}"
+                            echo "Caught hash: ${env.PR_COMMIT}"
                         }
 
                         postStatusToHash("${jsonBlob}", "${GITHUB_USERNAME}", "${GITHUB_REPONAME}", "${env.PR_COMMIT}", "${GITHUB_TOKEN}")
