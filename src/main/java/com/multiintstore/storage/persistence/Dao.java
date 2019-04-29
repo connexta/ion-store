@@ -1,4 +1,4 @@
-package com.connexta.multiintstore.storage.persistence;
+package com.multiintstore.storage.persistence;
 
 import java.util.Optional;
 

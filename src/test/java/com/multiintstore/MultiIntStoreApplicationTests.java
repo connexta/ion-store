@@ -1,4 +1,4 @@
-package com.connexta.multiintstore;
+package com.multiintstore;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

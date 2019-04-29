@@ -1,4 +1,4 @@
-package com.connexta.multiintstore.controllers;
+package com.multiintstore.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 

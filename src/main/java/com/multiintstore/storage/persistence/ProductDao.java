@@ -1,6 +1,6 @@
-package com.connexta.multiintstore.storage.persistence;
+package com.multiintstore.storage.persistence;
 
-import com.connexta.multiintstore.storage.persistence.models.Product;
+import com.multiintstore.storage.persistence.models.Product;
 
 import java.util.Optional;
 

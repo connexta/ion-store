@@ -1,4 +1,4 @@
-package com.connexta.multiintstore;
+package com.multiintstore;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
