@@ -1,6 +1,7 @@
 plugins {
 	id 'org.springframework.boot' version '2.1.4.RELEASE'
-	id 'java'
+    id 'com.diffplug.gradle.spotless' version '3.20.0'
+    id 'java'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -21,9 +22,31 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.retry:spring-retry'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.retry:spring-retry'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+allprojects {
+
+    sourceCompatibility = 1.11
+    targetCompatibility = 1.11
+
+    spotless {
+        java {
+            licenseHeaderFile rootProject.file("license.java")
+            removeUnusedImports()
+            googleJavaFormat()
+            trimTrailingWhitespace()
+        }
+    }
+
+    buildscript {
+        repositories {
+            mavenLocal()
+            mavenCentral()
+        }
+    }
 }

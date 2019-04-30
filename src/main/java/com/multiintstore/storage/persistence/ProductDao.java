@@ -13,26 +13,20 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-
 package com.multiintstore.storage.persistence;
 
 import com.multiintstore.storage.persistence.models.Product;
-
 import java.util.Optional;
 
 public class ProductDao implements Dao<Product> {
-    @Override
-    public Optional get(long id) {
-        return Optional.empty();
-    }
+  @Override
+  public Optional get(long id) {
+    return Optional.empty();
+  }
 
-    @Override
-    public void save(Product product) {
+  @Override
+  public void save(Product product) {}
 
-    }
-
-    @Override
-    public void delete(Product product) {
-
-    }
+  @Override
+  public void delete(Product product) {}
 }

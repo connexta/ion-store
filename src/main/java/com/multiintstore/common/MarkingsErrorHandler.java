@@ -13,9 +13,8 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-
 package com.multiintstore.common;
 
 public class MarkingsErrorHandler implements ErrorHandler {
-    //Todo: Logic for handling the errors we could receive from a markings service
+  // Todo: Logic for handling the errors we could receive from a markings service
 }

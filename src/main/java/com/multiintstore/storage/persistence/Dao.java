@@ -13,14 +13,14 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-
 package com.multiintstore.storage.persistence;
 
 import java.util.Optional;
 
 public interface Dao<T> {
-    Optional<T> get(long id);
-    void save(T t);
-    // We need this guy? Maybe for the MIS ID
-    void delete(T t);
+  Optional<T> get(long id);
+
+  void save(T t);
+  // We need this guy? Maybe for the MIS ID
+  void delete(T t);
 }
