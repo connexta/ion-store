@@ -11,12 +11,8 @@
 .history
 
 .gradle
-<<<<<<< HEAD
 **/build/
 **/out/
-=======
-/build/
->>>>>>> Adds gitignore for build dir
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
