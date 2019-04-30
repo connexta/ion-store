@@ -54,6 +54,13 @@ pipeline {
                 }
             }
         }
+        stage('Security Analysis - OWASP') {
+            steps {
+                timeout(time: 25, unit: 'MINUTES') {
+                    sh './gradlew dependencyCheckAnalyze --info'
+                }
+            }
+        }
     }
     post {
         success {
