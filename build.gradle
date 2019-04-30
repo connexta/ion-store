@@ -1,10 +1,12 @@
 plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.1.4.RELEASE'
+	id "io.spring.dependency-management" version "1.0.7.RELEASE"
+	id 'org.owasp.dependencycheck' version '5.0.0-M2'
 	id 'org.springframework.boot' version '2.1.4.RELEASE'
     id 'com.diffplug.gradle.spotless' version '3.20.0'
     id 'java'
 }
-
-apply plugin: 'io.spring.dependency-management'
 
 group = 'com.multiintstore'
 version = '0.1.0-SNAPSHOT'
@@ -23,12 +25,17 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.retry:spring-retry'
+	implementation('org.apache.tomcat.embed:tomcat-embed-websocket:9.0.19') {
+		force = true
+		because 'CVE-2019-0232 in the transitive tomcat-embed-websocket dependency'
+	}
+	implementation('org.apache.tomcat.embed:tomcat-embed-core:9.0.19') {
+		force = true
+		because 'CVE-2019-0232 in the transitive tomcat-embed-core dependency'
+	}
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-plugins {
-    id 'org.owasp.dependencycheck' version '5.0.0-M2'
 }
 
 allprojects {
