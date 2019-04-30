@@ -13,7 +13,6 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-
 package com.multiintstore.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,5 +21,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/retrieve")
 public class RetrievalController {
-    // Todo: Implement a path for handling retrieval requests
+  // Todo: Implement a path for handling retrieval requests
 }

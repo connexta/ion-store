@@ -13,7 +13,6 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-
 package com.multiintstore;
 
 import org.junit.Test;
@@ -25,8 +24,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class MultiIntStoreApplicationTests {
 
-	@Test
-	public void contextLoads() {
-	}
-
+  @Test
+  public void contextLoads() {}
 }
