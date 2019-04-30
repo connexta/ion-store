@@ -31,9 +31,6 @@ dependencies {
 
 allprojects {
 
-    apply plugin: 'com.diffplug.gradle.spotless'
-    apply plugin: 'java'
-
     sourceCompatibility = 1.11
     targetCompatibility = 1.11
 
