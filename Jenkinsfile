@@ -16,9 +16,13 @@ pipeline {
         disableConcurrentBuilds()
         timestamps()
     }
+    triggers {
+        cron(env.BRANCH_NAME == "master" ? "H H(21-23) * * *" : "")
+    }
     environment {
         GITHUB_USERNAME = 'connexta'
         GITHUB_REPONAME = 'multi-int-store'
+        COVERAGE_EXCLUSIONS = '**/test/**/*,**/itests/**/*,**/*Test*,**/sdk/**/*,**/*.js,**/node_modules/**/*,**/jaxb/**/*,**/wsdl/**/*,**/nces/sws/**/*,**/*.adoc,**/*.txt,**/*.xml'
     }
     stages {
         stage('Setup') {
@@ -58,6 +62,21 @@ pipeline {
             steps {
                 timeout(time: 25, unit: 'MINUTES') {
                     sh './gradlew dependencyCheckAnalyze --info'
+                }
+            }
+        }
+        stage('Quality Analysis - SonarCloud') {
+            when {
+                allOf {
+                    expression { env.CHANGE_ID == null }
+                    branch 'master'
+                }
+            }
+            steps {
+                timeout(time: 25, unit: 'MINUTES') {
+                    withCredentials([string(credentialsId: 'SonarQubeGithubToken', variable: 'SONARQUBE_GITHUB_TOKEN'), string(credentialsId: 'cxbot-sonarcloud', variable: 'SONAR_TOKEN')]) {
+                        sh './gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=cx -Dsonar.projectKey=multi-int-store -Dsonar.exclusions=${COVERAGE_EXCLUSIONS}'
+                    }
                 }
             }
         }
