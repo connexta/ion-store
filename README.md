@@ -5,6 +5,7 @@
 
 ## OWASP check
 `./gradlew dependencyCheckAnalyze --info`
+
 ## Style Checks
 `./gradlew spotlessApply`
 

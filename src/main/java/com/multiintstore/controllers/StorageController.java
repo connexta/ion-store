@@ -15,13 +15,22 @@
  */
 package com.multiintstore.controllers;
 
-import org.springframework.web.bind.annotation.RequestMapping;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/store")
 public class StorageController {
-  // Todo: Implement path for requesting data from the Transformation Service
 
-  // Todo: Implement paths for communicating failures back to the Transformation Service
+  @PostMapping("/store")
+  public ResponseEntity store(@RequestBody Map<String, Object> body) {
+    // Todo: Implement path for requesting data from the Transformation Service
+
+    // Todo: Implement paths for communicating failures back to the Transformation Service
+
+    return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 }
