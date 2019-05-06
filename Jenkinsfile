@@ -22,7 +22,6 @@ pipeline {
     environment {
         GITHUB_USERNAME = 'connexta'
         GITHUB_REPONAME = 'multi-int-store'
-        COVERAGE_EXCLUSIONS = '**/test/**/*,**/itests/**/*,**/*Test*,**/sdk/**/*,**/*.js,**/node_modules/**/*,**/jaxb/**/*,**/wsdl/**/*,**/nces/sws/**/*,**/*.adoc,**/*.txt,**/*.xml'
     }
     stages {
         stage('Setup') {
@@ -75,7 +74,7 @@ pipeline {
             steps {
                 timeout(time: 25, unit: 'MINUTES') {
                     withCredentials([string(credentialsId: 'SonarQubeGithubToken', variable: 'SONARQUBE_GITHUB_TOKEN'), string(credentialsId: 'cxbot-sonarcloud', variable: 'SONAR_TOKEN')]) {
-                        sh './gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=cx -Dsonar.projectKey=multi-int-store -Dsonar.exclusions=${COVERAGE_EXCLUSIONS}'
+                        sh './gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=cx -Dsonar.projectKey=multi-int-store'
                     }
                 }
             }
