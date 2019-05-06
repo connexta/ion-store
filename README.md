@@ -3,8 +3,12 @@
 ## Building
 `./gradlew build`
 
+## Running
+`./gradlew run`
+
 ## OWASP check
 `./gradlew dependencyCheckAnalyze --info`
+
 ## Style Checks
 `./gradlew spotlessApply`
 
