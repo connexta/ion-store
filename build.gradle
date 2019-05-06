@@ -8,7 +8,7 @@ plugins {
     id 'application'
 }
 
-group = 'com.multiintstore'
+group = 'com.connexta.multiintstore'
 version = '0.1.0-SNAPSHOT'
 
 configurations {

@@ -13,7 +13,7 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.multiintstore;
+package com.connexta.multiintstore;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

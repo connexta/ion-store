@@ -13,7 +13,7 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.multiintstore.common;
+package com.connexta.multiintstore.common;
 
 public class RetrievalErrorHandler implements ErrorHandler {
   // Todo: Logic for handling errors that occur when retrieving data from the Transformation Service

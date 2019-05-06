@@ -13,7 +13,7 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.multiintstore.controllers;
+package com.connexta.multiintstore.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multiintstore.callbacks.CallbackValidator;

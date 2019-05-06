@@ -13,9 +13,9 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.multiintstore.storage.persistence;
+package com.connexta.multiintstore.storage.persistence;
 
-import com.multiintstore.storage.persistence.models.Product;
+import com.connexta.multiintstore.storage.persistence.models.Product;
 import java.util.Optional;
 
 public class ProductDao implements Dao<Product> {
