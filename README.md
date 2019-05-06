@@ -3,6 +3,9 @@
 ## Building
 `./gradlew build`
 
+## Running
+`./gradlew run`
+
 ## OWASP check
 `./gradlew dependencyCheckAnalyze --info`
 
@@ -11,6 +14,3 @@
 
 For more information about spotless checks see 
 [here](https://github.com/diffplug/spotless/tree/master/plugin-gradle#custom-rules).
-
-## Running
-`./gradlew run`

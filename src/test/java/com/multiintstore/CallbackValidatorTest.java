@@ -25,9 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.multiintstore.callbacks.CallbackValidator;
 import com.multiintstore.callbacks.FinishedCallback;
 import com.multiintstore.callbacks.MetadataCallback;
-import java.io.IOException;
-
 import com.multiintstore.callbacks.ProductCallback;
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 public class CallbackValidatorTest {
@@ -73,10 +72,7 @@ public class CallbackValidatorTest {
   @Test
   public void FinishedCallbackTest() throws IOException {
     JsonNode validMetadata =
-        mapper.readTree(
-            "{\n"
-                + "\t\"id\": \"42\",\n"
-                + "\"status\": \"COMPLETE\"}\n");
+        mapper.readTree("{\n" + "\t\"id\": \"42\",\n" + "\"status\": \"COMPLETE\"}\n");
     assertThat(validator.parse(validMetadata), is(instanceOf(FinishedCallback.class)));
   }
 

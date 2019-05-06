@@ -17,9 +17,7 @@ package com.multiintstore.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multiintstore.callbacks.CallbackValidator;
-import com.multiintstore.callbacks.FinishedCallback;
-import com.multiintstore.callbacks.MetadataCallback;
-import com.multiintstore.callbacks.ProductCallback;
+import com.multiintstore.common.StorageManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,15 +28,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class StorageController {
 
-  @PostMapping(path = "/store/{iid}", consumes = "application/json")
-  public ResponseEntity store(
-      @PathVariable String iid, @RequestBody(required = false) JsonNode body) {
+  private final StorageManager manager = new StorageManager();
+  private final CallbackValidator validator = new CallbackValidator();
 
-    CallbackValidator validator = new CallbackValidator();
+  @PostMapping(path = "/store/{ingestID}", consumes = "application/json")
+  public ResponseEntity store(
+      @PathVariable String ingestID, @RequestBody(required = false) JsonNode body) {
+
     Object callback = validator.parse(body);
 
     if (callback != null) {
-      sortCallbacks(callback);
+      manager.handleGeneralCallback(callback);
     } else {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -46,34 +46,5 @@ public class StorageController {
     // Todo: Implement path for requesting data from the Transformation Service
 
     return new ResponseEntity(HttpStatus.OK);
-  }
-
-  private void sortCallbacks(Object callback) {
-    if (callback instanceof ProductCallback) {
-      handleCallback((ProductCallback) callback);
-    }
-    if (callback instanceof FinishedCallback) {
-      handleCallback((FinishedCallback) callback);
-    }
-    if (callback instanceof MetadataCallback) {
-      handleCallback((MetadataCallback) callback);
-    }
-  }
-
-  private void handleCallback(ProductCallback callback) {
-    System.out.println("Product");
-    //  TODO :: Check Markings
-    //  TODO :: Store Product
-  }
-
-  private void handleCallback(MetadataCallback callback) {
-    System.out.println("Metadata");
-    //  TODO :: Check Markings
-    //  TODO :: Store Metadata
-  }
-
-  private void handleCallback(FinishedCallback callback) {
-    System.out.println("Finished");
-    //  TODO :: Remove from Temp-Store
   }
 }
