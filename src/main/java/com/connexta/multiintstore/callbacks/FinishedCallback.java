@@ -13,17 +13,22 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.multiintstore.callbacks;
+package com.connexta.multiintstore.callbacks;
 
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
 @Setter(value = AccessLevel.PACKAGE)
 @Getter
-public class Markings {
-  @NotNull private String classification;
+public class FinishedCallback {
 
-  @NotNull private String ownerProducer;
+  @NotNull private String id;
+  @NotNull private String status;
+  private String message;
 }

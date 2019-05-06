@@ -77,7 +77,7 @@ dependencyCheck {
 }
 
 application {
-    mainClassName = 'com.multiintstore.MultiIntStoreApplication'
+    mainClassName = 'com.connexta.multiintstore.MultiIntStoreApplication'
 }
 
 test {

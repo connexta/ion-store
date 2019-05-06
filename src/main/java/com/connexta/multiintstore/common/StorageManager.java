@@ -13,11 +13,11 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.multiintstore.common;
+package com.connexta.multiintstore.common;
 
-import com.multiintstore.callbacks.FinishedCallback;
-import com.multiintstore.callbacks.MetadataCallback;
-import com.multiintstore.callbacks.ProductCallback;
+import com.connexta.multiintstore.callbacks.FinishedCallback;
+import com.connexta.multiintstore.callbacks.MetadataCallback;
+import com.connexta.multiintstore.callbacks.ProductCallback;
 
 public class StorageManager {
 

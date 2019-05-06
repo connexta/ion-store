@@ -13,33 +13,17 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.multiintstore.callbacks;
+package com.connexta.multiintstore.callbacks;
 
-import java.net.URI;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
 @Setter(value = AccessLevel.PACKAGE)
 @Getter
-public class MetadataCallback {
-  @NotNull private String id;
+public class Markings {
+  @NotNull private String classification;
 
-  @NotNull private String status;
-
-  @NotNull private String type;
-
-  @NotNull private String mimeType;
-
-  @NotNull private Long bytes;
-
-  @NotNull private URI location;
-
-  @Valid @NotNull private Markings security;
+  @NotNull private String ownerProducer;
 }

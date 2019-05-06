@@ -15,9 +15,9 @@
  */
 package com.connexta.multiintstore.controllers;
 
+import com.connexta.multiintstore.callbacks.CallbackValidator;
+import com.connexta.multiintstore.common.StorageManager;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.multiintstore.callbacks.CallbackValidator;
-import com.multiintstore.common.StorageManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;

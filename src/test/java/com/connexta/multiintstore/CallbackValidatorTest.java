@@ -20,12 +20,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.connexta.multiintstore.callbacks.CallbackValidator;
+import com.connexta.multiintstore.callbacks.FinishedCallback;
+import com.connexta.multiintstore.callbacks.MetadataCallback;
+import com.connexta.multiintstore.callbacks.ProductCallback;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.multiintstore.callbacks.CallbackValidator;
-import com.multiintstore.callbacks.FinishedCallback;
-import com.multiintstore.callbacks.MetadataCallback;
-import com.multiintstore.callbacks.ProductCallback;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
