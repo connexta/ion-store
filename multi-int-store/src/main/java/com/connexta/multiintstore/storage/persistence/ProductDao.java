@@ -17,10 +17,14 @@ package com.connexta.multiintstore.storage.persistence;
 
 import com.connexta.multiintstore.storage.persistence.models.Product;
 import java.util.Optional;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ProductDao implements Dao<Product> {
+
   @Override
-  public Optional get(long id) {
+  public Optional<Product> getById(UUID id) {
     return Optional.empty();
   }
 
@@ -28,5 +32,5 @@ public class ProductDao implements Dao<Product> {
   public void save(Product product) {}
 
   @Override
-  public void delete(Product product) {}
+  public void delete(UUID id) {}
 }

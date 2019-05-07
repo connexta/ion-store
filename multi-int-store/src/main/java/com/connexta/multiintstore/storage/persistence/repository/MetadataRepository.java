@@ -13,13 +13,10 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.connexta.multiintstore.storage.persistence.models;
+package com.connexta.multiintstore.storage.persistence.repository;
 
+import com.connexta.multiintstore.storage.persistence.models.Metadata;
 import java.util.UUID;
+import org.springframework.data.repository.CrudRepository;
 
-public class Failures implements Storable {
-  @Override
-  public UUID getId() {
-    return null;
-  }
-}
+public interface MetadataRepository extends CrudRepository<Metadata, UUID> {}

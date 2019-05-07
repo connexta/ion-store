@@ -15,4 +15,11 @@
  */
 package com.connexta.multiintstore.storage.persistence.models;
 
-public class Product {}
+import java.util.UUID;
+
+public class Product implements Storable {
+  @Override
+  public UUID getId() {
+    return null;
+  }
+}

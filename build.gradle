@@ -10,14 +10,14 @@ plugins {
 allprojects {
     sourceCompatibility = 1.11
     targetCompatibility = 1.11
-
-    group = 'com.connexta.multiintstore'
-    version = '0.1.0-SNAPSHOT'
+    
+	group = 'com.connexta.multiintstore'
+	version = '0.1.0-SNAPSHOT'
 }
 
 repositories {
-    mavenCentral()
-    mavenLocal()
+	mavenCentral()
+	mavenLocal()
 }
 
 subprojects {
@@ -76,6 +76,12 @@ subprojects {
     }
 
     spotless {
+		format 'misc', {
+			target '**/*.gradle', '**/*.md', '**/.gitignore'
+			trimTrailingWhitespace()
+			indentWithTabs()
+			endWithNewline()
+		}
         java {
             licenseHeaderFile rootProject.file("license.java")
             removeUnusedImports()
