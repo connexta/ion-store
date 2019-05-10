@@ -1,56 +1,76 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '2.1.4.RELEASE'
-	id 'io.spring.dependency-management' version '1.0.7.RELEASE'
-	id 'org.owasp.dependencycheck' version '5.0.0-M2'
+    id 'java'
+    id 'io.spring.dependency-management' version '1.0.7.RELEASE'
+    id 'org.owasp.dependencycheck' version '5.0.0-M2'
     id 'com.diffplug.gradle.spotless' version '3.20.0'
-    id "org.sonarqube" version "2.7"
-    id 'application'
-}
-
-group = 'com.connexta.multiintstore'
-version = '0.1.0-SNAPSHOT'
-
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-}
-
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation('org.apache.tomcat.embed:tomcat-embed-websocket:9.0.19') {
-		force = true
-		because 'CVE-2019-0232 in the transitive tomcat-embed-websocket dependency'
-	}
-	implementation('org.apache.tomcat.embed:tomcat-embed-core:9.0.19') {
-		force = true
-		because 'CVE-2019-0232 in the transitive tomcat-embed-core dependency'
-	}
-	compileOnly 'org.projectlombok:lombok:1.18.6'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    compile group: 'com.google.guava', name: 'guava', version: '27.1-jre'
-    
-    //  Test Dependencies :
-    testCompile("org.junit.jupiter:junit-jupiter-api:5.4.2")
-    
-    //  Intellij doesn't gracefully handle JUnit 5:
-    //  https://stackoverflow.com/questions/46161608/intellij-junit-5-jupiter
-    testRuntime("org.junit.platform:junit-platform-launcher:1.0.0")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.0.0")
-    testRuntime("org.junit.vintage:junit-vintage-engine:4.12.0")
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
+    id 'org.sonarqube' version '2.7'
+    id 'com.adarshr.test-logger' version '1.6.0'
 }
 
 allprojects {
-
     sourceCompatibility = 1.11
     targetCompatibility = 1.11
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'org.owasp.dependencycheck'
+    apply plugin: 'com.diffplug.gradle.spotless'
+    apply plugin: 'org.sonarqube'
+    apply plugin: 'com.adarshr.test-logger'
+
+    dependencyCheck {
+        failBuildOnCVSS = 4
+        failOnError = true
+        // To configure a suppression file once we start adding in dependencies:
+        //suppressionFile = 'config/dependencyCheck/suppressions.xml'
+    }
+
+    tasks.withType(Test) {
+        testlogger {
+            theme = 'mocha'
+            showStandardStreams = false
+            showSkippedStandardStreams = false
+            showFailedStandardStreams = true
+        }
+        useJUnitPlatform()
+    }
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation('org.apache.tomcat.embed:tomcat-embed-websocket:9.0.19') {
+            force = true
+            because 'CVE-2019-0232 in the transitive tomcat-embed-websocket dependency'
+        }
+        implementation('org.apache.tomcat.embed:tomcat-embed-core:9.0.19') {
+            force = true
+            because 'CVE-2019-0232 in the transitive tomcat-embed-core dependency'
+        }
+
+        compileOnly 'org.projectlombok:lombok:1.18.6'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+        //  Test Dependencies :
+        testCompile("org.junit.jupiter:junit-jupiter-api:5.4.2")
+
+        //  Intellij doesn't gracefully handle JUnit 5:
+        //  https://stackoverflow.com/questions/46161608/intellij-junit-5-jupiter
+        testRuntime("org.junit.platform:junit-platform-launcher:1.0.0")
+        testRuntime("org.junit.jupiter:junit-jupiter-engine:5.0.0")
+        testRuntime("org.junit.vintage:junit-vintage-engine:4.12.0")
+    }
 
     spotless {
         java {
@@ -60,28 +80,4 @@ allprojects {
             trimTrailingWhitespace()
         }
     }
-
-    buildscript {
-        repositories {
-            mavenLocal()
-            mavenCentral()
-        }
-    }
 }
-
-dependencyCheck {
-  failBuildOnCVSS = 4
-  failOnError = true
-  // To configure a suppression file once we start adding in dependencies:
-  //suppressionFile = 'config/dependencyCheck/suppressions.xml'
-}
-
-application {
-    mainClassName = 'com.connexta.multiintstore.MultiIntStoreApplication'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-run.dependsOn(build)

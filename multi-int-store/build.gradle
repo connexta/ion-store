@@ -1,0 +1,20 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.4.RELEASE'
+    id 'application'
+}
+
+dependencies {
+    implementation('org.springframework.data:spring-data-cassandra') {
+        exclude group: 'com.google.guava', module: 'guava'
+        because 'CVE-2018-10237 in guava 19.0'
+    }
+    implementation('com.google.guava:guava:27.1-jre') {
+        because 'CVE-2018-10237 in guava 19.0'
+    }}
+
+application {
+    mainClassName = 'com.connexta.multiintstore.MultiIntStoreApplication'
+}
+
+run.dependsOn(build)
+

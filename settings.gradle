@@ -1,6 +1,5 @@
-pluginManagement {
-	repositories {
-		gradlePluginPortal()
-	}
-}
-rootProject.name = 'multi-int-store'
+rootProject.name = 'content-discovery-retrieval'
+include 'multi-int-store'
+include 'ingest'
+include 'search'
+
