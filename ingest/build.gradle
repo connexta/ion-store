@@ -1,0 +1,10 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.4.RELEASE'
+    id 'application'
+}
+
+application {
+    mainClassName = 'com.connexta.ingest.IngestApplication'
+}
+
+run.dependsOn(build)
