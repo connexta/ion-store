@@ -10,6 +10,9 @@ plugins {
 allprojects {
     sourceCompatibility = 1.11
     targetCompatibility = 1.11
+
+    group = 'com.connexta.multiintstore'
+    version = '0.1.0-SNAPSHOT'
 }
 
 repositories {
