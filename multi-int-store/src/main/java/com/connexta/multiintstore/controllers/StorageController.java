@@ -18,6 +18,7 @@ package com.connexta.multiintstore.controllers;
 import com.connexta.multiintstore.callbacks.CallbackValidator;
 import com.connexta.multiintstore.common.StorageManager;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,8 +29,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class StorageController {
 
-  private final StorageManager manager = new StorageManager();
+  private final StorageManager manager;
   private final CallbackValidator validator = new CallbackValidator();
+
+  @Autowired
+  public StorageController(StorageManager storageManager) {
+    this.manager = storageManager;
+  }
 
   @PostMapping(path = "/store/{ingestID}", consumes = "application/json")
   public ResponseEntity store(

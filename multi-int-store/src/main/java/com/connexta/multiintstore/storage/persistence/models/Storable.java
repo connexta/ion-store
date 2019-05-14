@@ -17,9 +17,6 @@ package com.connexta.multiintstore.storage.persistence.models;
 
 import java.util.UUID;
 
-public class Failures implements Storable {
-  @Override
-  public UUID getId() {
-    return null;
-  }
+public interface Storable {
+  public UUID getId();
 }
