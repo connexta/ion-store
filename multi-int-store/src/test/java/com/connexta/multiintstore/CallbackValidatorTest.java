@@ -27,7 +27,7 @@ import com.connexta.multiintstore.callbacks.ProductCallback;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class CallbackValidatorTest {
 

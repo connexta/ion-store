@@ -131,7 +131,6 @@ subprojects {
 				logger.lifecycle("\n" + ("-" * repeatLength) + "\n" + startItem + output + endItem + "\n" + ("-" * repeatLength))
 			}
 		}
-		useJUnitPlatform()
 	}
 
 	repositories {
