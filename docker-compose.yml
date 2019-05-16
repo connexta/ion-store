@@ -2,17 +2,21 @@ version: '3.7'
 services:
   ingest:
     build: ./ingest
+    image: ingest:0.1.0-SNAPSHOT
     ports:
       - 8080:8080
   multi-int-store:
-    depends_on:
-      - cassandra
     build: ./multi-int-store
+    image: multi-int-store:0.1.0-SNAPSHOT
     ports:
       - 8081:8081
-    restart: on-failure
+    depends_on:
+      - cassandra
   cassandra:
     image: cassandra
+    ports:
+      - 9042:9042
+    restart: on-failure
 # Uncomment when we have implemented this service
 #  search:
 #    build: ./search
