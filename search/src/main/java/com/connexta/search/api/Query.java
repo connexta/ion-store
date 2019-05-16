@@ -15,4 +15,6 @@
  */
 package com.connexta.search.api;
 
-public interface Query {}
+public interface Query {
+  void visit(Visitor translator);
+}
