@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-	mainClassName = 'com.connexta.ingest.IngestApplication'
+	mainClassName = "com.connexta.ingest.IngestApplication"
 }
 
 run.dependsOn(build)

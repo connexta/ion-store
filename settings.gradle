@@ -1,4 +1,4 @@
-rootProject.name = 'content-discovery-retrieval'
-include 'multi-int-store'
-include 'ingest'
-include 'search'
+rootProject.name = "content-discovery-retrieval"
+include "multi-int-store"
+include "ingest"
+include "search"

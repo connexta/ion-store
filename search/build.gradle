@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-	mainClassName = 'com.connexta.search.SearchApplication'
+	mainClassName = "com.connexta.search.SearchApplication"
 }
 
 run.dependsOn(build)
