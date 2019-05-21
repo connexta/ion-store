@@ -41,10 +41,10 @@ subprojects {
 
 		//  Forces Gradle to always run the tests, regardless if they are up to date or not.
 		outputs.upToDateWhen { false }
-		
+
 		def styler = [(TestResult.ResultType.FAILURE): { msg -> "\033[31m${msg}\033[0m" },
-					  (TestResult.ResultType.SKIPPED): { msg -> "\033[33m${msg}\033[0m" },
-					  (TestResult.ResultType.SUCCESS): { msg -> "\033[32m${msg}\033[0m" }]
+					(TestResult.ResultType.SKIPPED): { msg -> "\033[33m${msg}\033[0m" },
+					(TestResult.ResultType.SUCCESS): { msg -> "\033[32m${msg}\033[0m" }]
 
 		def parallel = { desc ->
 			if (project.quietTest()) {
