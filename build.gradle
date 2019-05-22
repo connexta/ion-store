@@ -51,7 +51,11 @@ subprojects {
 	}
 
 	dependencies {
-		implementation 'org.springframework.boot:spring-boot-starter-web'
+		implementation('org.springframework.boot:spring-boot-starter-web')
+		implementation('com.fasterxml.jackson.core:jackson-databind:2.9.9') {
+			force = true
+			because 'CVE-2019-12086 is contained within 2.9.8 the version Spring-Web 2.1.5 uses'
+		}
 		implementation('org.apache.tomcat.embed:tomcat-embed-websocket:9.0.19') {
 			force = true
 			because 'CVE-2019-0232 in the transitive tomcat-embed-websocket dependency'
@@ -89,6 +93,9 @@ subprojects {
 			trimTrailingWhitespace()
 		}
 	}
+
+	task listDependencies(type: DependencyReportTask)
+
 }
 
 spotless {
