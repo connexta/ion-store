@@ -15,7 +15,7 @@ allprojects {
 }
 
 ext.quietTest = {
-	project.hasProperty('quiet')
+	project.hasProperty("quiet")
 }
 
 repositories {
@@ -87,7 +87,7 @@ subprojects {
 					if (lastTestClass != desc.className && desc.className != null) {
 						lastTestClass = desc.className
 						def toPrint = " Starting tests for ${desc.className}: "
-						logger.lifecycle('-=' * (toPrint.length() / 2) + '-')
+						logger.lifecycle("-=" * (toPrint.length() / 2) + "-")
 						logger.lifecycle(toPrint)
 					}
 			}
@@ -117,7 +117,7 @@ subprojects {
 					stack = result.exception.getStackTrace()
 				}
 				logger.lifecycle("\n${styler[result.resultType](result.exception)}\n\t" +
-						styler[result.resultType]("at ${stack.join('\n\t')}") + "\n")
+						styler[result.resultType]("at ${stack.join("\n\t")}") + "\n")
 			}
 		}
 
@@ -126,9 +126,9 @@ subprojects {
 				def output = "Results: ${styler[result.resultType](result.resultType)} (${result.testCount} tests, " +
 						"${result.successfulTestCount} successes, ${result.failedTestCount} failures, " +
 						"${result.skippedTestCount} skipped)"
-				def startItem = '|  ', endItem = '  |'
+				def startItem = "|  ", endItem = "  |"
 				def repeatLength = startItem.length() + output.length() + endItem.length()
-				logger.lifecycle('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+				logger.lifecycle("\n" + ("-" * repeatLength) + "\n" + startItem + output + endItem + "\n" + ("-" * repeatLength))
 			}
 		}
 		useJUnitPlatform()
@@ -140,12 +140,12 @@ subprojects {
 	}
 
 	dependencies {
-		implementation('org.springframework.boot:spring-boot-starter-web')
-		implementation('com.fasterxml.jackson.core:jackson-databind:2.9.9') {
+		implementation("org.springframework.boot:spring-boot-starter-web")
+		implementation("com.fasterxml.jackson.core:jackson-databind:2.9.9") {
 			force = true
-			because 'CVE-2019-12086 is contained within 2.9.8 the version Spring-Web 2.1.5 uses'
+			because "CVE-2019-12086 is contained within 2.9.8 the version Spring-Web 2.1.5 uses"
 		}
-		implementation('org.apache.tomcat.embed:tomcat-embed-websocket:9.0.19') {
+		implementation("org.apache.tomcat.embed:tomcat-embed-websocket:9.0.19") {
 			force = true
 			because "CVE-2019-0232 in the transitive tomcat-embed-websocket dependency"
 		}
