@@ -1,10 +1,10 @@
 plugins {
-	id 'org.springframework.boot' version '2.1.5.RELEASE'
-	id 'application'
+	id "org.springframework.boot" version "2.1.5.RELEASE"
+	id "application"
 }
 
 application {
-	mainClassName = 'com.connexta.ingest.IngestApplication'
+	mainClassName = "com.connexta.ingest.IngestApplication"
 }
 
 run.dependsOn(build)
