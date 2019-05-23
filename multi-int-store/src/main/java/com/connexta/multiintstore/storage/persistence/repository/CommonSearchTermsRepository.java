@@ -13,20 +13,15 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.connexta.multiintstore.controllers;
+package com.connexta.multiintstore.storage.persistence.repository;
 
-import com.connexta.multiintstore.storage.persistence.repository.CommonSearchTermsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
+import com.connexta.multiintstore.storage.persistence.models.CommonSearchTerms;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.solr.repository.Query;
+import org.springframework.data.solr.repository.SolrCrudRepository;
 
-@RestController()
-public class IndexingController {
-
-  private CommonSearchTermsRepository commonSearchTermsRepository;
-
-  @Autowired
-  public void setCommonSearchTermsRepository(
-      CommonSearchTermsRepository commonSearchTermsRepository) {
-    this.commonSearchTermsRepository = commonSearchTermsRepository;
-  }
+public interface CommonSearchTermsRepository extends SolrCrudRepository<CommonSearchTerms, String> {
+  @Query(name = "CommonSearchTerms.findByNamedQuery")
+  public Page<CommonSearchTerms> findByNamedQuery(String searchTerm, Pageable pageable);
 }
