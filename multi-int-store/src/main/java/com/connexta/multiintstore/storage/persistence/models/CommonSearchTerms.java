@@ -13,20 +13,22 @@
  * GNU Lesser General Public License is distributed along with this
  * program and can be found at http://www.gnu.org/licenses/lgpl.html.
  */
-package com.connexta.multiintstore.controllers;
+package com.connexta.multiintstore.storage.persistence.models;
 
-import com.connexta.multiintstore.storage.persistence.repository.CommonSearchTermsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.solr.core.mapping.Indexed;
+import org.springframework.data.solr.core.mapping.SolrDocument;
 
-@RestController()
-public class IndexingController {
+@SolrDocument(collection = "searchTerms")
+@Getter
+@Setter
+public class CommonSearchTerms {
+  @Id
+  @Indexed(name = "id", type = "string")
+  private String id;
 
-  private CommonSearchTermsRepository commonSearchTermsRepository;
-
-  @Autowired
-  public void setCommonSearchTermsRepository(
-      CommonSearchTermsRepository commonSearchTermsRepository) {
-    this.commonSearchTermsRepository = commonSearchTermsRepository;
-  }
+  @Indexed(name = "name", type = "string")
+  private String name;
 }

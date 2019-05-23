@@ -1,3 +1,6 @@
 cassandra:
   host: cassandra
   port: 9042
+solr:
+  host: localhost
+  port: 8983
