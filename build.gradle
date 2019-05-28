@@ -156,9 +156,9 @@ subprojects {
 		testImplementation "org.springframework.boot:spring-boot-starter-test:2.0.5.RELEASE"
 
 		//  Test Dependencies :
-		testCompile 'junit:junit:4.12'
+		testCompile "junit:junit:4.12"
 		// required if you want to use Mockito for unit tests
-		testImplementation 'org.mockito:mockito-core:2.23.0'
+		testImplementation "org.mockito:mockito-core:2.23.0"
 	}
 
 	spotless {
