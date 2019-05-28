@@ -15,11 +15,18 @@
  */
 package com.connexta.multiintstore.controllers;
 
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/retrieve")
 public class RetrievalController {
   // Todo: Implement a path for handling retrieval requests
+
+  @GetMapping(path = "/retrieve/{id}")
+  public ResponseEntity retrieve(@PathVariable String id) {
+    return new ResponseEntity(HttpStatus.OK);
+  }
 }

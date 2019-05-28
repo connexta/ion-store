@@ -25,16 +25,16 @@ import static org.mockito.Mockito.mock;
 import com.connexta.multiintstore.storage.persistence.models.Metadata;
 import com.connexta.multiintstore.storage.persistence.repository.MetadataRepository;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class MetadataDaoTest {
 
   // Mocked Database and methods
   private static Dao<Metadata> dao;
 
-  @BeforeAll
+  @BeforeClass
   public static void init() {
     MetadataRepository repository = mock(MetadataRepository.class);
     doAnswer(MockDB::store).when(repository).save(any());
@@ -44,7 +44,7 @@ public class MetadataDaoTest {
     dao = new MetadataDao(repository);
   }
 
-  @BeforeEach
+  @Before
   public void beforeEach() {
     MockDB.clear();
   }
