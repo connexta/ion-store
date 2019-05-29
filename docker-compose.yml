@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   ingest:
-    image: 160.1.120.126:5000/cdr-ingest:0.1.0-SNAPSHOT
+    image: ${REGISTRY}/cdr-ingest:0.1.0-SNAPSHOT
     hostname: cdr-ingest
     ports:
       - target: 9040
@@ -13,7 +13,7 @@ services:
       restart_policy:
         condition: any
   multi-int-store:
-    image: 160.1.120.126:5000/cdr-multi-int-store:0.1.0-SNAPSHOT
+    image: ${REGISTRY}/cdr-multi-int-store:0.1.0-SNAPSHOT
     hostname: cdr-store
     ports:
       - target: 9041
@@ -27,7 +27,7 @@ services:
       restart_policy:
         condition: any
 #  search:
-#    image: 160.1.120.126:5000/cdr-multi-int-store:0.1.0-SNAPSHOT
+#    image: ${REGISTRY}/cdr-multi-int-store:0.1.0-SNAPSHOT
 #    hostname: cdr-search
 #    ports:
 #      - target: 9039
