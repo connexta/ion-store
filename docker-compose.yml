@@ -1,24 +1,52 @@
 version: '3.7'
 services:
   ingest:
-    build: ./ingest
-    image: ingest:0.1.0-SNAPSHOT
+    image: 160.1.120.126:5000/cdr-ingest:0.1.0-SNAPSHOT
+    hostname: cdr-ingest
     ports:
-      - 8080:8080
+      - target: 9040
+        published: 9040
+        protocol: tcp
+    networks:
+      - cdr
+    deploy:
+      restart_policy:
+        condition: any
   multi-int-store:
-    build: ./multi-int-store
-    image: multi-int-store:0.1.0-SNAPSHOT
+    image: 160.1.120.126:5000/cdr-multi-int-store:0.1.0-SNAPSHOT
+    hostname: cdr-store
     ports:
-      - 8081:8081
+      - target: 9041
+        published: 9041
+        protocol: tcp
+    networks:
+      - cdr
     depends_on:
       - cassandra
+    deploy:
+      restart_policy:
+        condition: any
+#  search:
+#    image: 160.1.120.126:5000/cdr-multi-int-store:0.1.0-SNAPSHOT
+#    hostname: cdr-search
+#    ports:
+#      - target: 9039
+#        published: 9039
+#        protocol: tcp
+#    networks:
+#      - cdr
+#    deploy:
+#      restart_policy:
+#        condition: any
   cassandra:
     image: cassandra
+    hostname: cassandra
     ports:
-      - 9042:9042
-    restart: on-failure
-# Uncomment when we have implemented this service
-#  search:
-#    build: ./search
-#    ports:
-#      - 8080:8080
+      - target: 9042
+        published: 9042
+        protocol: tcp
+    networks:
+      - cdr
+networks:
+  cdr:
+    external: true
