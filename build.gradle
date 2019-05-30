@@ -17,6 +17,10 @@ ext.quietTest = {
 	project.hasProperty("quiet")
 }
 
+ext.skipITest = {
+	project.hasProperty("skipITest")
+}
+
 repositories {
 	mavenCentral()
 	mavenLocal()
@@ -65,6 +69,11 @@ subprojects {
 		def styler = [(TestResult.ResultType.FAILURE): { msg -> "\033[31m${msg}\033[0m" },
 					(TestResult.ResultType.SKIPPED): { msg -> "\033[33m${msg}\033[0m" },
 					(TestResult.ResultType.SUCCESS): { msg -> "\033[32m${msg}\033[0m" }]
+
+
+		if(project.skipITest()) {
+			exclude "**/*IntegrationTest*"
+		}
 
 		def parallel = { desc ->
 			if (project.quietTest()) {
