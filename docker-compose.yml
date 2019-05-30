@@ -1,0 +1,52 @@
+version: '3.7'
+services:
+  ingest:
+    image: ${REGISTRY}/cdr-ingest:0.1.0-SNAPSHOT
+    hostname: cdr-ingest
+    ports:
+      - target: 9040
+        published: 9040
+        protocol: tcp
+    networks:
+      - cdr
+    deploy:
+      restart_policy:
+        condition: any
+  multi-int-store:
+    image: ${REGISTRY}/cdr-multi-int-store:0.1.0-SNAPSHOT
+    hostname: cdr-store
+    ports:
+      - target: 9041
+        published: 9041
+        protocol: tcp
+    networks:
+      - cdr
+    depends_on:
+      - cassandra
+    deploy:
+      restart_policy:
+        condition: any
+#  search:
+#    image: ${REGISTRY}/cdr-multi-int-store:0.1.0-SNAPSHOT
+#    hostname: cdr-search
+#    ports:
+#      - target: 9039
+#        published: 9039
+#        protocol: tcp
+#    networks:
+#      - cdr
+#    deploy:
+#      restart_policy:
+#        condition: any
+  cassandra:
+    image: cassandra
+    hostname: cassandra
+    ports:
+      - target: 9042
+        published: 9042
+        protocol: tcp
+    networks:
+      - cdr
+networks:
+  cdr:
+    external: true
