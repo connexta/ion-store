@@ -17,7 +17,7 @@ ext.quietTest = {
 	project.hasProperty("quiet")
 }
 
-ext.skipITest = {
+ext.skipIntegrationTest = {
 	project.hasProperty("skipITest")
 }
 
@@ -71,7 +71,7 @@ subprojects {
 					(TestResult.ResultType.SUCCESS): { msg -> "\033[32m${msg}\033[0m" }]
 
 
-		if(project.skipITest()) {
+		if (project.skipIntegrationTest()) {
 			exclude "**/*IntegrationTest*"
 		}
 
