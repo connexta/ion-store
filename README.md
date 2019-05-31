@@ -27,4 +27,8 @@ For running a single test suite.
 
 Running tests with quiet logs. This should not be used with parallel builds.
 
-`./gradlew -Pquiet test`
+`-Pquiet`
+
+To skip Integration test use
+
+`-PskipITests`
