@@ -5,10 +5,8 @@
 ./gradlew build
 ```
 
-### Running Tests
-Tests are run automatically with `./gradlew build`. The tests require that Docker is running. Even if the tests fail, the artifacts are built and can be run.
-
-To skip integration tests, add `-PskipITests`.
+### Tests
+Tests are run automatically with `./gradlew build`. Even if the tests fail, the artifacts are built and can be run.
 
 To run tests with quiet logs, add `-Pquiet`. This should not be used with parallel builds.
 
@@ -16,6 +14,11 @@ To run a single test suite, execute:
 ```
 ./gradlew module:test --test fullClassName
 ```
+
+#### Integration Tests
+The integration tests require that Docker is running.
+
+To skip integration tests, add `-PskipITests`.
 
 ## Running
 1. Boot up an [Apache Cassandra](https://cassandra.apache.org/) instance using the default hostname and ports: `localhost:9042`.
