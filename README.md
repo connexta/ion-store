@@ -18,10 +18,12 @@ To run a single test suite, execute:
 ```
 
 ## Running
-Boot up an [Apache Cassandra](https://cassandra.apache.org/) instance using the default hostname and ports: `localhost:9042`.
-```
-./gradlew run
-```
+1. Boot up an [Apache Cassandra](https://cassandra.apache.org/) instance using the default hostname and ports: `localhost:9042`.
+
+2. To start the services, execute:
+    ```
+    ./gradlew run
+    ```
 
 ## Build Checks
 ### OWASP
