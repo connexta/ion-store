@@ -58,8 +58,6 @@ subprojects {
 	dependencyCheck {
 		failBuildOnCVSS = 4
 		failOnError = true
-		// To configure a suppression file once we start adding in dependencies:
-		//suppressionFile = "config/dependencyCheck/suppressions.xml"
 
 		// Add support for NVD mirror
 		if (project.hasProperty("dependencyCheckUrlModified") && project.hasProperty("dependencyCheckUrlBase")) {
@@ -152,6 +150,12 @@ subprojects {
 	repositories {
 		mavenLocal()
 		mavenCentral()
+		maven {
+			url = uri("http://nexus.phx.connexta.com:8081/nexus/content/groups/public/")
+			content {
+					includeGroup "com.connexta"
+			}
+		}
 	}
 
 	dependencies {

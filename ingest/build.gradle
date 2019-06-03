@@ -6,6 +6,11 @@ plugins {
 dependencies {
 	testCompile group: "org.springframework.boot", name: "spring-boot-starter-test", version: "2.1.5.RELEASE"
 	compile group: "org.json", name: "json", version: "20180813"
+	implementation("com.connexta.ingest:ingest-api-rest-spring-stubs:0.1.0-SNAPSHOT")
+}
+
+dependencyCheck {
+	suppressionFile = "${projectDir}/owasp-suppressions.xml"
 }
 
 springBoot {
