@@ -24,9 +24,9 @@ To skip integration tests, add `-PskipITests`.
 1. Boot up an [Apache Cassandra](https://cassandra.apache.org/) instance using the default hostname and ports: `localhost:9042`.
 
 2. To start the services, execute:
-    ```
-    ./gradlew run
-    ```
+	```
+	./gradlew run
+	```
 
 ## Build Checks
 ### OWASP
