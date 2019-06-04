@@ -3,7 +3,6 @@
 ## Prerequisites
 * Java 11
 
-
 ## Building
 ```
 ./gradlew build
