@@ -1,5 +1,8 @@
 # Multi-Int Store
 
+## Prerequisites
+* Java 11
+
 ## Building
 ```
 ./gradlew build
