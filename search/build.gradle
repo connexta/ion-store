@@ -1,10 +1,16 @@
 plugins {
 	id "org.springframework.boot" version "2.1.5.RELEASE"
-	id "application"
+	id "com.palantir.docker" version "0.22.1"
 }
 
-application {
-	mainClassName = "com.connexta.search.SearchApplication"
+bootJar {
+	launchScript()
 }
 
-run.dependsOn(build)
+docker {
+	files tasks.bootJar.outputs
+	name "cnxta/cdr-search:${project.version}"
+	buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
+}
+
+build.dependsOn("docker")

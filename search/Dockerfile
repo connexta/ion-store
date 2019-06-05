@@ -1,11 +1,7 @@
 FROM openjdk:11-jre-slim
-VOLUME /tmp
+LABEL maintainer=connexta
+LABEL com.connexta.application.name=cdr-search
 ARG JAR_FILE
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java",\
-    "-Dserver.port=9039",\
-    "-Djava.security.egd=file:/dev/./urandom",\
-    "-Djava.rmi.server.hostname=cdr-search",\
-    "-jar",\
-    "/app.jar"]
-EXPOSE 9039
+COPY ${JAR_FILE} /cdr-search
+ENTRYPOINT ["/cdr-search"]
+EXPOSE 8080
