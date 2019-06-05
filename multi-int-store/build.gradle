@@ -21,7 +21,7 @@ bootJar {
 
 docker {
 	files tasks.bootJar.outputs
-	name "cnxta/multi-int-store:${project.version}"
+	name "cnxta/cdr-multi-int-store:${project.version}"
 	buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
 }
 
