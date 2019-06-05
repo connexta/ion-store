@@ -2,11 +2,13 @@
 
 ## Prerequisites
 * Java 11
+* Docker
 
 ## Building
 ```
 ./gradlew build
 ```
+Because the Docker images are built automatically, a docker daemon must be available.
 
 ## Running via docker-compose
 There is a docker-compose environment included in this repository.
