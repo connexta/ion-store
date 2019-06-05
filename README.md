@@ -9,7 +9,7 @@
 ```
 
 ## Running via docker-compose
-There is a docker-compose environment included in this repository. 
+There is a docker-compose environment included in this repository.
 This will spin up each of the services that make up the multi-int-store as well as any 3rd party services needed by the multi-int-store.
 
 To start the full environment run `docker-compose up -d`
