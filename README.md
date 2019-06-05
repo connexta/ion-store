@@ -14,6 +14,21 @@ Because the Docker images are built automatically, a docker daemon must be avail
 There is a docker-compose environment included in this repository.
 This will spin up each of the services that make up the multi-int-store as well as any 3rd party services needed by the multi-int-store.
 
+A `cdr` network is needed to run via docker-compose. First, check if the `cdr` network is already created:
+```
+docker network ls
+```
+
+If it has not yet been created, execute:
+```
+docker network create --driver=overlay --attachable cdr
+```
+
+To check that it has been created successfully, execute:
+```
+docker network ls
+```
+
 To start the full environment, execute:
 ```
 docker-compose up -d
