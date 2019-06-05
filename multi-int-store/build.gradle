@@ -1,6 +1,6 @@
 plugins {
 	id "org.springframework.boot" version "2.1.5.RELEASE"
-	id "application"
+	id "com.palantir.docker" version "0.22.1"
 }
 
 dependencies {
@@ -15,8 +15,14 @@ dependencies {
 	testImplementation "org.testcontainers:testcontainers:1.11.2"
 }
 
-application {
-	mainClassName = "com.connexta.multiintstore.MultiIntStoreApplication"
+bootJar {
+	launchScript()
 }
 
-run.dependsOn(build)
+docker {
+	files tasks.bootJar.outputs
+	name "cnxta/multi-int-store:${project.version}"
+	buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
+}
+
+build.dependsOn("docker")
