@@ -12,17 +12,29 @@
 There is a docker-compose environment included in this repository.
 This will spin up each of the services that make up the multi-int-store as well as any 3rd party services needed by the multi-int-store.
 
-To start the full environment run `docker-compose up -d`
+To start the full environment, execute:
+```
+docker-compose up -d
+```
 
-To check the status of the environment run `docker-compose ps`
+To check the status of the environment, execute:
+```
+docker-compose ps
+```
 
-To stream the logs to the console run `docker-compose logs -f`
+To stream the logs to the console, execute:
+```
+docker-compose logs -f
+```
 
-To bring down the services and clean up run `docker-compose down`
+To bring down the services and clean up, execute:
+```
+docker-compose down
+```
 
 ### Accessing
 
-The compose environment is configured to expose each of the services to the host OS on a different port. To check the ports examine the output of `docker-compose ps`
+The compose environment is configured to expose each of the services to the host OS on a different port. To check the ports examine the output of `docker-compose ps`.
 
 ### Tests
 Tests are run automatically with `./gradlew build`. Even if the tests fail, the artifacts are built and can be run.
