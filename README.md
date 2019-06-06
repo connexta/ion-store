@@ -2,11 +2,14 @@
 
 ## Prerequisites
 * Java 11
+* Docker
 
 ## Building
 ```
 ./gradlew build
 ```
+Because the Docker images are built automatically, a docker daemon must be available.
+
 
 ### Tests
 Tests are run automatically with `./gradlew build`. Even if the tests fail, the artifacts are built and can be run.
@@ -30,6 +33,78 @@ To skip integration tests, add `-PskipITests`.
 	```
 	./gradlew run
 	```
+
+### Running via docker-compose
+There is a docker-compose environment included in this repository.
+This will spin up each of the services that make up the multi-int-store as well as any 3rd party services needed by the multi-int-store.
+
+A `cdr` network is needed to run via docker-compose. First, check if the `cdr` network is already created:
+```
+docker network ls
+```
+
+If it has not yet been created, execute:
+```
+docker network create --driver=overlay --attachable cdr
+```
+
+To check that it has been created successfully, execute:
+```
+docker network ls
+```
+
+To start the full environment, execute:
+```
+docker-compose up -d
+```
+
+To check the status of the environment, execute:
+```
+docker-compose ps
+```
+
+To stream the logs to the console, execute:
+```
+docker-compose logs -f
+```
+
+To bring down the services and clean up, execute:
+```
+docker-compose down
+```
+
+#### Accessing
+
+The compose environment is configured to expose each of the services to the host OS on a different port. To check the ports examine the output of `docker-compose ps`.
+
+### Running via docker stack
+To deploy the full environment onto a swarm, execute:
+```bash
+docker stack deploy -c docker-compose.yml cdr
+```
+
+To check the status of all services in the stack, execute:
+```bash
+docker stack services cdr
+```
+
+To stream the logs for a specific service, execute:
+```bash
+docker service logs -f <service_name>
+```
+
+#### Custom Registries
+The compose file in this repo uses variable interpolation to allow for overriding the registry url for the images produced during the build.
+
+For example, the build produces an image name that looks like `cnxta/cdr-ingest:<version>` which _implies_ a registry of `docker.io`. This means the full name of the repository is `docker.io/cnxta/cdr-ingest:<version>`.
+In order to make this flexible a variable has been added in the compose file that defaults to this value but can be overridden at deploy time.
+
+*Note:* Docker stack does not actually allow variable interpolation, we will need to run a more complex command to deal with this scenario.
+
+To deploy to a swarm using a custom registry:
+1. re-tag and push images to custom registry
+2. run `docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr`
+
 
 ## Build Checks
 ### OWASP

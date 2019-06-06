@@ -1,10 +1,17 @@
 plugins {
 	id "org.springframework.boot" version "2.1.5.RELEASE"
-	id "application"
+	id "com.palantir.docker" version "0.22.1"
 }
 
-application {
-	mainClassName = "com.connexta.ingest.IngestApplication"
+bootJar {
+	launchScript()
 }
 
-run.dependsOn(build)
+docker {
+	files tasks.bootJar.outputs
+	name "cnxta/cdr-ingest:${project.version}"
+	buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
+}
+
+build.dependsOn("docker")
+bootRun.dependsOn(build)

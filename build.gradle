@@ -22,8 +22,8 @@ ext.skipIntegrationTests = {
 }
 
 repositories {
-	mavenCentral()
 	mavenLocal()
+	mavenCentral()
 }
 
 class SpotlessConfig {
@@ -150,8 +150,8 @@ subprojects {
 	}
 
 	repositories {
-		mavenCentral()
 		mavenLocal()
+		mavenCentral()
 	}
 
 	dependencies {
