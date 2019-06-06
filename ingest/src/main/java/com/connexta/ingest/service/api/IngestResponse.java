@@ -6,11 +6,7 @@
  */
 package com.connexta.ingest.service.api;
 
-/*
- **
- * Java object that represents the response handed back to the caller
- *
- */
+/** Java object that represents the response handed back to the caller */
 public interface IngestResponse {
 
   boolean isStarted();

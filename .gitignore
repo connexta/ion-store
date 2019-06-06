@@ -28,3 +28,6 @@ gradle-app.setting
 
 #jenv
 .java-version
+
+#Do not upload
+*.sec

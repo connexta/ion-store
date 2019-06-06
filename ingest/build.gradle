@@ -27,5 +27,11 @@ docker {
 	buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
 }
 
+dependencies {
+	implementation platform("software.amazon.awssdk:bom:2.5.29")
+	implementation "software.amazon.awssdk:s3"
+	compile group: "commons-io", name: "commons-io", version: "2.6"
+}
+
 build.dependsOn("docker")
 bootRun.dependsOn(build)
