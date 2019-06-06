@@ -48,6 +48,9 @@ pipeline {
                         postStatusToHash("${jsonBlob}", "${GITHUB_USERNAME}", "${GITHUB_REPONAME}", "${env.PR_COMMIT}", "${GITHUB_TOKEN}")
                     }
                 }
+                configFileProvider([configFile(fileId: 'gradle-nvd-mirror', targetLocation: '$HOME/.gradle/gradle.properties')]) {
+                    // Nothing to do here
+                }
             }
         }
         stage('Full Build') {
