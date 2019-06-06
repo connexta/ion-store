@@ -60,6 +60,15 @@ subprojects {
 		failOnError = true
 		// To configure a suppression file once we start adding in dependencies:
 		//suppressionFile = "config/dependencyCheck/suppressions.xml"
+
+		// Add support for NVD mirror
+		if (project.hasProperty("dependencyCheckUrlModified") && project.hasProperty("dependencyCheckUrlBase")) {
+			println "Using NVD Mirrors: ${dependencyCheckUrlBase} and ${dependencyCheckUrlModified}"
+			cve {
+				urlModified = "${dependencyCheckUrlModified}"
+				urlBase = "${dependencyCheckUrlBase}"
+			}
+		}
 	}
 
 	tasks.withType(Test) {
