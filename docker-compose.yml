@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   ingest:
-    image: cnxta/cdr-ingest:0.1.0-SNAPSHOT
+    image: ${REGISTRY:-docker.io}/cnxta/cdr-ingest:0.1.0-SNAPSHOT
     hostname: cdr-ingest
     ports:
       - target: 8080
@@ -13,7 +13,7 @@ services:
       restart_policy:
         condition: any
   multi-int-store:
-    image: cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
+    image: ${REGISTRY:-docker.io}/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
     hostname: cdr-store
     ports:
       - target: 8080
@@ -31,7 +31,7 @@ services:
       - "--cassandra.host=cassandra"
       - "--cassandra.port=9042"
   search:
-    image: cnxta/cdr-search:0.1.0-SNAPSHOT
+    image: ${REGISTRY:-docker.io}/cnxta/cdr-search:0.1.0-SNAPSHOT
     hostname: cdr-search
     ports:
       - target: 8080

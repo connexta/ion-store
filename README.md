@@ -10,7 +10,31 @@
 ```
 Because the Docker images are built automatically, a docker daemon must be available.
 
-## Running via docker-compose
+
+### Tests
+Tests are run automatically with `./gradlew build`. Even if the tests fail, the artifacts are built and can be run.
+
+To run tests with quiet logs, add `-Pquiet`. This should not be used with parallel builds.
+
+To run a single test suite, execute:
+```
+./gradlew module:test --test fullClassName
+```
+
+#### Integration Tests
+The integration tests require that Docker is running.
+
+To skip integration tests, add `-PskipITests`.
+
+## Running
+1. Boot up an [Apache Cassandra](https://cassandra.apache.org/) instance using the default hostname and ports: `localhost:9042`.
+
+2. To start the services, execute:
+	```
+	./gradlew run
+	```
+	
+### Running via docker-compose
 There is a docker-compose environment included in this repository.
 This will spin up each of the services that make up the multi-int-store as well as any 3rd party services needed by the multi-int-store.
 
@@ -49,33 +73,37 @@ To bring down the services and clean up, execute:
 docker-compose down
 ```
 
-### Accessing
+#### Accessing
 
 The compose environment is configured to expose each of the services to the host OS on a different port. To check the ports examine the output of `docker-compose ps`.
 
-### Tests
-Tests are run automatically with `./gradlew build`. Even if the tests fail, the artifacts are built and can be run.
-
-To run tests with quiet logs, add `-Pquiet`. This should not be used with parallel builds.
-
-To run a single test suite, execute:
-```
-./gradlew module:test --test fullClassName
+### Running via docker stack
+To deploy the full environment onto a swarm, execute:
+```bash
+docker stack deploy -c docker-compose.yml cdr
 ```
 
-#### Integration Tests
-The integration tests require that Docker is running.
+To check the status of all services in the stack, execute:
+```bash
+docker stack services cdr
+```
 
-To skip integration tests, add `-PskipITests`.
+To stream the logs for a specific service, execute:
+```bash
+docker service logs -f <service_name>
+```
 
-## Running
-1. Boot up an [Apache Cassandra](https://cassandra.apache.org/) instance using the default hostname and ports: `localhost:9042`.
+#### Custom Registries
+The compose file in this repo uses variable interpolation to allow for overriding the registry url for the images produced during the build.
 
-2. To start the services, execute:
-	```
-	./gradlew run
-	```
+For example, the build produces an image name that looks like `cnxta/cdr-ingest:<version>` which _implies_ a registry of `docker.io`. This means the full name of the repository is `docker.io/cnxta/cdr-ingest:<version>`.
+In order to make this flexible a variable has been added in the compose file that defaults to this value but can be overridden at deploy time.
 
+*Note:* Docker stack does not actually allow variable interpolation, we will need to run a more complex command to deal with this scenario.
+
+To deploy to a swarm using a custom registry:
+1. re-tag and push images to custom registry
+2. Run 
 ## Build Checks
 ### OWASP
 ```
