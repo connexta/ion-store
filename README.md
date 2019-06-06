@@ -33,7 +33,7 @@ To skip integration tests, add `-PskipITests`.
 	```
 	./gradlew run
 	```
-	
+
 ### Running via docker-compose
 There is a docker-compose environment included in this repository.
 This will spin up each of the services that make up the multi-int-store as well as any 3rd party services needed by the multi-int-store.
@@ -103,7 +103,9 @@ In order to make this flexible a variable has been added in the compose file tha
 
 To deploy to a swarm using a custom registry:
 1. re-tag and push images to custom registry
-2. Run 
+2. run `docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr`
+
+
 ## Build Checks
 ### OWASP
 ```
