@@ -63,9 +63,9 @@ subprojects {
 
 		// Add support for NVD mirror
 		if (project.hasProperty("dependencyCheckUrlModified") && project.hasProperty("dependencyCheckUrlBase")) {
-            cve {
+			cve {
 				urlModified = "${dependencyCheckUrlModified}"
-                urlBase = "${dependencyCheckUrlBase}"
+				urlBase = "${dependencyCheckUrlBase}"
 			}
 		}
 	}
