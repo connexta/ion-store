@@ -63,7 +63,7 @@ pipeline {
         stage('Security Analysis - OWASP') {
             steps {
                 timeout(time: 25, unit: 'MINUTES') {
-                    sh './gradlew dependencyCheckAnalyze --debug'
+                    sh './gradlew dependencyCheckAnalyze --info'
                 }
             }
         }
