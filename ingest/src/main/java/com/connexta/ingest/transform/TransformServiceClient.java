@@ -10,8 +10,10 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+@Service
 public class TransformServiceClient {
 
   @Autowired RestTemplate restTemplate;
@@ -25,6 +27,10 @@ public class TransformServiceClient {
           + "\"bytes\": \"2147483648\",\n"
           + "\"callbackUrl\": \"https://<host>:<port>/a/callback\"\n"
           + "}";
+
+  public TransformServiceClient(RestTemplate restTemplate) {
+    this.restTemplate = restTemplate;
+  }
 
   public void postRequest() {
 
