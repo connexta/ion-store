@@ -1,3 +1,27 @@
+# Configurable Registries
+#    This compose file allows the composition to be used in multiple environments. Instead of
+#    using hard-coded strings to identify the names of images, variable interpolation is
+#    to make the registry part of the name configurable at runtime.
+#
+#    If the REGISTRY environment variable is not set, the registry defaults to
+#    Docker Hub (docker.io).
+#
+#    If the REGISTRY variable is set, interpolation on the command line can be used to inject
+#    a registry's address when the Docker service is deployed. the format of the command is:
+#
+#        docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr
+#
+#    where <registry-url> is changed to be the address of the target registry.
+# --------------------------------------------------------------------------------------------------
+# To deploy to a cloud:
+#    1. Build the images locally.
+#    2. Tag those images to include the target registry address.
+#    3. Push those images.
+#    4. From the cloud environment, execute:
+#
+#        docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr
+#
+#
 version: '3.7'
 services:
   ingest:
