@@ -16,6 +16,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableSolrRepositories(
@@ -28,11 +29,10 @@ public class ApplicationConfiguration {
 
   @Value("${cassandra.port}")
   private int cassandraPort;
-
-  @Bean
-  public Session createSession() {
-    return createSession(cassandraHost, cassandraPort);
-  }
+  @Value("${solr.host}")
+  private String solrHost;
+  @Value("${solr.port}")
+  private int solrPort;
 
   public static Session createSession(String ip, int port) {
     Cluster cluster;
@@ -50,11 +50,10 @@ public class ApplicationConfiguration {
     return session;
   }
 
-  @Value("${solr.host}")
-  private String solrHost;
-
-  @Value("${solr.port}")
-  private int solrPort;
+  @Bean
+  public Session createSession() {
+    return createSession(cassandraHost, cassandraPort);
+  }
 
   @Bean
   public SolrClient solrClient() {
@@ -65,5 +64,10 @@ public class ApplicationConfiguration {
   @Bean
   public SolrTemplate solrTemplate(SolrClient client) throws Exception {
     return new SolrTemplate(client);
+  }
+
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 }
