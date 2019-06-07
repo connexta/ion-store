@@ -22,7 +22,7 @@ public class MockTransformService {
     SpringApplication.run(MockTransformService.class);
   }
 
-  @RequestMapping("/")
+  @RequestMapping("/transform")
   public String mockTransform() {
     System.err.println("rootResource");
     return "{message : 'under construction'}";

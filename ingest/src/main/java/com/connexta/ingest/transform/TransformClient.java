@@ -27,9 +27,10 @@ public class TransformClient {
   @Autowired private RestTemplate restTemplate;
 
   public String requestTransform() {
-    String result = null;
+    String result;
     try {
-      result = restTemplate.postForObject("http://localhost:8000", jsonBody, String.class);
+      result =
+          restTemplate.postForObject("http://localhost:8000/transform", jsonBody, String.class);
       System.err.println("TransformClient#requestTransform");
     } catch (HttpClientErrorException e) {
       result = e.getMessage();
