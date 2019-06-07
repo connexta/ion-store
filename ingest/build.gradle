@@ -3,6 +3,15 @@ plugins {
 	id "com.palantir.docker" version "0.22.1"
 }
 
+dependencies {
+	testCompile group: "org.springframework.boot", name: "spring-boot-starter-test", version: "2.1.5.RELEASE"
+	compile group: "org.json", name: "json", version: "20180813"
+}
+
+springBoot {
+	mainClassName = "com.connexta.ingest.IngestApplication"
+}
+
 bootJar {
 	launchScript()
 }
