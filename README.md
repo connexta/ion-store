@@ -6,7 +6,6 @@
 
 ## Build Procedures
 
-
 ### Build
 To build and test the application:
 
@@ -52,6 +51,13 @@ For more information about spotless checks see
 
 * For either option, examine the output of `docker-compose ps` to determine
 the **ports assigned to the services**.
+* To use a local block storage implementation (to simulate S3), run Minio locally
+
+```bash
+	docker run -p 9000:9000 --name minio1 -e "MINIO_ACCESS_KEY=admin" -e "MINIO_SECRET_KEY=adminadmin" minio/minio server /data
+```
+After starting the Minio service, add a bucket named `staged-products`
+
 
 ### Option 1: Run services using docker-compose
 There is a docker-compose environment included in this repository.
