@@ -22,7 +22,8 @@ public class TransformClient {
 
   public TransformSuccessResponse requestTransform(TransformRequest transformRequest) {
     HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
-    return restTemplate.postForObject(getTransformEndpoint(), request, TransformSuccessResponse.class);
+    return restTemplate.postForObject(
+        getTransformEndpoint(), request, TransformSuccessResponse.class);
   }
 
   public URI getTransformEndpoint() {

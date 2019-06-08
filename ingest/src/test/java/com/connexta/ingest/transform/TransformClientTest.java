@@ -75,49 +75,7 @@ public class TransformClientTest {
     assertThat(result.getMessage(), equalTo("success-message"));
   }
 
-  /* @Before
-  public void setup() throws Exception {
-    restTemplate = new ApplicationConfiguration().restTemplate();
-    mockTransformationService = MockRestServiceServer.createServer(restTemplate);
-    client = new TransformServiceClient(restTemplate);
-  }
-
-  @Test
-  public void sendRequest() {
-    DefaultResponseCreator response = MockRestResponseCreators.withSuccess();
-    HttpHeaders headers = new HttpHeaders();
-    headers.addAll("Allow", List.of("POST"));
-    response.headers(headers);
-    mockTransformationService
-        .expect(requestTo("http://localhost:8000/ingest"))
-        .andExpect(method(HttpMethod.POST))
-        .andRespond(response);
-    client.postRequest();
-    mockTransformationService.verify();
-
-    //    HttpHeaders headers = new HttpHeaders();
-    //    headers.addAll("Allow", List.of("POST", "OPTIONS"));
-    //    response.headers(headers);
-    //    mockTransformationService
-    //        .expect(requestTo("http://localhost:8080/"))
-    //        .andExpect(method(HttpMethod.POST))
-    //        .andRespond(response);
-  }*/
-
   private String asJson(Object object) throws JsonProcessingException {
     return (new ObjectMapper()).writeValueAsString(object);
-    //     JsonGenerator jsonGenerator = null;
-    //     ObjectMapper objectMapper = null;
-    //      objectMapper = new ObjectMapper();
-    //      try{
-    //        jsonGenerator = objectMapper.getFactory().createJsonGenerator(System.out,
-    // JsonEncoding.UTF8);
-    //        jsonGenerator.writeObject(bean);
-    //        objectMapper.writeValue(System.out, bean);
-    //      }catch (IOException e) {
-    //        e.printStackTrace();
-    //      }
-    //      jsonGenerator.flush();
-    //      jsonGenerator.close();
   }
 }
