@@ -127,7 +127,7 @@ to the Govcloud Docker registry. Once the images are in the registry, they can b
 ### Step 1: Tag each image
 To successfully push an image to a registry, the IP or hostname of the registry, along with
 its port number must be added to the name of the image. This is accomplished by the `docker tag`
-command which crates and alias to a Docker image.
+command which creates and alias to a Docker image.
 
 To see the images in your local image cache, execute:
 ```bash
