@@ -6,38 +6,18 @@
  */
 package com.connexta.ingest.transform;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-@SpringBootApplication
 @RestController
 public class MockTransformService {
 
-  public static void main(String[] args) {
-    SpringApplication.run(MockTransformService.class);
-  }
-
-  @RequestMapping(
-      path = "/transform",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE,
-      method = RequestMethod.POST)
-  public TransformResponse mockTransform() {
-    return new TransformResponse();
-  }
-
+  // Tried defining the rest template bean in the ApplicationConfiguration class, but it doesn't
+  // work there and I don't know why.
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
-    // Do not throw exceptions when receiving 400-500 or other non-successful status codes
-    // DOES NOT REPLACE THE DEFAULT ERROR HANDLER!
-    //    builder.errorHandler(new NoOpResponseErrorHandler());
     return builder.build();
   }
 }
