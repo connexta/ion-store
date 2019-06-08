@@ -10,7 +10,8 @@ and each version would have it"s own image file with a unique Image ID, but they
 intances of cdr-search
 * Tag - A string to identify one version from another. The default tag is "latest".
 * Registry - A registry is a server of image files. Docker assumes default registry Docker Hub
-(dockerhub.io). Docker also has a convention for parsng Docker Hub usernames from a repository name.
+(dockerhub.io). Docker also has a convention for parsing Docker Hub usernames from
+a repository name.
 
 ### Docker Name Grammar
 *Colons : and forward slashes / are literals*
