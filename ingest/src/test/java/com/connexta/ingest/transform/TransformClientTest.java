@@ -20,6 +20,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URISyntaxException;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +66,7 @@ public class TransformClientTest {
     expectedFailedResponse = new TransformResponse();
     expectedFailedResponse.setId("1");
     expectedFailedResponse.setMessage("failure");
-    //    expectedFailedResponse.setDetails(List.of("A", "B"));
+    expectedFailedResponse.setDetails(List.of("A", "B"));
   }
 
   @Test

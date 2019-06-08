@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -22,12 +23,18 @@ public class TransformClient {
   private URI transformEndpoint;
 
   public TransformResponse requestTransform(TransformRequest transformRequest) {
-    restTemplate.setErrorHandler(new NoOpResponseErrorHandler());
-    HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
-    ResponseEntity<TransformResponse> responseEntity =
-        restTemplate.postForEntity(getTransformEndpoint(), request, TransformResponse.class);
-    TransformResponse transformResponse = responseEntity.getBody();
-        transformResponse.setStatus(responseEntity.getStatusCode());
+    ResponseErrorHandler originalRequestHandler = restTemplate.getErrorHandler();
+    TransformResponse transformResponse = null;
+    try {
+      restTemplate.setErrorHandler(new NoOpResponseErrorHandler());
+      HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
+      ResponseEntity<TransformResponse> responseEntity =
+          restTemplate.postForEntity(getTransformEndpoint(), request, TransformResponse.class);
+      transformResponse = responseEntity.getBody();
+      transformResponse.setStatus(responseEntity.getStatusCode());
+    } finally {
+      restTemplate.setErrorHandler(originalRequestHandler);
+    }
     if (!transformRequest.getId().equals(transformResponse.getId())) {
       throw new RuntimeException("Transform service did not return same ID.");
     }
