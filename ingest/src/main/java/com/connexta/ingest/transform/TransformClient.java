@@ -6,9 +6,10 @@
  */
 package com.connexta.ingest.transform;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -26,16 +27,22 @@ public class TransformClient {
 
   @Autowired private RestTemplate restTemplate;
 
-  public String requestTransform() {
-    String result;
-    try {
-      result =
-          restTemplate.postForObject("http://localhost:8000/transform", jsonBody, String.class);
-      System.err.println("TransformClient#requestTransform");
-    } catch (HttpClientErrorException e) {
-      result = e.getMessage();
-    }
+  private URI transformEndpoint;
 
-    return result;
+  public String requestTransform() {
+
+    return restTemplate.postForObject(getTransformEndpoint(), jsonBody, String.class);
+  }
+
+  public URI getTransformEndpoint() {
+    return transformEndpoint;
+  }
+
+  public void setTransformEndpoint(URI transformEndpoint) {
+    this.transformEndpoint = transformEndpoint;
+  }
+
+  public void setTransformEndpoint(String transformEndpoint) throws URISyntaxException {
+    this.transformEndpoint = new URI(transformEndpoint);
   }
 }

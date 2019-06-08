@@ -10,6 +10,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import java.net.URISyntaxException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,21 +30,22 @@ public class TransformClientTest {
   @Autowired TransformClient client;
 
   private MockRestServiceServer mockServer;
+  private String transformEndpoint;
 
   @Before
-  public void setUp() {
+  public void setUp() throws URISyntaxException {
     mockServer = MockRestServiceServer.createServer(restTemplate);
-  }
+    transformEndpoint = "http://localhost:8000/transform";
+    client.setTransformEndpoint(transformEndpoint);}
 
   @Test
   public void testPerformTransform() {
     mockServer
-        .expect(requestTo("http://localhost:8000/transform"))
+        .expect(requestTo(transformEndpoint))
         .andExpect(jsonPath("$.id").value("30f14c6c1fc85cba12bfd093aa8f90e3"))
         .andRespond(withSuccess("<put json response here>", MediaType.TEXT_PLAIN));
 
     String result = client.requestTransform();
-    System.err.println("Test output: " + result);
 
     mockServer.verify();
     // assertEquals("hello", result);
