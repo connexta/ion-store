@@ -12,6 +12,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
@@ -20,6 +21,7 @@ import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 @EnableSolrRepositories(
     basePackages = "com.connexta.multiintstore.storage.persistence.repository",
     namedQueriesLocation = "classpath:solr-named-queries.properties")
+@ComponentScan
 public class ApplicationConfiguration {
   @Value("${cassandra.host}")
   private String cassandraHost;
@@ -27,11 +29,10 @@ public class ApplicationConfiguration {
   @Value("${cassandra.port}")
   private int cassandraPort;
 
-  @Value("${solr.host}")
-  private String solrHost;
-
-  @Value("${solr.port}")
-  private int solrPort;
+  @Bean
+  public Session createSession() {
+    return createSession(cassandraHost, cassandraPort);
+  }
 
   public static Session createSession(String ip, int port) {
     Cluster cluster;
@@ -49,10 +50,11 @@ public class ApplicationConfiguration {
     return session;
   }
 
-  @Bean
-  public Session createSession() {
-    return createSession(cassandraHost, cassandraPort);
-  }
+  @Value("${solr.host}")
+  private String solrHost;
+
+  @Value("${solr.port}")
+  private int solrPort;
 
   @Bean
   public SolrClient solrClient() {
