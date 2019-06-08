@@ -43,7 +43,7 @@ public class TransformClient {
     transformResponse = responseEntity.getBody();
     transformResponse.setStatus(responseEntity.getStatusCode());
     if (!transformRequest.getId().equals(transformResponse.getId())) {
-      throw new RuntimeException("Transform service did not return same ID.");
+      throw new MismatchedIdException("Transform service did not return same ID.");
     }
     return transformResponse;
   }

@@ -106,11 +106,11 @@ public class TransformClientTest {
     assertThat(transformResponse.isError(), is(true));
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test(expected = MismatchedIdException.class)
   public void testIdMismatch() throws JsonProcessingException {
     transformRequest.setId("orange");
     expectedSuccessResponse.setId("apple");
     mockServer.expect(anything()).andRespond(withSuccess(expectedFailedResponse));
-    TransformResponse transformResponse = client.requestTransform(transformRequest);
+    client.requestTransform(transformRequest);
   }
 }
