@@ -6,7 +6,7 @@
  */
 package com.connexta.ingest.transform;
 
-import static org.junit.Assert.assertEquals;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -39,13 +39,14 @@ public class TransformClientTest {
   public void testPerformTransform() {
     mockServer
         .expect(requestTo("http://localhost:8000/transform"))
+        .andExpect(jsonPath("$.id").value("30f14c6c1fc85cba12bfd093aa8f90e3"))
         .andRespond(withSuccess("<put json response here>", MediaType.TEXT_PLAIN));
 
     String result = client.requestTransform();
     System.err.println("Test output: " + result);
 
     mockServer.verify();
-    //assertEquals("hello", result);
+    // assertEquals("hello", result);
   }
 
   /* @Before
