@@ -11,6 +11,7 @@ import static com.connexta.ingest.transform.ExtendedMockRestResponseCreators.wit
 import static com.connexta.ingest.transform.ExtendedMockRestResponseCreators.withSuccess;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.anything;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
@@ -62,7 +63,7 @@ public class TransformClientTest {
     expectedSuccessResponse.setId("1");
     expectedSuccessResponse.setMessage("success");
     expectedFailedResponse = new TransformResponse();
-    expectedFailedResponse.setId("6");
+    expectedFailedResponse.setId("1");
     expectedFailedResponse.setMessage("failure");
     //    expectedFailedResponse.setDetails(List.of("A", "B"));
   }
@@ -92,7 +93,7 @@ public class TransformClientTest {
     mockServer.expect(anything()).andRespond(withBadRequest(expectedFailedResponse));
     TransformResponse transformResponse = client.requestTransform(transformRequest);
     mockServer.verify();
-    //    assertThat(transformResponse.getDetails(), hasSize(2));
+    assertThat(transformResponse.getDetails(), hasSize(2));
     assertThat(transformResponse.isError(), is(true));
   }
 
@@ -102,5 +103,13 @@ public class TransformClientTest {
     TransformResponse transformResponse = client.requestTransform(transformRequest);
     mockServer.verify();
     assertThat(transformResponse.isError(), is(true));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testIdMismatch() throws JsonProcessingException {
+    transformRequest.setId("orange");
+    expectedSuccessResponse.setId("apple");
+    mockServer.expect(anything()).andRespond(withSuccess(expectedFailedResponse));
+    TransformResponse transformResponse = client.requestTransform(transformRequest);
   }
 }

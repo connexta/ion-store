@@ -35,6 +35,9 @@ public class MockTransformService {
 
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
+    // Do not throw exceptions when receiving 400-500 or other non-successful status codes
+    // DOES NOT REPLACE THE DEFAULT ERROR HANDLER!
+    //    builder.errorHandler(new NoOpResponseErrorHandler());
     return builder.build();
   }
 }

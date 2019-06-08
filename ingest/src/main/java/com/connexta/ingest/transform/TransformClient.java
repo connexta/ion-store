@@ -22,11 +22,12 @@ public class TransformClient {
   private URI transformEndpoint;
 
   public TransformResponse requestTransform(TransformRequest transformRequest) {
+    restTemplate.setErrorHandler(new NoOpResponseErrorHandler());
     HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
     ResponseEntity<TransformResponse> responseEntity =
         restTemplate.postForEntity(getTransformEndpoint(), request, TransformResponse.class);
     TransformResponse transformResponse = responseEntity.getBody();
-//    transformResponse.setStatus(responseEntity.getStatusCode());
+        transformResponse.setStatus(responseEntity.getStatusCode());
     if (!transformRequest.getId().equals(transformResponse.getId())) {
       throw new RuntimeException("Transform service did not return same ID.");
     }

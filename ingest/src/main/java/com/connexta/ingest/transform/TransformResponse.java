@@ -1,12 +1,16 @@
 package com.connexta.ingest.transform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import org.springframework.http.HttpStatus;
+
 public class TransformResponse {
 
   private String id;
   private String message;
-  //  private List<String> details;
+  private List<String> details;
 
-  //  @JsonIgnore private HttpStatus status;
+  private HttpStatus status;
 
   public String getId() {
     return id;
@@ -24,24 +28,24 @@ public class TransformResponse {
     this.message = message;
   }
 
-  //  public List<String> getDetails() {
-  //    return details;
-  //  }
-  //
-  //  public void setDetails(List<String> details) {
-  //    this.details = details;
-  //  }
+  public List<String> getDetails() {
+    return details;
+  }
 
-  //  public HttpStatus getStatus() {
-  //    return status;
-  //  }
+  public void setDetails(List<String> details) {
+    this.details = details;
+  }
 
-  //  public void setStatus(HttpStatus status) {
-  //    this.status = status;
-  //  }
-
+  @JsonIgnore
   public boolean isError() {
-    return false;
-    //    return getStatus() != null || getStatus().isError();
+    return getStatus() == null || getStatus().isError();
+  }
+
+  public HttpStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(HttpStatus status) {
+    this.status = status;
   }
 }
