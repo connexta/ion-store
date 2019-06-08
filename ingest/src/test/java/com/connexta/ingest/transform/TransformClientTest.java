@@ -10,7 +10,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,7 +65,9 @@ public class TransformClientTest {
         .andExpect(jsonPath("$.mimeType").value(MediaType.IMAGE_JPEG_VALUE))
         .andExpect(jsonPath("$.productLocation").value("product-location"))
         .andExpect(jsonPath("$.stagedLocation").value("staged-location"))
-        .andRespond(withSuccess(asJson(expectedSuccessResponse), MediaType.APPLICATION_JSON));
+        // .andRespond(ExtendedMockRestResponseCreators.withSuccess(asJson(expectedSuccessResponse),
+        // MediaType.APPLICATION_JSON));
+        .andRespond(ExtendedMockRestResponseCreators.withSuccess(expectedSuccessResponse));
 
     TransformSuccessResponse result = client.requestTransform(mockRequest);
 
