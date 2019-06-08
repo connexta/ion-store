@@ -52,7 +52,7 @@ public class TransformClientTest {
     transformEndpoint = "http://localhost:8000/transform";
     client.setTransformEndpoint(transformEndpoint);
 
-    // Mock configuration and data
+    // Mock data
     transformRequest = new TransformRequest();
     transformRequest.setId("1");
     transformRequest.setBytes("2");
