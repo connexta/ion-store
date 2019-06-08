@@ -26,19 +26,25 @@ public class TransformClient {
     ResponseErrorHandler originalRequestHandler = restTemplate.getErrorHandler();
     TransformResponse transformResponse = null;
     try {
-      restTemplate.setErrorHandler(new NoOpResponseErrorHandler());
-      HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
-      ResponseEntity<TransformResponse> responseEntity =
-          restTemplate.postForEntity(getTransformEndpoint(), request, TransformResponse.class);
-      transformResponse = responseEntity.getBody();
-      transformResponse.setStatus(responseEntity.getStatusCode());
+      transformResponse = postForTransform(transformRequest);
     } finally {
       restTemplate.setErrorHandler(originalRequestHandler);
     }
+
+    return transformResponse;
+  }
+
+  private TransformResponse postForTransform(TransformRequest transformRequest) {
+    TransformResponse transformResponse;
+    restTemplate.setErrorHandler(new NoOpResponseErrorHandler());
+    HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
+    ResponseEntity<TransformResponse> responseEntity =
+        restTemplate.postForEntity(getTransformEndpoint(), request, TransformResponse.class);
+    transformResponse = responseEntity.getBody();
+    transformResponse.setStatus(responseEntity.getStatusCode());
     if (!transformRequest.getId().equals(transformResponse.getId())) {
       throw new RuntimeException("Transform service did not return same ID.");
     }
-
     return transformResponse;
   }
 
