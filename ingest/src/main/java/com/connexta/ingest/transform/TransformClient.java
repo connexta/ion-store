@@ -16,29 +16,20 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class TransformClient {
 
-  String jsonBody =
-      "{"
-          + "\"id\": \"30f14c6c1fc85cba12bfd093aa8f90e3\",\n"
-          + "\"stagedLocation\": \"https://<host>:<port>/my/temp/location/e1bd38ddb07444958cf3a18dd6291518\",\n"
-          + "\"productLocation\": \"https://<host>:<port>/my/final/location/30f14c6c1fc85cba12bfd093aa8f90e3\",\n"
-          + "\"mimeType\": \"img/nitf\",\n"
-          + "\"bytes\": \"2147483648\",\n"
-          + "\"callbackUrl\": \"https://<host>:<port>/a/callback\"\n"
-          + "}";
-
   @Autowired private RestTemplate restTemplate;
 
   private URI transformEndpoint;
 
-  public String requestTransform(TransformRequest transformRequest) {
+  public TransformSuccessResponse requestTransform(TransformRequest transformRequest) {
     HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
-    return restTemplate.postForObject(getTransformEndpoint(), request, String.class);
+    return restTemplate.postForObject(getTransformEndpoint(), request, TransformSuccessResponse.class);
   }
 
   public URI getTransformEndpoint() {
     return transformEndpoint;
   }
 
+  @SuppressWarnings("unused")
   public void setTransformEndpoint(URI transformEndpoint) {
     this.transformEndpoint = transformEndpoint;
   }

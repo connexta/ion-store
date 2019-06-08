@@ -10,7 +10,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,10 +24,13 @@ public class MockTransformService {
     SpringApplication.run(MockTransformService.class);
   }
 
-  @RequestMapping("/transform")
-  public String mockTransform() {
-    System.err.println("rootResource");
-    return "{message : 'under construction'}";
+  @RequestMapping(
+      path = "/transform",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      method = RequestMethod.POST)
+  public TransformSuccessResponse mockTransform() {
+    return new TransformSuccessResponse();
   }
 
   @Bean

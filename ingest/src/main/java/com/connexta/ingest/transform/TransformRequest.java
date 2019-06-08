@@ -10,21 +10,14 @@ import java.io.Serializable;
 
 public class TransformRequest implements Serializable {
 
-  private final String id;
-  private final String stagedLocation;
-  private final String productLocation;
-  private final String mimeType;
-  private final String bytes;
-  private final String callbackUrl;
+  private String id;
+  private String stagedLocation;
+  private String productLocation;
+  private String mimeType;
+  private String bytes;
+  private String callbackUrl;
 
-  public TransformRequest() {
-    id = "30f14c6c1fc85cba12bfd093aa8f90e3";
-    stagedLocation = "https://<host>:<port>/my/temp/location/e1bd38ddb07444958cf3a18dd6291518";
-    productLocation = "https://<host>:<port>/my/final/location/30f14c6c1fc85cba12bfd093aa8f90e3";
-    mimeType = "img/nitf";
-    bytes = "2147483648";
-    callbackUrl = "https://0.0.0.0:8090/a/callback";
-  }
+  public TransformRequest() {}
 
   public String getId() {
     return id;
@@ -48,5 +41,29 @@ public class TransformRequest implements Serializable {
 
   public String getCallbackUrl() {
     return callbackUrl;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setStagedLocation(String stagedLocation) {
+    this.stagedLocation = stagedLocation;
+  }
+
+  public void setProductLocation(String productLocation) {
+    this.productLocation = productLocation;
+  }
+
+  public void setMimeType(String mimeType) {
+    this.mimeType = mimeType;
+  }
+
+  public void setBytes(String bytes) {
+    this.bytes = bytes;
+  }
+
+  public void setCallbackUrl(String callbackUrl) {
+    this.callbackUrl = callbackUrl;
   }
 }

@@ -6,10 +6,14 @@
  */
 package com.connexta.ingest.transform;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URISyntaxException;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,24 +35,44 @@ public class TransformClientTest {
 
   private MockRestServiceServer mockServer;
   private String transformEndpoint;
+  private TransformSuccessResponse expectedSuccessResponse = new TransformSuccessResponse();
+  private TransformRequest mockRequest = new TransformRequest();
 
   @Before
   public void setUp() throws URISyntaxException {
     mockServer = MockRestServiceServer.createServer(restTemplate);
     transformEndpoint = "http://localhost:8000/transform";
-    client.setTransformEndpoint(transformEndpoint);}
+    client.setTransformEndpoint(transformEndpoint);
+
+    // Mock data
+    mockRequest.setId("1");
+    mockRequest.setBytes("2");
+    mockRequest.setCallbackUrl("callback-url");
+    mockRequest.setMimeType(MediaType.IMAGE_JPEG_VALUE);
+    mockRequest.setProductLocation("product-location");
+    mockRequest.setStagedLocation("staged-location");
+    expectedSuccessResponse.setId("1");
+    expectedSuccessResponse.setMessage("success-message");
+  }
 
   @Test
-  public void testPerformTransform() {
+  public void testSuccessfulRequest() throws JsonProcessingException {
+
     mockServer
         .expect(requestTo(transformEndpoint))
-        .andExpect(jsonPath("$.id").value("30f14c6c1fc85cba12bfd093aa8f90e3"))
-        .andRespond(withSuccess("<put json response here>", MediaType.TEXT_PLAIN));
+        .andExpect(jsonPath("$.id").value("1"))
+        .andExpect(jsonPath("$.bytes").value("2"))
+        .andExpect(jsonPath("$.callbackUrl").value("callback-url"))
+        .andExpect(jsonPath("$.mimeType").value(MediaType.IMAGE_JPEG_VALUE))
+        .andExpect(jsonPath("$.productLocation").value("product-location"))
+        .andExpect(jsonPath("$.stagedLocation").value("staged-location"))
+        .andRespond(withSuccess(asJson(expectedSuccessResponse), MediaType.APPLICATION_JSON));
 
-    String result = client.requestTransform(new TransformRequest());
+    TransformSuccessResponse result = client.requestTransform(mockRequest);
 
     mockServer.verify();
-    // assertEquals("hello", result);
+    assertThat(result.getId(), equalTo("1"));
+    assertThat(result.getMessage(), equalTo("success-message"));
   }
 
   /* @Before
@@ -79,4 +103,21 @@ public class TransformClientTest {
     //        .andExpect(method(HttpMethod.POST))
     //        .andRespond(response);
   }*/
+
+  private String asJson(Object object) throws JsonProcessingException {
+    return (new ObjectMapper()).writeValueAsString(object);
+    //     JsonGenerator jsonGenerator = null;
+    //     ObjectMapper objectMapper = null;
+    //      objectMapper = new ObjectMapper();
+    //      try{
+    //        jsonGenerator = objectMapper.getFactory().createJsonGenerator(System.out,
+    // JsonEncoding.UTF8);
+    //        jsonGenerator.writeObject(bean);
+    //        objectMapper.writeValue(System.out, bean);
+    //      }catch (IOException e) {
+    //        e.printStackTrace();
+    //      }
+    //      jsonGenerator.flush();
+    //      jsonGenerator.close();
+  }
 }
