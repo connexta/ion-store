@@ -29,8 +29,8 @@ public class MockTransformService {
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE,
       method = RequestMethod.POST)
-  public TransformSuccessResponse mockTransform() {
-    return new TransformSuccessResponse();
+  public TransformResponse mockTransform() {
+    return new TransformResponse();
   }
 
   @Bean

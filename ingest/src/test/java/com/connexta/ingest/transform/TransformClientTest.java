@@ -6,19 +6,25 @@
  */
 package com.connexta.ingest.transform;
 
+import static com.connexta.ingest.transform.ExtendedMockRestResponseCreators.withBadRequest;
+import static com.connexta.ingest.transform.ExtendedMockRestResponseCreators.withServerError;
+import static com.connexta.ingest.transform.ExtendedMockRestResponseCreators.withSuccess;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.core.Is.is;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.anything;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URISyntaxException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -34,8 +40,9 @@ public class TransformClientTest {
 
   private MockRestServiceServer mockServer;
   private String transformEndpoint;
-  private TransformSuccessResponse expectedSuccessResponse = new TransformSuccessResponse();
-  private TransformRequest mockRequest = new TransformRequest();
+  private TransformResponse expectedSuccessResponse;
+  private TransformRequest transformRequest;
+  private TransformResponse expectedFailedResponse;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -43,15 +50,21 @@ public class TransformClientTest {
     transformEndpoint = "http://localhost:8000/transform";
     client.setTransformEndpoint(transformEndpoint);
 
-    // Mock data
-    mockRequest.setId("1");
-    mockRequest.setBytes("2");
-    mockRequest.setCallbackUrl("callback-url");
-    mockRequest.setMimeType(MediaType.IMAGE_JPEG_VALUE);
-    mockRequest.setProductLocation("product-location");
-    mockRequest.setStagedLocation("staged-location");
+    // Mock configuration and data
+    transformRequest = new TransformRequest();
+    transformRequest.setId("1");
+    transformRequest.setBytes("2");
+    transformRequest.setCallbackUrl("callback-url");
+    transformRequest.setMimeType(MediaType.IMAGE_JPEG_VALUE);
+    transformRequest.setProductLocation("product-location");
+    transformRequest.setStagedLocation("staged-location");
+    expectedSuccessResponse = new TransformResponse();
     expectedSuccessResponse.setId("1");
-    expectedSuccessResponse.setMessage("success-message");
+    expectedSuccessResponse.setMessage("success");
+    expectedFailedResponse = new TransformResponse();
+    expectedFailedResponse.setId("6");
+    expectedFailedResponse.setMessage("failure");
+    //    expectedFailedResponse.setDetails(List.of("A", "B"));
   }
 
   @Test
@@ -59,24 +72,35 @@ public class TransformClientTest {
 
     mockServer
         .expect(requestTo(transformEndpoint))
+        .andExpect(method(HttpMethod.POST))
         .andExpect(jsonPath("$.id").value("1"))
         .andExpect(jsonPath("$.bytes").value("2"))
         .andExpect(jsonPath("$.callbackUrl").value("callback-url"))
         .andExpect(jsonPath("$.mimeType").value(MediaType.IMAGE_JPEG_VALUE))
         .andExpect(jsonPath("$.productLocation").value("product-location"))
         .andExpect(jsonPath("$.stagedLocation").value("staged-location"))
-        // .andRespond(ExtendedMockRestResponseCreators.withSuccess(asJson(expectedSuccessResponse),
-        // MediaType.APPLICATION_JSON));
-        .andRespond(ExtendedMockRestResponseCreators.withSuccess(expectedSuccessResponse));
-
-    TransformSuccessResponse result = client.requestTransform(mockRequest);
-
+        .andRespond(withSuccess(expectedSuccessResponse));
+    TransformResponse transformResponse = client.requestTransform(transformRequest);
     mockServer.verify();
-    assertThat(result.getId(), equalTo("1"));
-    assertThat(result.getMessage(), equalTo("success-message"));
+    assertThat(transformResponse.getId(), equalTo("1"));
+    assertThat(transformResponse.getMessage(), equalTo("success"));
+    assertThat(transformResponse.isError(), is(false));
   }
 
-  private String asJson(Object object) throws JsonProcessingException {
-    return (new ObjectMapper()).writeValueAsString(object);
+  @Test
+  public void testMalformedRequest() throws JsonProcessingException {
+    mockServer.expect(anything()).andRespond(withBadRequest(expectedFailedResponse));
+    TransformResponse transformResponse = client.requestTransform(transformRequest);
+    mockServer.verify();
+    //    assertThat(transformResponse.getDetails(), hasSize(2));
+    assertThat(transformResponse.isError(), is(true));
+  }
+
+  @Test
+  public void testServerError() throws JsonProcessingException {
+    mockServer.expect(anything()).andRespond(withServerError(expectedFailedResponse));
+    TransformResponse transformResponse = client.requestTransform(transformRequest);
+    mockServer.verify();
+    assertThat(transformResponse.isError(), is(true));
   }
 }

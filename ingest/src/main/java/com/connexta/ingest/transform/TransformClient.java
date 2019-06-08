@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,10 +21,17 @@ public class TransformClient {
 
   private URI transformEndpoint;
 
-  public TransformSuccessResponse requestTransform(TransformRequest transformRequest) {
+  public TransformResponse requestTransform(TransformRequest transformRequest) {
     HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
-    return restTemplate.postForObject(
-        getTransformEndpoint(), request, TransformSuccessResponse.class);
+    ResponseEntity<TransformResponse> responseEntity =
+        restTemplate.postForEntity(getTransformEndpoint(), request, TransformResponse.class);
+    TransformResponse transformResponse = responseEntity.getBody();
+//    transformResponse.setStatus(responseEntity.getStatusCode());
+    if (!transformRequest.getId().equals(transformResponse.getId())) {
+      throw new RuntimeException("Transform service did not return same ID.");
+    }
+
+    return transformResponse;
   }
 
   public URI getTransformEndpoint() {
