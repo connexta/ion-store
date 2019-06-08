@@ -45,7 +45,7 @@ public class TransformClientTest {
         .andExpect(jsonPath("$.id").value("30f14c6c1fc85cba12bfd093aa8f90e3"))
         .andRespond(withSuccess("<put json response here>", MediaType.TEXT_PLAIN));
 
-    String result = client.requestTransform();
+    String result = client.requestTransform(new TransformRequest());
 
     mockServer.verify();
     // assertEquals("hello", result);

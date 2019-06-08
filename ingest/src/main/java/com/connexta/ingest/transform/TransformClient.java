@@ -9,6 +9,7 @@ package com.connexta.ingest.transform;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,9 +30,9 @@ public class TransformClient {
 
   private URI transformEndpoint;
 
-  public String requestTransform() {
-
-    return restTemplate.postForObject(getTransformEndpoint(), jsonBody, String.class);
+  public String requestTransform(TransformRequest transformRequest) {
+    HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
+    return restTemplate.postForObject(getTransformEndpoint(), request, String.class);
   }
 
   public URI getTransformEndpoint() {

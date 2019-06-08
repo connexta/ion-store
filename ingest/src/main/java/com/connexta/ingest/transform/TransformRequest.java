@@ -8,7 +8,7 @@ package com.connexta.ingest.transform;
 
 import java.io.Serializable;
 
-public class TransformMessage implements Serializable {
+public class TransformRequest implements Serializable {
 
   private final String id;
   private final String stagedLocation;
@@ -17,7 +17,7 @@ public class TransformMessage implements Serializable {
   private final String bytes;
   private final String callbackUrl;
 
-  public TransformMessage() {
+  public TransformRequest() {
     id = "30f14c6c1fc85cba12bfd093aa8f90e3";
     stagedLocation = "https://<host>:<port>/my/temp/location/e1bd38ddb07444958cf3a18dd6291518";
     productLocation = "https://<host>:<port>/my/final/location/30f14c6c1fc85cba12bfd093aa8f90e3";
