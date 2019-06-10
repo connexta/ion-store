@@ -1,0 +1,1108 @@
+{
+  "summary": {
+    "title": "CDR",
+    "owner": "Connexta",
+    "description": "Create, Query and Retrieve"
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "title": "Query",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 0,
+        "$$hashKey": "object:16",
+        "diagramJson": {
+          "cells": [
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 315,
+                "y": 423
+              },
+              "angle": 0,
+              "id": "70f77507-10b0-4cd5-bd41-77d5bb937554",
+              "z": 1,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "user not allowed to query",
+                  "type": "Elevation of privilege",
+                  "$$hashKey": "object:139"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "user not allowed to see some of the results",
+                  "type": "Information disclosure",
+                  "$$hashKey": "object:145"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "DIB"
+                },
+                ".element-text": {
+                  "class": "element-text hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Actor",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 41,
+                "y": 438
+              },
+              "angle": 0,
+              "id": "abe20abc-6db3-464c-8959-dc9ab838708f",
+              "z": 2,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "EDIB"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 694,
+                "y": 417
+              },
+              "angle": 0,
+              "id": "7acdf006-fcd3-4e45-a31a-ffde4884ae98",
+              "z": 4,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Elevation of Priviledge",
+                  "type": "Elevation of privilege",
+                  "mitigation": "Ports on Lock, auth",
+                  "$$hashKey": "object:813"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Index Service"
+                },
+                ".element-text": {
+                  "class": "element-text hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 899,
+                "y": 426
+              },
+              "angle": 0,
+              "id": "82a5c5b1-631d-42cf-9f62-75d333a8bef5",
+              "z": 5,
+              "hasOpenThreats": true,
+              "isSigned": false,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "User accesses the DB",
+                  "type": "Information disclosure",
+                  "mitigation": "Require Auth / lock down ports",
+                  "$$hashKey": "object:628"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Solr DB"
+                },
+                ".element-text": {
+                  "class": "element-text hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 691,
+                "y": 229
+              },
+              "angle": 0,
+              "id": "8496d8e3-8415-4622-a2e5-0124e2c04ca6",
+              "z": 6,
+              "hasOpenThreats": false,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Elevation of privilege",
+                  "title": "User gets access to the MiS endpoints",
+                  "mitigation": "Ports are on lock",
+                  "$$hashKey": "object:583"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "MiS"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 897,
+                "y": 238
+              },
+              "angle": 0,
+              "id": "cd65e792-202c-4948-bf51-c4974c56ebe8",
+              "z": 8,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "title": "User gets access to the database",
+                  "mitigation": "Require Auth, Lock down ports",
+                  "$$hashKey": "object:617"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Cassandra DB"
+                },
+                ".element-text": {
+                  "class": "element-text hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "abe20abc-6db3-464c-8959-dc9ab838708f"
+              },
+              "target": {
+                "id": "70f77507-10b0-4cd5-bd41-77d5bb937554"
+              },
+              "vertices": [
+                {
+                  "x": 264,
+                  "y": 444
+                }
+              ],
+              "id": "fcc82db5-8171-4d98-872e-77aaa89306b0",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Query (A)",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 10,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "title": "Complicated Query",
+                  "description": "Query to consume all the systems resources",
+                  "mitigation": "N/A",
+                  "$$hashKey": "object:53"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "title": "Millions of requests",
+                  "description": "while curl localhost:8080",
+                  "$$hashKey": "object:59"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Changing the Query after it's been sent",
+                  "type": "Tampering",
+                  "mitigation": "https",
+                  "$$hashKey": "object:65"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Non Authenticated Request",
+                  "type": "Repudiation",
+                  "mitigation": "Logged in / auditing",
+                  "$$hashKey": "object:71"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Query Injection",
+                  "type": "Tampering",
+                  "mitigation": "Query language doens't support / validation",
+                  "$$hashKey": "object:77"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "82a5c5b1-631d-42cf-9f62-75d333a8bef5"
+              },
+              "target": {
+                "id": "7acdf006-fcd3-4e45-a31a-ffde4884ae98"
+              },
+              "vertices": [
+                {
+                  "x": 847,
+                  "y": 493
+                }
+              ],
+              "id": "ba1f891f-ff7e-4af1-8c19-75e9f371bcad",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "ID's",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 14,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Spoofing",
+                  "title": "User spoofs the Index service",
+                  "mitigation": "https",
+                  "$$hashKey": "object:461"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Tampering",
+                  "title": "User tampers with the query results",
+                  "mitigation": "https",
+                  "$$hashKey": "object:467"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "wiretapping / hijacking",
+                  "type": "Information disclosure",
+                  "mitigation": "https",
+                  "$$hashKey": "object:473"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "title": "Result doesn't make it to the index service",
+                  "mitigation": "retry logic / auditing",
+                  "$$hashKey": "object:479"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "7acdf006-fcd3-4e45-a31a-ffde4884ae98"
+              },
+              "target": {
+                "id": "82a5c5b1-631d-42cf-9f62-75d333a8bef5"
+              },
+              "vertices": [
+                {
+                  "x": 847,
+                  "y": 441
+                }
+              ],
+              "id": "f0ecc24a-195e-45b0-b8b1-6a202ac62804",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Query (B)",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 15,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Query Injection",
+                  "type": "Tampering",
+                  "mitigation": "Control queries /  require auth",
+                  "$$hashKey": "object:388"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "User impersonates the context of the Index Service",
+                  "type": "Elevation of privilege",
+                  "$$hashKey": "object:398"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "User spoofs the Indexing service",
+                  "type": "Spoofing",
+                  "mitigation": "https",
+                  "$$hashKey": "object:404"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "User modifies the query",
+                  "type": "Tampering",
+                  "mitigation": "https",
+                  "$$hashKey": "object:410"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "User spoofs solr",
+                  "type": "Spoofing",
+                  "mitigation": "https",
+                  "$$hashKey": "object:416"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "ID doesn't exists",
+                  "type": "Denial of service",
+                  "mitigation": "We have good error handling",
+                  "$$hashKey": "object:422"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "title": "Repudiation Threat",
+                  "mitigation": "Require auth / auditing",
+                  "$$hashKey": "object:428"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "title": "Complex Query",
+                  "mitigation": "Control query / none",
+                  "$$hashKey": "object:455"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Millions of Queries",
+                  "type": "Denial of service",
+                  "$$hashKey": "object:440"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "7acdf006-fcd3-4e45-a31a-ffde4884ae98"
+              },
+              "target": {
+                "id": "8496d8e3-8415-4622-a2e5-0124e2c04ca6"
+              },
+              "vertices": [
+                {
+                  "x": 700,
+                  "y": 366
+                }
+              ],
+              "id": "d3acfb99-219c-4a64-849c-5dfd0a7664d9",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "ID's, metadata type",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 16,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Spoofing",
+                  "title": "Spoofing the MiS",
+                  "mitigation": "https ?",
+                  "$$hashKey": "object:543"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "title": "Millions of request",
+                  "$$hashKey": "object:549"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "title": "Invalid metadata type",
+                  "mitigation": "error handling",
+                  "$$hashKey": "object:555"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Invalid Ids",
+                  "type": "Denial of service",
+                  "mitigation": "Error Handling",
+                  "$$hashKey": "object:561"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "title": "Repudiation threat",
+                  "mitigation": "retry logic / auditing",
+                  "$$hashKey": "object:567"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "ID / metadata tampering",
+                  "type": "Tampering",
+                  "mitigation": "https",
+                  "$$hashKey": "object:573"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "8496d8e3-8415-4622-a2e5-0124e2c04ca6"
+              },
+              "target": {
+                "id": "7acdf006-fcd3-4e45-a31a-ffde4884ae98"
+              },
+              "vertices": [
+                {
+                  "x": 783,
+                  "y": 371
+                }
+              ],
+              "id": "f0038d01-ecf3-407d-a05e-89f41c4d3ebb",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "metadata",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 17,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "8496d8e3-8415-4622-a2e5-0124e2c04ca6"
+              },
+              "target": {
+                "id": "cd65e792-202c-4948-bf51-c4974c56ebe8"
+              },
+              "vertices": [
+                {
+                  "x": 842,
+                  "y": 243
+                }
+              ],
+              "id": "82dc0fb2-8fbc-4562-afee-803b4de135d5",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "ID, metadata type",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 18,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Query Injection",
+                  "type": "Tampering",
+                  "mitigation": "Control the Queries / require auth",
+                  "$$hashKey": "object:593"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Spoofing Cassandra",
+                  "type": "Spoofing",
+                  "mitigation": "https",
+                  "$$hashKey": "object:647"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Spoofing MiS",
+                  "type": "Spoofing",
+                  "mitigation": "https / auth",
+                  "$$hashKey": "object:653"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "title": "Repudiation threat",
+                  "mitigation": "auth / audits",
+                  "$$hashKey": "object:659"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Query tampering",
+                  "type": "Tampering",
+                  "mitigation": "https",
+                  "$$hashKey": "object:669"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Millions of request",
+                  "type": "Denial of service",
+                  "$$hashKey": "object:675"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "ID doesn't exists",
+                  "type": "Denial of service",
+                  "mitigation": "Good error handling",
+                  "$$hashKey": "object:696"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Metadata type doesn't exists",
+                  "type": "Denial of service",
+                  "mitigation": "Good error handling",
+                  "$$hashKey": "object:702"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "cd65e792-202c-4948-bf51-c4974c56ebe8"
+              },
+              "target": {
+                "id": "8496d8e3-8415-4622-a2e5-0124e2c04ca6"
+              },
+              "vertices": [
+                {
+                  "x": 850,
+                  "y": 323
+                }
+              ],
+              "id": "73350262-c8fe-479a-a5d9-753f8b221af4",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "metadata",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 19,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Spoofing the MiS",
+                  "type": "Spoofing",
+                  "mitigation": "https",
+                  "$$hashKey": "object:708"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Spoofing Cassandra",
+                  "type": "Spoofing",
+                  "mitigation": "https",
+                  "$$hashKey": "object:714"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Modifying the results",
+                  "type": "Tampering",
+                  "mitigation": "https",
+                  "$$hashKey": "object:720"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "title": "Hijacking / wiretapping",
+                  "mitigation": "https",
+                  "$$hashKey": "object:730"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "title": "Repudiation",
+                  "mitigation": "retry logic / auditing",
+                  "$$hashKey": "object:736"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "title": "Returning a absolutely obsurd amount of bytes",
+                  "mitigation": "Don't / use streams",
+                  "$$hashKey": "object:742"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Boundary",
+              "smooth": true,
+              "source": {
+                "x": 203,
+                "y": 333
+              },
+              "target": {
+                "x": 250,
+                "y": 629
+              },
+              "vertices": [
+                {
+                  "x": 223,
+                  "y": 390
+                },
+                {
+                  "x": 216,
+                  "y": 480
+                },
+                {
+                  "x": 227,
+                  "y": 573
+                }
+              ],
+              "id": "d0bef9ea-f205-47e0-b034-364cf79656d2",
+              "z": 22,
+              "attrs": {}
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "70f77507-10b0-4cd5-bd41-77d5bb937554"
+              },
+              "target": {
+                "id": "abe20abc-6db3-464c-8959-dc9ab838708f"
+              },
+              "vertices": [
+                {
+                  "x": 258,
+                  "y": 505
+                }
+              ],
+              "id": "b68249f7-4d55-4867-92c3-9ac6b33280db",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "redacted metadata",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 25,
+              "hasOpenThreats": false,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Spoofs the DIB",
+                  "type": "Spoofing",
+                  "description": "Gives an improper response",
+                  "mitigation": "https",
+                  "$$hashKey": "object:761"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Tampering",
+                  "title": "Modify the results",
+                  "mitigation": "https",
+                  "$$hashKey": "object:767"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Information disclosure",
+                  "type": "Information disclosure",
+                  "mitigation": "Redaction and filtering by DIB",
+                  "$$hashKey": "object:773"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "User claims never got results",
+                  "type": "Repudiation",
+                  "mitigation": "Auditing / retry logic",
+                  "$$hashKey": "object:779"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "title": "Wiretapping / hijacking",
+                  "mitigation": "https",
+                  "$$hashKey": "object:785"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "70f77507-10b0-4cd5-bd41-77d5bb937554"
+              },
+              "target": {
+                "id": "7acdf006-fcd3-4e45-a31a-ffde4884ae98"
+              },
+              "vertices": [
+                {
+                  "x": 559,
+                  "y": 423
+                }
+              ],
+              "id": "fdf3c8e6-2286-4c60-b6a9-0466864fed4e",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Query (B), metadata\ntype",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 26,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Query Injection",
+                  "type": "Tampering",
+                  "description": "Don't send bad queries",
+                  "mitigation": "Validation / logged in / https",
+                  "$$hashKey": "object:95"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "User impersonates the context of the DIB",
+                  "type": "Elevation of privilege",
+                  "mitigation": "https / docker networks",
+                  "$$hashKey": "object:101"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Unknown query requester",
+                  "type": "Repudiation",
+                  "mitigation": "Audit logging / requires authenticated",
+                  "$$hashKey": "object:107"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Query Tampering",
+                  "type": "Tampering",
+                  "mitigation": "https",
+                  "$$hashKey": "object:113"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "User hitting this endpoint directly",
+                  "type": "Information disclosure",
+                  "mitigation": "Ports locked up tighter than Fort Knox",
+                  "$$hashKey": "object:119"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "title": "Complex Query",
+                  "mitigation": "Filtered / N/A",
+                  "$$hashKey": "object:145"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "7acdf006-fcd3-4e45-a31a-ffde4884ae98"
+              },
+              "target": {
+                "id": "70f77507-10b0-4cd5-bd41-77d5bb937554"
+              },
+              "vertices": [
+                {
+                  "x": 553,
+                  "y": 501
+                }
+              ],
+              "id": "717daf6e-3cc4-4e20-ab38-b15520eaf3c5",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "metadata",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 27,
+              "hasOpenThreats": false,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "title": "Wiretapping / hijacking",
+                  "mitigation": "https",
+                  "$$hashKey": "object:502"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "User spoofs the index service",
+                  "type": "Spoofing",
+                  "description": "Bad results",
+                  "mitigation": "https",
+                  "$$hashKey": "object:513"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Tampering",
+                  "title": "User modifies the response",
+                  "mitigation": "https",
+                  "$$hashKey": "object:519"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "DIB never gets the response",
+                  "type": "Repudiation",
+                  "mitigation": "Retry logic / audit logs",
+                  "$$hashKey": "object:525"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Spoofing",
+                  "title": "User spoofs the dib",
+                  "mitigation": "https",
+                  "$$hashKey": "object:531"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            }
+          ]
+        },
+        "size": {
+          "height": 631.279541015625,
+          "width": 882.4000244140625
+        }
+      }
+    ]
+  }
+}
