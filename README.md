@@ -2,119 +2,161 @@
 
 ## Prerequisites
 * Java 11
-* Docker
+* Docker daemon
 
-## Building
-```
+## Build
+```bash
 ./gradlew build
 ```
-Because the Docker images are built automatically, a docker daemon must be available.
 
-
-### Tests
-Tests are run automatically with `./gradlew build`. Even if the tests fail, the artifacts are built and can be run.
-
-To run tests with quiet logs, add `-Pquiet`. This should not be used with parallel builds.
-
-To run a single test suite, execute:
-```
-./gradlew module:test --test fullClassName
-```
-
-#### Integration Tests
-The integration tests require that Docker is running.
-
-To skip integration tests, add `-PskipITests`.
-
-## Running
-1. Boot up an [Apache Cassandra](https://cassandra.apache.org/) instance using the default hostname and ports: `localhost:9042`.
-
-2. To start the services, execute:
-	```
-	./gradlew run
-	```
-
-### Running via docker-compose
-There is a docker-compose environment included in this repository.
-This will spin up each of the services that make up the multi-int-store as well as any 3rd party services needed by the multi-int-store.
-
-A `cdr` network is needed to run via docker-compose. First, check if the `cdr` network is already created:
-```
-docker network ls
-```
-
-If it has not yet been created, execute:
-```
-docker network create --driver=overlay --attachable cdr
-```
-
-To check that it has been created successfully, execute:
-```
-docker network ls
-```
-
-To start the full environment, execute:
-```
-docker-compose up -d
-```
-
-To check the status of the environment, execute:
-```
-docker-compose ps
-```
-
-To stream the logs to the console, execute:
-```
-docker-compose logs -f
-```
-
-To bring down the services and clean up, execute:
-```
-docker-compose down
-```
-
-#### Accessing
-
-The compose environment is configured to expose each of the services to the host OS on a different port. To check the ports examine the output of `docker-compose ps`.
-
-### Running via docker stack
-To deploy the full environment onto a swarm, execute:
+### Build Checks
+#### OWASP
 ```bash
-docker stack deploy -c docker-compose.yml cdr
-```
-
-To check the status of all services in the stack, execute:
-```bash
-docker stack services cdr
-```
-
-To stream the logs for a specific service, execute:
-```bash
-docker service logs -f <service_name>
-```
-
-#### Custom Registries
-The compose file in this repo uses variable interpolation to allow for overriding the registry url for the images produced during the build.
-
-For example, the build produces an image name that looks like `cnxta/cdr-ingest:<version>` which _implies_ a registry of `docker.io`. This means the full name of the repository is `docker.io/cnxta/cdr-ingest:<version>`.
-In order to make this flexible a variable has been added in the compose file that defaults to this value but can be overridden at deploy time.
-
-*Note:* Docker stack does not actually allow variable interpolation, we will need to run a more complex command to deal with this scenario.
-
-To deploy to a swarm using a custom registry:
-1. re-tag and push images to custom registry
-2. run `docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr`
-
-
-## Build Checks
-### OWASP
-```
 ./gradlew dependencyCheckAnalyze --info
 ```
 
-### Style
-```
+#### Style
+The build can fail because the static analysis tool, Spotless, detects an issue. To correct most Spotless issues:
+```bash
 ./gradlew spotlessApply
 ```
 
 For more information about spotless checks see [here](https://github.com/diffplug/spotless/tree/master/plugin-gradle#custom-rules).
+
+#### Tests
+* Tests are run automatically with `./gradlew build`.
+* Even if the tests fail, the artifacts are built and can be run.
+* To run tests with quiet logs, add `-Pquiet`. This should not be used with parallel builds.
+* To run a single test suite:
+	```bash
+	./gradlew module:test --test fullClassName
+	```
+
+##### Integration Tests
+* The integration tests require a Docker daemon.
+* To skip integration tests, add `-PskipITests`.
+
+## Run
+
+### Run Locally
+1. Start the service using one of the following:
+	* [`docker-compose`](#start-the-service-locally-via-docker-compose)
+	* [`docker stack`](#start-the-service-locally-via-docker-stack)
+2. Examine the output of `docker-compose ps` to determine the ports assigned to the services.
+3. Set up a local block storage implementation (to simulate S3).
+	1. Run Minio locally:
+		```bash
+		docker run -p 9000:9000 --name minio1 -e "MINIO_ACCESS_KEY=admin" -e "MINIO_SECRET_KEY=adminadmin" minio/minio server /data
+		```
+	2. After starting the Minio service, add a bucket named `staged-products`.
+
+#### Start the Service Locally via `docker-compose`
+1. A Docker network named `cdr` is needed to run via docker-compose.
+
+	1. Determine if the network already exists:
+		```bash
+		docker network ls
+		```
+		If the network exists, the output includes a reference to it:
+		```bash
+		NETWORK ID          NAME                DRIVER              SCOPE
+		zk0kg1knhd6g        cdr                 overlay             swarm
+		```
+	2. If the network has not been created:
+		```bash
+		docker network create --driver=overlay --attachable cdr
+		```
+2. Start the Docker service:
+	```bash
+	docker-compose up -d
+	```
+
+##### Helpful `docker-compose` Commands
+* To stop the Docker service:
+	```bash
+	docker-compose down
+	```
+* To stream the logs to the console:
+	```bash
+	docker-compose logs
+	```
+* To stream the logs to the console for a specific service:
+	```bash
+	docker-compose logs -f <service_name>
+	```
+
+#### Start the Service Locally via `docker stack`
+```bash
+docker stack deploy -c docker-compose.yml cdr
+```
+
+##### Helpful `docker stack` Commands
+* To stop the Docker service:
+	```bash
+	docker stack rm cdr
+	```
+* To check the status of all services in the stack:
+	```bash
+	docker stack services cdr
+	```
+* To stream the logs to the console:
+	```bash
+	docker service logs
+	```
+* To stream the logs to the console for a specific service:
+	```bash
+	docker service logs -f <service_name>
+	```
+
+### Run on a Docker Swarm
+1. Tag each image.
+
+	To successfully push an image to a registry, the IP or hostname of the registry, along with its port number must be added to the name of the image. This is accomplished by the `docker tag` command which creates and alias to a Docker image.
+
+	To see the images in your local image cache:
+	```bash
+	docker iamge ls
+	```
+
+	Look in the list for the images to be deployed:
+	```bash
+	REPOSITORY                                     TAG                 IMAGE ID            CREATED             SIZE
+	cnxta/cdr-ingest                               0.1.0-SNAPSHOT      4ca707d86ddb        2 hours ago         290MB
+	cnxta/cdr-multi-int-store                      0.1.0-SNAPSHOT      39b44248f9c1        19 hours ago        308MB
+	cnxta/cdr-search                               0.1.0-SNAPSHOT      4c29a3d8b5fa        25 hours ago        290MB
+	```
+
+	For each image, use `docker tag SOURCE TARGET` to create an alias with the address of the target registry. For example, if the address of the target registry is `<docker_registry>`:
+	```bash
+	docker tag cnxta/cdr-ingest:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
+	docker tag cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
+	docker tag cnxta/cdr-search:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-search:0.1.0-SNAPSHOT
+	```
+2. Push each image.
+
+	```bash
+	docker push <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
+	docker push <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
+	docker push <docker_registry>/cnxta/cdr-search:0.1.0-SNAPSHOT
+	```
+3. Deploy the service in the cloud.
+	> **Note**: All of the commands in this section must be executed from the cloud environment, not the local environment.
+
+	```bash
+	docker stack deploy -c (REGISTRY=<docker_registry> docker-compose config) cdr
+	```
+	This command first sets the `REGISTRY` environment variable and then runs `docker-compose config` to substitute the value of the variable into the compose file. It then takes the contents of the compose file with the substituted text and redirects it to `stdin`.
+
+#### Helpful Docker swarm commands
+> **Note**: All of the commands in this section must be executed from the cloud environment, not the local environment.
+* To monitor the service:
+	```bash
+	docker stack services cdr
+	```
+	```bash
+	docker stack ps cdr
+	```
+* To stop the service:
+	```bash
+	docker stack rm cdr
+	```
