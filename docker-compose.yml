@@ -1,6 +1,6 @@
 # Configurable Registries
 #    This compose file allows the composition to be used in multiple environments. Instead of
-#    using hard-coded strings to identify the names of images, variable interpolation is
+#    using hard-coded strings to identify the names of images, variable interpolation is used
 #    to make the registry part of the name configurable at runtime.
 #
 #    If the REGISTRY environment variable is not set, the registry defaults to
