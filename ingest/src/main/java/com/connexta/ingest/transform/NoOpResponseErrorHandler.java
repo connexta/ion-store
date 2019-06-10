@@ -9,7 +9,7 @@ package com.connexta.ingest.transform;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 
-// Do not throw an exception when an HTTP response include a non-successful status code
+// Do not throw an exception when an HTTP response includes a non-successful status code
 public class NoOpResponseErrorHandler extends DefaultResponseErrorHandler {
 
   @Override
