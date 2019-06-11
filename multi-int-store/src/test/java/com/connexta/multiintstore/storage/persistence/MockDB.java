@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.storage.persistence;
 
-import com.connexta.multiintstore.storage.persistence.models.Storable;
+import com.connexta.multiintstore.models.Storable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

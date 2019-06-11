@@ -13,7 +13,9 @@ import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.connexta.multiintstore.storage.persistence.repository.CommonSearchTermsRepository;
+import com.connexta.multiintstore.models.IndexedProductMetadata;
+import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
+import com.connexta.multiintstore.services.api.SearchService;
 import com.xebialabs.restito.semantics.Action;
 import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
@@ -32,7 +34,8 @@ import org.springframework.web.context.WebApplicationContext;
 public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestContainers {
 
   @Autowired private WebApplicationContext wac;
-  @Autowired private CommonSearchTermsRepository cstRepository;
+  @Autowired private IndexedMetadataRepository searchRepository;
+  @Autowired private SearchService searchService;
 
   private MockMvc mockMvc;
   private StubServer server;
@@ -82,7 +85,7 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
         .andExpect(status().isOk());
 
     assertThat(
-        cstRepository.findById(ingestId),
+        searchRepository.findById(ingestId),
         isPresentAnd(Matchers.hasProperty("contents", is(cstContents))));
   }
 
@@ -92,5 +95,14 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
         .perform(MockMvcRequestBuilders.get("/retrieve/1"))
         .andDo(print())
         .andExpect(status().isOk());
+  }
+
+  @Test
+  public void testSearchEndpointKeyword() throws Exception {
+
+    searchService.store(
+        new IndexedProductMetadata(
+            "1",
+            "All the color had been leached from Winterfell until only grey and white remained"));
   }
 }

@@ -6,17 +6,13 @@
  */
 package com.connexta.multiintstore.controllers;
 
-import com.connexta.multiintstore.storage.persistence.repository.CommonSearchTermsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController()
+@AllArgsConstructor
 public class IndexingController {
 
-  private final CommonSearchTermsRepository commonSearchTermsRepository;
-
-  @Autowired
-  public IndexingController(CommonSearchTermsRepository commonSearchTermsRepository) {
-    this.commonSearchTermsRepository = commonSearchTermsRepository;
-  }
+  private final IndexedMetadataRepository commonSearchTermsRepository;
 }

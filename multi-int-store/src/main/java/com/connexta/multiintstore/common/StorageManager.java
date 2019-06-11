@@ -9,9 +9,9 @@ package com.connexta.multiintstore.common;
 import com.connexta.multiintstore.callbacks.FinishedCallback;
 import com.connexta.multiintstore.callbacks.MetadataCallback;
 import com.connexta.multiintstore.callbacks.ProductCallback;
-import com.connexta.multiintstore.storage.persistence.Dao;
-import com.connexta.multiintstore.storage.persistence.models.CommonSearchTerms;
-import com.connexta.multiintstore.storage.persistence.models.Product;
+import com.connexta.multiintstore.models.IndexedProductMetadata;
+import com.connexta.multiintstore.models.Product;
+import com.connexta.multiintstore.services.api.Dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +24,13 @@ public class StorageManager {
   private static final String CST = "cst";
 
   private final Dao<Product, String> productDao;
-  private final Dao<CommonSearchTerms, String> cstDao;
+  private final Dao<IndexedProductMetadata, String> cstDao;
   private final DataRetriever retriever;
 
   @Autowired
   public StorageManager(
       Dao<Product, String> productDao,
-      Dao<CommonSearchTerms, String> cstDao,
+      Dao<IndexedProductMetadata, String> cstDao,
       DataRetriever retriever) {
     this.productDao = productDao;
     this.cstDao = cstDao;
@@ -70,7 +70,7 @@ public class StorageManager {
       String contents =
           retriever.getMetadata(
               callback.getLocation().toString(), callback.getMimeType(), String.class);
-      final CommonSearchTerms cst = new CommonSearchTerms(ingestId, contents);
+      final IndexedProductMetadata cst = new IndexedProductMetadata(ingestId, contents);
       cstDao.save(cst);
     } else {
       LOGGER.info("Received non-CST metadata, which is not yet supported");
