@@ -1,3 +1,14 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		// Needed for central nvd connection
+		classpath "org.mariadb.jdbc:mariadb-java-client:2.4.1"
+	}
+}
+
 plugins {
 	id "java"
 	id "org.owasp.dependencycheck" version "5.0.0-M2"
@@ -67,6 +78,26 @@ subprojects {
 			cve {
 				urlModified = "${dependencyCheckUrlModified}"
 				urlBase = "${dependencyCheckUrlBase}"
+			}
+		}
+
+		// Allow NVD updates to be disabled
+		if (project.hasProperty("dependencyCheckAutoUpdateDisabled")) {
+			println "NVD Auto Update is disabled"
+			autoUpdate = false
+		}
+
+		// Add support for Centralized NVD
+		if (project.hasProperty("dependencyCheckDBDriver")
+				&& project.hasProperty("dependencyCheckDBUrl")
+				&& project.hasProperty("dependencyCheckDBUsername")
+				&& project.hasProperty("dependencyCheckDBPassword")) {
+			println "Using Centralized NVD server"
+			data {
+				driver = "${dependencyCheckDBDriver}"
+				connectionString = "${dependencyCheckDBUrl}"
+				username = "${dependencyCheckDBUsername}"
+				password = "${dependencyCheckDBPassword}"
 			}
 		}
 	}
