@@ -6,19 +6,15 @@
  */
 package com.connexta.ingest.endpoint;
 
-import com.connexta.ingest.service.api.IngestRequest;
-import com.connexta.ingest.service.api.IngestResponse;
+import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
-import com.connexta.ingest.service.impl.IngestRequestImpl;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController()
-public class IngestController {
+public class IngestController implements IngestApi {
 
   private final IngestService ingestService;
 
@@ -31,13 +27,17 @@ public class IngestController {
     this.ingestService = ingestService;
   }
 
-  @PostMapping(path = "/ingest", consumes = "application/json")
-  public ResponseEntity store(@RequestBody(required = false) JsonNode body) {
-    IngestRequest request = new IngestRequestImpl(body);
-    IngestResponse response = ingestService.ingest(request);
-    if (response.isStarted()) {
-      return new ResponseEntity(HttpStatus.OK);
-    }
-    return new ResponseEntity(HttpStatus.BAD_REQUEST);
+  //  Because ingest is a default method we need to override it
+  //  Thankfully however, Spring keeps the magic of annotations
+  @Override
+  public ResponseEntity<Void> ingest(
+      String acceptVersion,
+      Long fileSize,
+      String mimeType,
+      MultipartFile file,
+      String title,
+      String fileName) {
+    // TODO
+    return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
   }
 }

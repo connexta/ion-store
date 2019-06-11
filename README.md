@@ -14,6 +14,7 @@
 ```bash
 ./gradlew dependencyCheckAnalyze --info
 ```
+The report for each project can be found at build/reports/dependency-check-report.html.
 
 #### Style
 The build can fail because the static analysis tool, Spotless, detects an issue. To correct most Spotless issues:
