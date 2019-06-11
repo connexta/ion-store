@@ -22,8 +22,6 @@ pipeline {
     environment {
         GITHUB_USERNAME = 'connexta'
         GITHUB_REPONAME = 'multi-int-store'
-        ORG_GRADLE_PROJECT_dependencyCheckUrlModified = 'http://10.101.190.7:10179/nvdcve-1.0-modified.json.gz'
-        ORG_GRADLE_PROJECT_dependencyCheckUrlBase = 'http://10.101.190.7:10179/nvdcve-1.0-%d.json.gz'
     }
     stages {
         stage('Setup') {
