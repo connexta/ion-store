@@ -8,6 +8,7 @@ package com.connexta.ingest.endpoint;
 
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +38,11 @@ public class IngestController implements IngestApi {
       MultipartFile file,
       String title,
       String fileName) {
-    // TODO
-    return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    UUID key = ingestService.ingest(acceptVersion, fileSize, mimeType, file, title, fileName);
+    if (key != null) {
+      return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    // TODO: Send out the Transformation request to process the new data
   }
 }
