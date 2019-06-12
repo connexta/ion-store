@@ -11,8 +11,6 @@ import com.connexta.transformation.rest.models.TransformResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,16 +19,27 @@ public class TransformClient {
 
   @Autowired private RestTemplate restTemplate;
 
-  private String transformEndpoint = "http://TODO";
+  private com.connexta.transformation.rest.spring.TransformApi transformApi;
 
-  public TransformResponse requestTransform(TransformRequest transformRequest)
-      throws URISyntaxException {
+  private URI transformEndpoint;
+
+  public TransformResponse requestTransform(TransformRequest transformRequest) {
 
     return restTemplate.postForObject(
         getTransformEndpoint(), transformRequest, TransformResponse.class);
   }
 
-  public URI getTransformEndpoint() throws URISyntaxException {
-    return new URI(transformEndpoint);
+  public URI getTransformEndpoint() {
+    return transformEndpoint;
+  }
+
+  @SuppressWarnings("unused")
+  public void setTransformEndpoint(URI transformEndpoint) {
+    this.transformEndpoint = transformEndpoint;
+  }
+
+  @SuppressWarnings("unused")
+  public void setTransformEndpoint(String transformEndpoint) throws URISyntaxException {
+    this.transformEndpoint = new URI(transformEndpoint);
   }
 }
