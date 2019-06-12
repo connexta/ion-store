@@ -11,7 +11,6 @@ import com.connexta.ingest.service.api.IngestRequest;
 import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
-import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +45,10 @@ public class S3Adaptor implements Adaptor {
     s3Endpoint = configuration.getS3Endpoint();
     s3Region = configuration.getS3Region();
     s3BucketQuarantine = configuration.getS3BucketQuarantine();
+
+    initializeS3();
   }
 
-  @PostConstruct
   private void initializeS3() {
     AwsCredentials credentials = AwsBasicCredentials.create(s3AccessKey, s3SecretKey);
 

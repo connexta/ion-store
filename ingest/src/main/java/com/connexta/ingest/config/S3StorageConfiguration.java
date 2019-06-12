@@ -15,10 +15,12 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
 @ComponentScan
 @Getter
+@Profile("prod")
 public class S3StorageConfiguration {
 
   @Value("${aws.s3.endpointUrl}")
