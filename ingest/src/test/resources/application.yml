@@ -1,0 +1,10 @@
+aws:
+  s3:
+    endpointUrl: "https://niceme.me"
+    region: "TUCSON/AZ"
+    secret:
+      file: "file01"
+    access:
+      file: "file02"
+    bucket:
+      quarantine: "Leaky"
