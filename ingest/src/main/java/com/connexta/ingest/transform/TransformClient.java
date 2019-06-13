@@ -14,6 +14,8 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,7 +36,13 @@ public class TransformClient {
 
   public TransformResponse requestTransform(TransformRequest transformRequest) {
     LOGGER.warn("Entering requestTransform {}", transformEndpoint.toString());
-    return restTemplate.postForObject(transformEndpoint, transformRequest, TransformResponse.class);
+
+    // TODO: Do not hardcode the accept-version value
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("Accept-Version", "0.0.1-SNAPSHOT");
+
+    HttpEntity<TransformRequest> requestEntity = new HttpEntity<>(transformRequest, headers);
+    return restTemplate.postForObject(transformEndpoint, requestEntity, TransformResponse.class);
   }
 
   @SuppressWarnings("unused")
