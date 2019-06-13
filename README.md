@@ -152,7 +152,7 @@ docker stack deploy -c docker-compose.yml cdr
 	```
 	> **Note**: Replace *<docker_registry>* in the above command with the 
 	*ip:port* or *host:port* of the Docker registry.
-	
+
 	This command first sets the `REGISTRY` environment variable and then runs `docker-compose config` to substitute the
 	value of the variable into the compose file. It then takes the contents of the compose file with the substituted
 	text and redirects it to `stdin`.
