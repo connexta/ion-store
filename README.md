@@ -150,7 +150,7 @@ docker stack deploy -c docker-compose.yml cdr
 	```bash
 	docker stack deploy -c <(REGISTRY=<docker_registry> docker-compose config) cdr-stack
 	```
-	> **Note**: Replace *<docker_registry>* in the above commandwith the 
+	> **Note**: Replace *<docker_registry>* in the above command with the 
 	*ip:port* or *host:port* of the Docker registry.
 	
 	This command first sets the `REGISTRY` environment variable and then runs `docker-compose config` to substitute the
