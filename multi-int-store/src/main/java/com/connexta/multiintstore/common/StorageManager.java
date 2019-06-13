@@ -10,28 +10,34 @@ import com.connexta.multiintstore.callbacks.FinishedCallback;
 import com.connexta.multiintstore.callbacks.MetadataCallback;
 import com.connexta.multiintstore.callbacks.ProductCallback;
 import com.connexta.multiintstore.storage.persistence.Dao;
-import com.connexta.multiintstore.storage.persistence.models.Metadata;
+import com.connexta.multiintstore.storage.persistence.models.CommonSearchTerms;
 import com.connexta.multiintstore.storage.persistence.models.Product;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StorageManager {
 
-  private Dao<Metadata> metadataDao;
-  private Dao<Product> productDao;
+  private static final Logger LOGGER = LoggerFactory.getLogger(StorageManager.class);
+  private static final String CST = "cst";
+
+  private final Dao<Product, String> productDao;
+  private final Dao<CommonSearchTerms, String> cstDao;
+  private final DataRetriever retriever;
 
   @Autowired
-  public StorageManager(Dao<Metadata> metadataDao, Dao<Product> productDao) {
-    this.metadataDao = metadataDao;
+  public StorageManager(
+      Dao<Product, String> productDao,
+      Dao<CommonSearchTerms, String> cstDao,
+      DataRetriever retriever) {
     this.productDao = productDao;
+    this.cstDao = cstDao;
+    this.retriever = retriever;
   }
 
-  private void sortCallbacks(Object callback) {
+  private void sortCallbacks(Object callback, String ingestId) {
     if (callback instanceof ProductCallback) {
       handleCallback((ProductCallback) callback);
     }
@@ -39,76 +45,41 @@ public class StorageManager {
       handleCallback((FinishedCallback) callback);
     }
     if (callback instanceof MetadataCallback) {
-      handleCallback((MetadataCallback) callback);
+      handleCallback((MetadataCallback) callback, ingestId);
     }
   }
 
-  public void handleGeneralCallback(Object callback) {
+  public void handleGeneralCallback(Object callback, String ingestId) {
     if (callback == null) {
       return;
     }
-    sortCallbacks(callback);
+    sortCallbacks(callback, ingestId);
   }
 
   private void handleCallback(ProductCallback callback) {
-    System.out.println("Product");
+    LOGGER.info("Product");
     //  TODO :: Check Markings
     //  TODO :: Store Product
   }
 
-  private void handleCallback(MetadataCallback callback) {
-    System.out.println("Metadata");
+  private void handleCallback(MetadataCallback callback, String ingestId) {
+    LOGGER.info("Metadata");
     //  TODO :: Check Markings
-    //  TODO :: Store Metadata
 
-    Metadata metadata = getter(callback.getLocation(), callback.getId());
-    if (metadata != null) {
-      metadataDao.save(metadata);
+    if (callback.getType().equals(CST)) {
+      String contents =
+          retriever.getMetadata(
+              callback.getLocation().toString(), callback.getMimeType(), String.class);
+      final CommonSearchTerms cst = new CommonSearchTerms(ingestId, contents);
+      cstDao.save(cst);
+    } else {
+      LOGGER.info("Received non-CST metadata, which is not yet supported");
+      // TODO
     }
   }
 
   private void handleCallback(FinishedCallback callback) {
-    System.out.println("Finished");
+    LOGGER.info("Finished");
     //  TODO :: Remove from Temp-Store
-  }
-
-  /* Temporary code until DT figures out how we're retrieving the
-    metadata.
-  */
-  private Map<UUID, Integer> tempState = new HashMap<>();
-  private String[] metadatas = new String[] {"ddms2", "ddms5"};
-  private Map<String, UUID> tempMap = new HashMap<>();
-
-  private Metadata getter(URI location, String id) {
-    Metadata temp = new Metadata();
-
-    UUID tempID = tempMap.get(id);
-    if (tempID == null) {
-      tempID = UUID.randomUUID();
-      tempMap.put(id, tempID);
-    }
-
-    tempState.putIfAbsent(tempID, 0);
-
-    int index = tempState.get(tempID);
-    tempState.put(tempID, index + 1);
-
-    if (index >= metadatas.length) {
-      return null;
-    }
-
-    switch (metadatas[index]) {
-      case "ddms2":
-        temp.setDdms2("Much DDMS2 Stuffs from " + location);
-        System.out.println(metadatas[index]);
-        break;
-      case "ddms5":
-        temp.setDdms5("Such DDMS5 Stuffs from " + location);
-        System.out.println(metadatas[index]);
-        break;
-    }
-    temp.setId(tempID);
-
-    return temp;
   }
 }

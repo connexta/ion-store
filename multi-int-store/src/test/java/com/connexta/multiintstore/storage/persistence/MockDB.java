@@ -10,7 +10,6 @@ import com.connexta.multiintstore.storage.persistence.models.Storable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import org.mockito.invocation.InvocationOnMock;
 
 /**
@@ -19,19 +18,19 @@ import org.mockito.invocation.InvocationOnMock;
  * that implements {@link Storable}
  */
 public class MockDB {
-  private static Map<UUID, Storable> db = new HashMap<>();
+  private static final Map<String, Storable> db = new HashMap<>();
 
   static Object store(InvocationOnMock invocationOnMock) {
     Object arg = invocationOnMock.getArgument(0);
     if (arg instanceof Storable) {
-      db.put(((Storable) arg).getId(), (Storable) arg);
+      db.put(((Storable) arg).getId().toString(), (Storable) arg);
     }
     return arg;
   }
 
   static Object load(InvocationOnMock invocationOnMock) {
     Object arg = invocationOnMock.getArgument(0);
-    if (arg instanceof UUID) {
+    if (arg instanceof String) {
       return (db.containsKey(arg)) ? Optional.of(db.get(arg)) : Optional.empty();
     }
     return Optional.empty();
@@ -39,7 +38,7 @@ public class MockDB {
 
   static Object delete(InvocationOnMock invocationOnMock) {
     Object arg = invocationOnMock.getArgument(0);
-    if (arg instanceof UUID) {
+    if (arg instanceof String) {
       db.remove(arg);
     }
     return null;

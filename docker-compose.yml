@@ -59,16 +59,10 @@ services:
     networks:
       - cdr
     depends_on:
-      - cassandra
       - solr
     deploy:
       restart_policy:
         condition: any
-    command:
-      - "--cassandra.host=cassandra"
-      - "--cassandra.port=9042"
-      - "--solr.host=solr"
-      - "--solr.port=9983"
   search:
     image: ${REGISTRY:-docker.io}/cnxta/cdr-search:0.1.0-SNAPSHOT
     hostname: cdr-search
@@ -81,22 +75,11 @@ services:
     deploy:
       restart_policy:
         condition: any
-  cassandra:
-    image: cassandra
-    hostname: cassandra
-    ports:
-      - target: 9042
-        published: 9042
-        protocol: tcp
-    networks:
-      - cdr
+  # TODO: solr version
   solr:
     image: solr
-    hostname: solr
     ports:
-      - target: 9983
-        published: 9983
-        protocol: tcp
+      - "9983:8983"
     volumes:
       - data:/opt/solr/server/solr/mycores
     entrypoint:

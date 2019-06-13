@@ -27,6 +27,7 @@ For more information about spotless checks see
 
 #### Tests
 * Tests are run automatically with `./gradlew build`.
+* To skip all tests, add `-x test`.
 * Even if the tests fail, the artifacts are built and can be run.
 * To run tests with quiet logs, add `-Pquiet`. This should not be used with parallel builds.
 * To run a single test suite:
@@ -147,8 +148,11 @@ docker stack deploy -c docker-compose.yml cdr
 	environment.
 
 	```bash
-	docker stack deploy -c (REGISTRY=<docker_registry> docker-compose config) cdr
+	docker stack deploy -c <(REGISTRY=<docker_registry> docker-compose config) cdr-stack
 	```
+	> **Note**: Replace *<docker_registry>* in the above command with the 
+	*ip:port* or *host:port* of the Docker registry.
+	
 	This command first sets the `REGISTRY` environment variable and then runs `docker-compose config` to substitute the
 	value of the variable into the compose file. It then takes the contents of the compose file with the substituted
 	text and redirects it to `stdin`.
@@ -157,14 +161,14 @@ docker stack deploy -c docker-compose.yml cdr
 > **Note**: All of the commands in this section must be executed from the cloud environment, not the local environment.
 * To monitor the service:
 	```bash
-	docker stack services cdr
+	docker stack services cdr-stack
 	```
 	```bash
-	docker stack ps cdr
+	docker stack ps cdr-stack
 	```
 * To stop the service:
 	```bash
-	docker stack rm cdr
+	docker stack rm cdr-stack
 	```
 
 ## Using
