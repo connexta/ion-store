@@ -14,5 +14,5 @@ import org.springframework.data.solr.repository.SolrCrudRepository;
 
 public interface CommonSearchTermsRepository extends SolrCrudRepository<CommonSearchTerms, String> {
   @Query(name = "CommonSearchTerms.findByNamedQuery")
-  public Page<CommonSearchTerms> findByNamedQuery(String searchTerm, Pageable pageable);
+  Page<CommonSearchTerms> findByNamedQuery(String searchTerm, Pageable pageable);
 }

@@ -38,11 +38,12 @@ public class IngestController implements IngestApi {
       MultipartFile file,
       String title,
       String fileName) {
-    UUID key = ingestService.ingest(acceptVersion, fileSize, mimeType, file, title, fileName);
-    if (key != null) {
+    final UUID ingestId =
+        ingestService.ingest(acceptVersion, fileSize, mimeType, file, title, fileName);
+    if (ingestId != null) {
       return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
-    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     // TODO: Send out the Transformation request to process the new data
   }
 }

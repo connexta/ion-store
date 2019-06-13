@@ -30,23 +30,17 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 public class S3Adaptor implements Adaptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3Adaptor.class);
+
+  private final String s3AccessKey;
+  private final String s3SecretKey;
+  private final String s3Endpoint;
+  private final String s3Region;
+  private final String s3BucketQuarantine;
+
   private S3Client s3Client;
-
-  private String s3BucketQuarantine;
-
-  private String s3Endpoint;
-
-  private String s3Region;
-
-  private String s3SecretKey;
-
-  private String s3AccessKey;
-
-  private S3StorageConfiguration configuration;
 
   @Autowired
   public S3Adaptor(S3StorageConfiguration configuration) {
-    this.configuration = configuration;
     s3AccessKey = configuration.getS3AccessKey();
     s3SecretKey = configuration.getS3SecretKey();
     s3Endpoint = configuration.getS3Endpoint();
@@ -69,24 +63,24 @@ public class S3Adaptor implements Adaptor {
 
   @Override
   public UUID upload(IngestRequest ingestRequest) {
-    UUID key = UUID.randomUUID();
+    final UUID ingestId = UUID.randomUUID();
 
     try {
-      PutObjectRequest putRequest =
-          PutObjectRequest.builder().bucket(s3BucketQuarantine).key(key.toString()).build();
-      LOGGER.debug("Storing in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, key);
+      final PutObjectRequest putRequest =
+          PutObjectRequest.builder().bucket(s3BucketQuarantine).key(ingestId.toString()).build();
+      LOGGER.info("Storing in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, ingestId);
 
       s3Client.putObject(
           putRequest,
           RequestBody.fromInputStream(
               ingestRequest.getFile().getInputStream(), ingestRequest.getFile().getSize()));
-      LOGGER.info("{} has been successfully stored in S3.", key);
+      LOGGER.info("{} has been successfully stored in S3.", ingestId);
 
     } catch (IOException | S3Exception | SdkClientException e) {
       // Handle put request failures
       // TODO: Actually handle errors and retries
       LOGGER.error(e.getMessage());
     }
-    return key;
+    return ingestId;
   }
 }

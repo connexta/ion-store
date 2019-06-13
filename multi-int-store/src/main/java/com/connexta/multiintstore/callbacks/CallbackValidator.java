@@ -11,8 +11,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CallbackValidator {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CallbackValidator.class);
 
   private final ObjectMapper mapper = new ObjectMapper();
   private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -31,7 +35,7 @@ public class CallbackValidator {
       }
     }
 
-    System.out.println(body + " is not valid callback");
+    LOGGER.warn("{} is not a valid callback", body);
 
     return null;
   }

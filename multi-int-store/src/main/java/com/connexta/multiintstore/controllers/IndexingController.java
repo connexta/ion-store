@@ -13,11 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController()
 public class IndexingController {
 
-  private CommonSearchTermsRepository commonSearchTermsRepository;
+  private final CommonSearchTermsRepository commonSearchTermsRepository;
 
   @Autowired
-  public void setCommonSearchTermsRepository(
-      CommonSearchTermsRepository commonSearchTermsRepository) {
+  public IndexingController(CommonSearchTermsRepository commonSearchTermsRepository) {
     this.commonSearchTermsRepository = commonSearchTermsRepository;
   }
 }
