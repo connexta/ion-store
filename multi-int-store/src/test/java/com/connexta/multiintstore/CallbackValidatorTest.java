@@ -22,8 +22,8 @@ import org.junit.Test;
 
 public class CallbackValidatorTest {
 
-  private CallbackValidator validator = new CallbackValidator();
-  private ObjectMapper mapper = new ObjectMapper();
+  private final CallbackValidator validator = new CallbackValidator();
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @Test
   public void MetadataCallbackTest() throws IOException {
@@ -32,7 +32,7 @@ public class CallbackValidatorTest {
             "{\n"
                 + "\t\"id\": \"42\",\n"
                 + "\"status\": \"COMPLETE\",\n"
-                + "\"type\": \"ddms2.0\",\n"
+                + "\"type\": \"cst\",\n"
                 + "\"mimeType\": \"application/xml\",\n"
                 + "\"bytes\": \"256\",\n"
                 + "\"location\": \"https://localhost:8080\",\n"
@@ -74,7 +74,7 @@ public class CallbackValidatorTest {
             "{\n"
                 + "\t\"id\": \"42\",\n"
                 + "\"status\": \"COMPLETE\",\n"
-                + "\"type\": \"ddms2.0\",\n"
+                + "\"type\": \"cst\",\n"
                 + "\"mimeType\": \"application/xml\",\n"
                 + "\"bytes\": \"256\",\n"
                 + "\"location\": \"https://localhost:8080\",\n"
@@ -92,7 +92,7 @@ public class CallbackValidatorTest {
             "{\n"
                 + "\t\"id\": \"42\",\n"
                 + "\"status\": \"COMPLETE\",\n"
-                + "\"type\": \"ddms2.0\",\n"
+                + "\"type\": \"cst\",\n"
                 + "\"mimeType\": \"application/xml\",\n"
                 + "\"location\": \"https://localhost:8080\",\n"
                 + "\"security\": {\n"
@@ -109,7 +109,7 @@ public class CallbackValidatorTest {
             "{\n"
                 + "\t\"id\": \"42\",\n"
                 + "\"status\": \"COMPLETE\",\n"
-                + "\"type\": \"ddms2.0\",\n"
+                + "\"type\": \"cst\",\n"
                 + "\"mimeType\": \"application/xml\",\n"
                 + "\"bytes\": \"Heh\",\n"
                 + "\"location\": \"https://localhost:8080\",\n"

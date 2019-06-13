@@ -4,7 +4,7 @@
 * Java 11
 * Docker daemon
 
-## Build
+## Building
 ```bash
 ./gradlew build
 ```
@@ -14,6 +14,7 @@
 ```bash
 ./gradlew dependencyCheckAnalyze --info
 ```
+The report for each project can be found at build/reports/dependency-check-report.html.
 
 #### Style
 The build can fail because the static analysis tool, Spotless, detects an issue. To correct most Spotless issues:
@@ -21,10 +22,12 @@ The build can fail because the static analysis tool, Spotless, detects an issue.
 ./gradlew spotlessApply
 ```
 
-For more information about spotless checks see [here](https://github.com/diffplug/spotless/tree/master/plugin-gradle#custom-rules).
+For more information about spotless checks see
+[here](https://github.com/diffplug/spotless/tree/master/plugin-gradle#custom-rules).
 
 #### Tests
 * Tests are run automatically with `./gradlew build`.
+* To skip all tests, add `-x test`.
 * Even if the tests fail, the artifacts are built and can be run.
 * To run tests with quiet logs, add `-Pquiet`. This should not be used with parallel builds.
 * To run a single test suite:
@@ -36,19 +39,17 @@ For more information about spotless checks see [here](https://github.com/diffplu
 * The integration tests require a Docker daemon.
 * To skip integration tests, add `-PskipITests`.
 
-## Run
+## Running
 
 ### Run Locally
-1. Start the service using one of the following:
-	* [`docker-compose`](#start-the-service-locally-via-docker-compose)
-	* [`docker stack`](#start-the-service-locally-via-docker-stack)
-2. Examine the output of `docker-compose ps` to determine the ports assigned to the services.
-3. Set up a local block storage implementation (to simulate S3).
-	1. Run Minio locally:
-		```bash
-		docker run -p 9000:9000 --name minio1 -e "MINIO_ACCESS_KEY=admin" -e "MINIO_SECRET_KEY=adminadmin" minio/minio server /data
-		```
-	2. After starting the Minio service, add a bucket named `staged-products`.
+Start the service using one of the following:
+* [`docker-compose`](#start-the-service-locally-via-docker-compose)
+* [`docker stack`](#start-the-service-locally-via-docker-stack)
+
+To determine the ports assigned to the services:
+```bash
+docker-compose ps
+```
 
 #### Start the Service Locally via `docker-compose`
 1. A Docker network named `cdr` is needed to run via docker-compose.
@@ -111,11 +112,13 @@ docker stack deploy -c docker-compose.yml cdr
 ### Run on a Docker Swarm
 1. Tag each image.
 
-	To successfully push an image to a registry, the IP or hostname of the registry, along with its port number must be added to the name of the image. This is accomplished by the `docker tag` command which creates and alias to a Docker image.
+	To successfully push an image to a registry, the IP or hostname of the registry, along with its port number must be
+	added to the name of the image. This is accomplished by the `docker tag` command which creates and alias to a Docker
+	image.
 
 	To see the images in your local image cache:
 	```bash
-	docker iamge ls
+	docker image ls
 	```
 
 	Look in the list for the images to be deployed:
@@ -126,7 +129,8 @@ docker stack deploy -c docker-compose.yml cdr
 	cnxta/cdr-search                               0.1.0-SNAPSHOT      4c29a3d8b5fa        25 hours ago        290MB
 	```
 
-	For each image, use `docker tag SOURCE TARGET` to create an alias with the address of the target registry. For example, if the address of the target registry is `<docker_registry>`:
+	For each image, use `docker tag SOURCE TARGET` to create an alias with the address of the target registry. For
+	example, if the address of the target registry is `<docker_registry>`:
 	```bash
 	docker tag cnxta/cdr-ingest:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
 	docker tag cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
@@ -140,23 +144,39 @@ docker stack deploy -c docker-compose.yml cdr
 	docker push <docker_registry>/cnxta/cdr-search:0.1.0-SNAPSHOT
 	```
 3. Deploy the service in the cloud.
-	> **Note**: All of the commands in this section must be executed from the cloud environment, not the local environment.
+	> **Note**: All of the commands in this section must be executed from the cloud environment, not the local
+	environment.
 
 	```bash
-	docker stack deploy -c (REGISTRY=<docker_registry> docker-compose config) cdr
+	docker stack deploy -c <(REGISTRY=<docker_registry> docker-compose config) cdr-stack
 	```
-	This command first sets the `REGISTRY` environment variable and then runs `docker-compose config` to substitute the value of the variable into the compose file. It then takes the contents of the compose file with the substituted text and redirects it to `stdin`.
+	> **Note**: Replace *<docker_registry>* in the above command with the 
+	*ip:port* or *host:port* of the Docker registry.
+	
+	This command first sets the `REGISTRY` environment variable and then runs `docker-compose config` to substitute the
+	value of the variable into the compose file. It then takes the contents of the compose file with the substituted
+	text and redirects it to `stdin`.
 
 #### Helpful Docker swarm commands
 > **Note**: All of the commands in this section must be executed from the cloud environment, not the local environment.
 * To monitor the service:
 	```bash
-	docker stack services cdr
+	docker stack services cdr-stack
 	```
 	```bash
-	docker stack ps cdr
+	docker stack ps cdr-stack
 	```
 * To stop the service:
 	```bash
-	docker stack rm cdr
+	docker stack rm cdr-stack
 	```
+
+## Using
+
+### Ingest Service
+The Ingest service is capable of storing data in an S3-compatible data store. The configuration to access S3 is found as
+a list of commands under the ingest service in the `docker-compose.yml` file. Here you can change the endpoint URL, the
+S3 bucket name, and the credentials the Ingest Service will use to connect to S3. The Ingest Service uses docker secrets
+for the AWS Access Key and the AWS Secret Key. The key values are stored in files called `aws_s3_access.sec` and
+`aws_s3_secret.sec`. These files must be in the same directory as the `docker-compose.yml` and will not be version
+controlled.

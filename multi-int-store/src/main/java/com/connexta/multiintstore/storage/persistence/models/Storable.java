@@ -6,8 +6,7 @@
  */
 package com.connexta.multiintstore.storage.persistence.models;
 
-import java.util.UUID;
+public interface Storable<E> {
 
-public interface Storable {
-  public UUID getId();
+  E getId();
 }

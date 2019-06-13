@@ -28,14 +28,14 @@ public class StorageController {
     this.manager = storageManager;
   }
 
-  @PostMapping(path = "/store/{ingestID}", consumes = "application/json")
+  @PostMapping(path = "/store/{ingestId}", consumes = "application/json")
   public ResponseEntity store(
-      @PathVariable String ingestID, @RequestBody(required = false) JsonNode body) {
+      @PathVariable String ingestId, @RequestBody(required = false) JsonNode body) {
 
     Object callback = validator.parse(body);
 
     if (callback != null) {
-      manager.handleGeneralCallback(callback);
+      manager.handleGeneralCallback(callback, ingestId);
     } else {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

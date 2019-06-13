@@ -6,6 +6,11 @@ plugins {
 dependencies {
 	testCompile group: "org.springframework.boot", name: "spring-boot-starter-test", version: "2.1.5.RELEASE"
 	compile group: "org.json", name: "json", version: "20180813"
+	implementation("com.connexta.ingest:ingest-api-rest-spring-stubs:0.1.1")
+}
+
+dependencyCheck {
+	suppressionFile = "${projectDir}/owasp-suppressions.xml"
 }
 
 springBoot {
@@ -20,6 +25,12 @@ docker {
 	files tasks.bootJar.outputs
 	name "cnxta/cdr-ingest:${project.version}"
 	buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
+}
+
+dependencies {
+	implementation platform("software.amazon.awssdk:bom:2.5.29")
+	implementation "software.amazon.awssdk:s3"
+	compile group: "commons-io", name: "commons-io", version: "2.6"
 }
 
 build.dependsOn("docker")

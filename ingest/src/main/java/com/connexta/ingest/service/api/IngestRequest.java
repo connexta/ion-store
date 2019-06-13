@@ -6,9 +6,18 @@
  */
 package com.connexta.ingest.service.api;
 
-/*
- **
- * Java object representation of the json request
- *
- */
-public interface IngestRequest {}
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
+
+/** Java object representation of the ingest request */
+@Getter
+@AllArgsConstructor
+public class IngestRequest {
+  private final String acceptVersion;
+  private final Long fileSize;
+  private final String mimeType;
+  private final MultipartFile file;
+  private final String title;
+  private final String fileName;
+}

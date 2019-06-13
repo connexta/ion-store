@@ -36,6 +36,18 @@ services:
     deploy:
       restart_policy:
         condition: any
+    secrets:
+      - source: aws_s3_secret
+        target: /secrets/aws_s3_secret.sec
+      - source: aws_s3_access
+        target: /secrets/aws_s3_access.sec
+    # TODO: Find a way to set the endpointURL and region without exposing them
+    command:
+      - "--aws.s3.secret.file=/secrets/aws_s3_secret.sec"
+      - "--aws.s3.access.file=/secrets/aws_s3_access.sec"
+      - "--aws.s3.endpointUrl=TODO"
+      - "--aws.s3.bucket.quarantine=ingest-quarantine"
+      - "--aws.s3.region=TODO"
   multi-int-store:
     image: ${REGISTRY:-docker.io}/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
     hostname: cdr-store
@@ -47,16 +59,10 @@ services:
     networks:
       - cdr
     depends_on:
-      - cassandra
       - solr
     deploy:
       restart_policy:
         condition: any
-    command:
-      - "--cassandra.host=cassandra"
-      - "--cassandra.port=9042"
-      - "--solr.host=solr"
-      - "--solr.port=9983"
   search:
     image: ${REGISTRY:-docker.io}/cnxta/cdr-search:0.1.0-SNAPSHOT
     hostname: cdr-search
@@ -69,22 +75,11 @@ services:
     deploy:
       restart_policy:
         condition: any
-  cassandra:
-    image: cassandra
-    hostname: cassandra
-    ports:
-      - target: 9042
-        published: 9042
-        protocol: tcp
-    networks:
-      - cdr
+  # TODO: solr version
   solr:
     image: solr
-    hostname: solr
     ports:
-      - target: 9983
-        published: 9983
-        protocol: tcp
+      - "9983:8983"
     volumes:
       - data:/opt/solr/server/solr/mycores
     entrypoint:
@@ -98,3 +93,8 @@ networks:
     external: true
 volumes:
   data:
+secrets:
+  aws_s3_secret:
+    file: aws_s3_secret.sec
+  aws_s3_access:
+    file: aws_s3_access.sec

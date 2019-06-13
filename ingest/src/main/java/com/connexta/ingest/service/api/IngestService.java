@@ -6,12 +6,17 @@
  */
 package com.connexta.ingest.service.api;
 
-/*
- **
- * Sends request on for processing and storage
- *
- */
+import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
+
+/** Provides clients with a way to ingest Products into ION for processing and storage */
 public interface IngestService {
 
-  IngestResponse ingest(IngestRequest request);
+  UUID ingest(
+      String acceptVersion,
+      Long fileSize,
+      String mimeType,
+      MultipartFile file,
+      String title,
+      String fileName);
 }
