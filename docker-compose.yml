@@ -41,13 +41,13 @@ services:
         target: /secrets/aws_s3_secret.sec
       - source: aws_s3_access
         target: /secrets/aws_s3_access.sec
-    # TODO: Find a way to set the endpointURL and region without exposing them
+    configs:
+      - source: ingest_config
+        target: /configs/ingest_config.yml
     command:
       - "--aws.s3.secret.file=/secrets/aws_s3_secret.sec"
       - "--aws.s3.access.file=/secrets/aws_s3_access.sec"
-      - "--aws.s3.endpointUrl=http://localhost/TODO"
-      - "--aws.s3.bucket.quarantine=ingest-quarantine"
-      - "--aws.s3.region=TODO"
+      - "--spring.config.location=file:/configs/ingest_config.yml"
   multi-int-store:
     image: ${REGISTRY:-docker.io}/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
     hostname: cdr-store
@@ -98,3 +98,6 @@ secrets:
     file: aws_s3_secret.sec
   aws_s3_access:
     file: aws_s3_access.sec
+configs:
+  ingest_config:
+    file: ./configs/ingest_config.yml
