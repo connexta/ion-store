@@ -4,13 +4,13 @@ plugins {
 }
 
 dependencies {
-	compile group: "org.json", name: "json", version: "20180813"
-	compile "commons-io:commons-io:2.6"
+	implementation "org.json:json:20180813"
+	implementation "commons-io:commons-io:2.6"
 	implementation "com.connexta.ingest:ingest-api-rest-spring-stubs:0.1.1"
-	implementation platform("software.amazon.awssdk:bom:2.5.29")
 	implementation "software.amazon.awssdk:s3"
+	implementation platform("software.amazon.awssdk:bom:2.5.29")
 
-	testCompile group: "org.springframework.boot", name: "spring-boot-starter-test", version: "2.1.5.RELEASE"
+	testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.5.RELEASE"
 }
 
 dependencyCheck {
