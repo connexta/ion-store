@@ -24,10 +24,6 @@ import org.testcontainers.containers.GenericContainer;
 public abstract class MultiIntStoreIntegrationTestContainers {
 
   @ClassRule
-  public static final GenericContainer cassandra =
-      new GenericContainer("cassandra:3").withExposedPorts(9042);
-
-  @ClassRule
   public static final GenericContainer solr =
       new GenericContainer("solr:8")
           .withCommand("solr-create -c searchTerms")
@@ -38,10 +34,7 @@ public abstract class MultiIntStoreIntegrationTestContainers {
     @Override
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
       TestPropertyValues.of(
-              "cassandra.host=" + cassandra.getContainerIpAddress(),
-              "cassandra.port=" + cassandra.getMappedPort(9042),
-              "solr.host=" + solr.getContainerIpAddress(),
-              "solr.port=" + solr.getMappedPort(8983))
+              "solr.host=" + solr.getContainerIpAddress(), "solr.port=" + solr.getMappedPort(8983))
           .applyTo(configurableApplicationContext.getEnvironment());
     }
   }
