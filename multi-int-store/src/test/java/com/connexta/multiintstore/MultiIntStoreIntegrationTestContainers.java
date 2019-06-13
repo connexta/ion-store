@@ -18,13 +18,20 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.GenericContainer;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = MultiIntStoreIntegrationTestContainers.Initializer.class)
 @EnableConfigurationProperties
-public class MultiIntStoreIntegrationTestContainers extends MultiIntStoreIntegrationTest {
+public abstract class MultiIntStoreIntegrationTestContainers {
+
   @ClassRule
-  public static GenericContainer cassandra =
+  public static final GenericContainer cassandra =
       new GenericContainer("cassandra:3").withExposedPorts(9042);
+
+  @ClassRule
+  public static final GenericContainer solr =
+      new GenericContainer("solr:8")
+          .withCommand("solr-create -c searchTerms")
+          .withExposedPorts(8983);
 
   public static class Initializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -32,7 +39,9 @@ public class MultiIntStoreIntegrationTestContainers extends MultiIntStoreIntegra
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
       TestPropertyValues.of(
               "cassandra.host=" + cassandra.getContainerIpAddress(),
-              "cassandra.port=" + cassandra.getMappedPort(9042))
+              "cassandra.port=" + cassandra.getMappedPort(9042),
+              "solr.host=" + solr.getContainerIpAddress(),
+              "solr.port=" + solr.getMappedPort(8983))
           .applyTo(configurableApplicationContext.getEnvironment());
     }
   }

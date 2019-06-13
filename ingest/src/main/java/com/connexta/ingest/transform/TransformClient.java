@@ -18,9 +18,13 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class TransformClient {
 
-  @Autowired private RestTemplate restTemplate;
+  private final RestTemplate restTemplate;
+  private final URI transformEndpoint = new URI("TODO");
 
-  private URI transformEndpoint;
+  @Autowired
+  public TransformClient(RestTemplate restTemplate) throws URISyntaxException {
+    this.restTemplate = restTemplate;
+  }
 
   public TransformResponse requestTransform(TransformRequest transformRequest) {
     ResponseErrorHandler originalRequestHandler = restTemplate.getErrorHandler();
@@ -49,19 +53,6 @@ public class TransformClient {
 
   private ResponseEntity<TransformResponse> sendRequest(TransformRequest transformRequest) {
     HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
-    return restTemplate.postForEntity(getTransformEndpoint(), request, TransformResponse.class);
-  }
-
-  public URI getTransformEndpoint() {
-    return transformEndpoint;
-  }
-
-  @SuppressWarnings("unused")
-  public void setTransformEndpoint(URI transformEndpoint) {
-    this.transformEndpoint = transformEndpoint;
-  }
-
-  public void setTransformEndpoint(String transformEndpoint) throws URISyntaxException {
-    this.transformEndpoint = new URI(transformEndpoint);
+    return restTemplate.postForEntity(transformEndpoint, request, TransformResponse.class);
   }
 }

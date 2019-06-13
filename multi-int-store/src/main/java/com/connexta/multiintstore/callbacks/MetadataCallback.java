@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.callbacks;
 
-import java.net.URI;
+import java.net.URL;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -20,7 +20,7 @@ import lombok.Setter;
 @Setter(value = AccessLevel.PACKAGE)
 @Getter
 public class MetadataCallback {
-  @NotNull private String id;
+  @NotNull private String id; // TODO this should be removed from the request API
 
   @NotNull private String status;
 
@@ -30,7 +30,7 @@ public class MetadataCallback {
 
   @NotNull private Long bytes;
 
-  @NotNull private URI location;
+  @NotNull private URL location;
 
   @Valid @NotNull private Markings security;
 }

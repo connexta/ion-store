@@ -6,11 +6,9 @@
  */
 package com.connexta.multiintstore.storage.persistence.models;
 
-import java.util.UUID;
-
-public class Product implements Storable {
+public class Product implements Storable<String> {
   @Override
-  public UUID getId() {
+  public String getId() {
     return null;
   }
 }

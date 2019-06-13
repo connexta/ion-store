@@ -66,4 +66,15 @@ public class ApplicationConfiguration {
   public SolrTemplate solrTemplate(SolrClient client) throws Exception {
     return new SolrTemplate(client);
   }
+
+  /**
+   * We use this to check the Accept-Version in the callback request. The name of this should
+   * probably be updated.
+   */
+  @Value("${ion-version}")
+  private String ionVersion;
+
+  public String getIonVersion() {
+    return ionVersion;
+  }
 }
