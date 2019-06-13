@@ -8,23 +8,29 @@ package com.connexta.ingest.adaptors;
 
 import com.connexta.ingest.config.S3StorageConfiguration;
 import com.connexta.ingest.service.api.IngestRequest;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.net.URI;
-import java.util.UUID;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 public class S3Adaptor implements Adaptor {
@@ -62,25 +68,38 @@ public class S3Adaptor implements Adaptor {
   }
 
   @Override
-  public UUID upload(IngestRequest ingestRequest) {
-    final UUID ingestId = UUID.randomUUID();
+  public void upload(IngestRequest ingestRequest, String key) throws IOException {
+    final String fileName = ingestRequest.getFileName();
 
-    try {
-      final PutObjectRequest putRequest =
-          PutObjectRequest.builder().bucket(s3BucketQuarantine).key(ingestId.toString()).build();
-      LOGGER.info("Storing in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, ingestId);
+    LOGGER.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
+    s3Client.putObject(
+        PutObjectRequest.builder()
+            .bucket(s3BucketQuarantine)
+            .key(key)
+            .contentType(ingestRequest.getMimeType())
+            .contentLength(ingestRequest.getFileSize())
+            .metadata(ImmutableMap.of("filename", fileName))
+            .build(),
+        RequestBody.fromInputStream(
+            ingestRequest.getFile().getInputStream(), ingestRequest.getFile().getSize()));
+  }
 
-      s3Client.putObject(
-          putRequest,
-          RequestBody.fromInputStream(
-              ingestRequest.getFile().getInputStream(), ingestRequest.getFile().getSize()));
-      LOGGER.info("{} has been successfully stored in S3.", ingestId);
+  public ResponseEntity<Resource> retrieve(String ingestId) {
+    LOGGER.info(
+        "Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, ingestId);
 
-    } catch (IOException | S3Exception | SdkClientException e) {
-      // Handle put request failures
-      // TODO: Actually handle errors and retries
-      LOGGER.error(e.getMessage());
-    }
-    return ingestId;
+    final ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream =
+        s3Client.getObject(
+            GetObjectRequest.builder().bucket(s3BucketQuarantine).key(ingestId).build());
+    final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
+
+    return ResponseEntity.ok()
+        .contentType(MediaType.valueOf(getObjectResponse.contentType()))
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=\""
+                + getObjectResponse.metadata().getOrDefault("filename", ingestId)
+                + "\"")
+        .body(new InputStreamResource(getObjectResponseResponseInputStream));
   }
 }

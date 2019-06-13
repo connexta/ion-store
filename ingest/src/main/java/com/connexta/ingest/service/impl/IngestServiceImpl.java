@@ -11,10 +11,15 @@ import com.connexta.ingest.service.api.IngestRequest;
 import com.connexta.ingest.service.api.IngestService;
 import com.connexta.ingest.transform.TransformClient;
 import com.connexta.transformation.rest.models.TransformRequest;
+import com.connexta.transformation.rest.models.TransformResponse;
+import java.io.IOException;
+import java.net.URL;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,28 +31,38 @@ public class IngestServiceImpl implements IngestService {
   private final TransformClient transformClient;
 
   @Override
-  public UUID ingest(
+  public void ingest(
       String acceptVersion,
       Long fileSize,
       String mimeType,
       MultipartFile file,
       String title,
-      String fileName) {
+      String fileName)
+      throws IOException {
+    final String ingestId = UUID.randomUUID().toString().replace("-", "");
+    s3Adaptor.upload(
+        new IngestRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
 
-    IngestRequest ingestRequest =
-        new IngestRequest(acceptVersion, fileSize, mimeType, file, title, fileName);
-    TransformRequest transformRequest = new TransformRequest();
-    transformRequest.setBytes(20L);
-    transformRequest.setCallbackUrl("http://blah/blah");
-    transformRequest.setId("1");
-    transformRequest.setMimeType("nitf");
-    transformRequest.setProductLocation("prod");
-    transformRequest.setStagedLocation("stage");
+    final String url = new URL("TODO/retrieve/" + ingestId).toString();
+    LOGGER.info("{} has been successfully stored in S3 and can be downloaded at {}", fileName, url);
 
-    UUID ingestId = s3Adaptor.upload(ingestRequest);
+    final TransformRequest transformRequest = new TransformRequest();
+    transformRequest.setBytes(fileSize);
+    transformRequest.setCallbackUrl("TODO/store/" + ingestId);
+    transformRequest.setId("1"); // TODO This should be removed from the API
+    transformRequest.setMimeType(mimeType);
+    transformRequest.setProductLocation("prod"); // TODO This should be removed from the API
+    transformRequest.setStagedLocation(url);
 
-    transformClient.requestTransform(transformRequest);
+    final TransformResponse transformResponse = transformClient.requestTransform(transformRequest);
 
-    return ingestId;
+    LOGGER.warn("Completed transform request, response is {}", transformResponse);
+  }
+
+  @Override
+  public ResponseEntity<Resource> retrieve(final String ingestId) {
+    final ResponseEntity<Resource> resourceResponseEntity = s3Adaptor.retrieve(ingestId);
+    LOGGER.info("Resource \"{}\" has been successfully retrieved from S3", ingestId);
+    return resourceResponseEntity;
   }
 }

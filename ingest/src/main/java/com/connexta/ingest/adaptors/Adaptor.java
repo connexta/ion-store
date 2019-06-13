@@ -7,9 +7,9 @@
 package com.connexta.ingest.adaptors;
 
 import com.connexta.ingest.service.api.IngestRequest;
-import java.util.UUID;
+import java.io.IOException;
 
 public interface Adaptor {
 
-  UUID upload(IngestRequest ingestRequest);
+  void upload(IngestRequest ingestRequest, String key) throws IOException;
 }
