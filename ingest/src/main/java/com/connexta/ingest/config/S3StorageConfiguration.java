@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @ComponentScan
 @Getter
-@Profile("prod")
+@Profile("default")
 public class S3StorageConfiguration {
 
   @Value("${aws.s3.endpointUrl}")
