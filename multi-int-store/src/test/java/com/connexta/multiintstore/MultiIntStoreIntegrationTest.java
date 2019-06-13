@@ -65,6 +65,9 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
             Action.stringContent(cstContents),
             Action.status(HttpStatus.OK_200));
 
+    // TODO
+    Thread.sleep(5000);
+
     mockMvc
         .perform(
             MockMvcRequestBuilders.post("/store/" + ingestId)

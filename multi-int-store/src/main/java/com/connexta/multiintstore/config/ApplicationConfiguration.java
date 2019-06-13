@@ -6,8 +6,6 @@
  */
 package com.connexta.multiintstore.config;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,32 +21,6 @@ import org.springframework.data.solr.repository.config.EnableSolrRepositories;
     namedQueriesLocation = "classpath:solr-named-queries.properties")
 @ComponentScan
 public class ApplicationConfiguration {
-  @Value("${cassandra.host}")
-  private String cassandraHost;
-
-  @Value("${cassandra.port}")
-  private int cassandraPort;
-
-  @Bean
-  public Session createSession() {
-    return createSession(cassandraHost, cassandraPort);
-  }
-
-  public static Session createSession(String ip, int port) {
-    Cluster cluster;
-
-    cluster = Cluster.builder().addContactPoint(ip).withPort(port).build();
-
-    Session session = cluster.connect();
-
-    session.execute(
-        "CREATE KEYSPACE IF NOT EXISTS multiintstore_keyspace WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }");
-    session.execute("USE multiintstore_keyspace;");
-    session.execute(
-        "CREATE TABLE IF NOT EXISTS metadata(id UUID PRIMARY KEY, ddms2 text, ddms5 text);");
-
-    return session;
-  }
 
   @Value("${solr.host}")
   private String solrHost;

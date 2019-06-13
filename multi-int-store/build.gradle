@@ -5,10 +5,6 @@ plugins {
 
 dependencies {
 	implementation "org.springframework.data:spring-data-solr:4.0.8.RELEASE"
-	implementation("org.springframework.data:spring-data-cassandra:2.1.5.RELEASE") {
-		exclude group: "com.google.guava", module: "guava"
-		because "CVE-2018-10237 in guava 19.0"
-	}
 	implementation("com.google.guava:guava:27.1-jre") {
 		because "CVE-2018-10237 in guava 19.0"
 	}
