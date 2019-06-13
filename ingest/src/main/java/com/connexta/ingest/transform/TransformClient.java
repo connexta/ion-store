@@ -10,6 +10,7 @@ import com.connexta.transformation.rest.models.TransformRequest;
 import com.connexta.transformation.rest.models.TransformResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,18 +24,17 @@ public class TransformClient {
 
   @Autowired private RestTemplate restTemplate;
 
-  private com.connexta.transformation.rest.spring.TransformApi transformApi;
-
   private URI transformEndpoint;
 
-  public TransformResponse requestTransform(TransformRequest transformRequest) {
-    LOGGER.warn("Entering requestTransform {}", getTransformEndpoint().toString());
-    return restTemplate.postForObject(
-        getTransformEndpoint(), transformRequest, TransformResponse.class);
+  @PostConstruct
+  private void setEndpoint() throws URISyntaxException {
+    // TODO: Set endpoint URL
+    setTransformEndpoint("http://TODO");
   }
 
-  public URI getTransformEndpoint() {
-    return transformEndpoint;
+  public TransformResponse requestTransform(TransformRequest transformRequest) {
+    LOGGER.warn("Entering requestTransform {}", transformEndpoint.toString());
+    return restTemplate.postForObject(transformEndpoint, transformRequest, TransformResponse.class);
   }
 
   @SuppressWarnings("unused")
