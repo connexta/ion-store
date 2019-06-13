@@ -148,7 +148,7 @@ docker stack deploy -c docker-compose.yml cdr
 	environment.
 
 	```bash
-	docker stack deploy -c (REGISTRY=<docker_registry> docker-compose config) cdr
+	docker stack deploy -c <(REGISTRY=<docker_registry> docker-compose config) cdr-stack
 	```
 	This command first sets the `REGISTRY` environment variable and then runs `docker-compose config` to substitute the
 	value of the variable into the compose file. It then takes the contents of the compose file with the substituted
@@ -158,14 +158,14 @@ docker stack deploy -c docker-compose.yml cdr
 > **Note**: All of the commands in this section must be executed from the cloud environment, not the local environment.
 * To monitor the service:
 	```bash
-	docker stack services cdr
+	docker stack services cdr-stack
 	```
 	```bash
-	docker stack ps cdr
+	docker stack ps cdr-stack
 	```
 * To stop the service:
 	```bash
-	docker stack rm cdr
+	docker stack rm cdr-stack
 	```
 
 ## Using
