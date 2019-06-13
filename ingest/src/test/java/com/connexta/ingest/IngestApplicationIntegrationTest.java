@@ -52,6 +52,7 @@ public class IngestApplicationIntegrationTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isAccepted());
+
   }
 
   @Test
