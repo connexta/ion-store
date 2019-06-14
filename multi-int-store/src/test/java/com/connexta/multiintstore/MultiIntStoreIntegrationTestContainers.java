@@ -16,6 +16,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -27,7 +28,8 @@ public abstract class MultiIntStoreIntegrationTestContainers {
   public static final GenericContainer solr =
       new GenericContainer("solr:8")
           .withCommand("solr-create -c searchTerms")
-          .withExposedPorts(8983);
+          .withExposedPorts(8983)
+          .waitingFor(Wait.forHttp("/solr/admin/cores?action=STATUS"));
 
   public static class Initializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {
