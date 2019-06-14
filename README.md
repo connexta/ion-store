@@ -187,7 +187,7 @@ for the AWS Access Key and the AWS Secret Key. The key values are stored in file
 `aws_s3_secret.sec`. These files must be in the same directory as the `docker-compose.yml` and will not be version
 controlled.
 
-Example configuration file:
+Example configs/ingest_config.yml:
 ```yaml
 aws:
 s3:
@@ -200,4 +200,11 @@ transformEndpointUrl: http://localhost:1231/transform/
 ingest:
 callbackEndpointUrl: http://localhost:1232/store/
 retrieveEndpointUrl: http://localhost:1233/retrieve/
+```
+
+Example configs/mis_config.yml:
+```yaml
+solr:
+host: localhost
+port: 9983
 ```
