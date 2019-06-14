@@ -186,3 +186,18 @@ S3 bucket name, and the credentials the Ingest Service will use to connect to S3
 for the AWS Access Key and the AWS Secret Key. The key values are stored in files called `aws_s3_access.sec` and
 `aws_s3_secret.sec`. These files must be in the same directory as the `docker-compose.yml` and will not be version
 controlled.
+
+Example configuration file:
+```yaml
+aws:
+s3:
+	endpointUrl: https://s3.us-west-1.amazonaws.com
+	region: us-west-1
+	bucket:
+	quarantine: ingest-qurantine
+transformation:
+transformEndpointUrl: http://localhost:1231/transform/
+ingest:
+callbackEndpointUrl: http://localhost.com:1232/store/
+retrieveEndpointUrl: http://localhost.com:1233/retrieve/
+```
