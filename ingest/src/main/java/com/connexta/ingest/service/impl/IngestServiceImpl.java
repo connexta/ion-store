@@ -11,7 +11,6 @@ import com.connexta.ingest.service.api.IngestRequest;
 import com.connexta.ingest.service.api.IngestService;
 import com.connexta.ingest.transform.TransformClient;
 import com.connexta.transformation.rest.models.TransformRequest;
-import com.connexta.transformation.rest.models.TransformResponse;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -45,9 +44,10 @@ public class IngestServiceImpl implements IngestService {
     transformRequest.setProductLocation("prod");
     transformRequest.setStagedLocation("stage");
 
-    TransformResponse transformResponse = transformClient.requestTransform(transformRequest);
+    UUID ingestId = s3Adaptor.upload(ingestRequest);
 
-    LOGGER.warn("Completed transform request, reponse is {}", transformResponse);
-    return s3Adaptor.upload(ingestRequest);
+    transformClient.requestTransform(transformRequest);
+
+    return ingestId;
   }
 }
