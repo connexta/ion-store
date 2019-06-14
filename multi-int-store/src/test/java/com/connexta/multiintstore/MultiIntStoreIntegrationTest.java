@@ -53,7 +53,6 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
   @Test
   public void testContextLoads() {}
 
-  @Ignore
   @Test
   public void handleCSTCallback() throws Exception {
 
