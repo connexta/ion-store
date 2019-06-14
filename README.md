@@ -177,8 +177,6 @@ deployment. The configuration YAML files can be found under: `<PROJECT_ROOT>/con
 The properties in these files will be merged with any properties that you have configured in the service. The properties
 in the external config file take precedence over config files that are built with the service.
 
-Currently only the Ingest Service is configured externally.
-
 ## Using
 
 ### Ingest Service
