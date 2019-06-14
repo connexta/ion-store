@@ -198,6 +198,6 @@ s3:
 transformation:
 transformEndpointUrl: http://localhost:1231/transform/
 ingest:
-callbackEndpointUrl: http://localhost.com:1232/store/
-retrieveEndpointUrl: http://localhost.com:1233/retrieve/
+callbackEndpointUrl: http://localhost:1232/store/
+retrieveEndpointUrl: http://localhost:1233/retrieve/
 ```
