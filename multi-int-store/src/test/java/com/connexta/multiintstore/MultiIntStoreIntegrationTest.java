@@ -53,8 +53,6 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
   @Test
   public void testContextLoads() {}
 
-  // TODO: Does not pass because it did not talk to Solr during integration test.
-  //  "IOException occurred when talking to server at: http://localhost:32773/solr"
   @Ignore
   @Test
   public void handleCSTCallback() throws Exception {
