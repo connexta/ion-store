@@ -31,3 +31,4 @@ gradle-app.setting
 
 #Do not upload
 *.sec
+/configs

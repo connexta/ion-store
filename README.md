@@ -171,6 +171,12 @@ docker stack deploy -c docker-compose.yml cdr
 	docker stack rm cdr-stack
 	```
 
+## Configuration
+Services can be configured with an external configuration file that will be applied to the docker container during
+deployment. The configuration YAML files can be found under: `<PROJECT_ROOT>/configs/` and are not verison-controlled.
+The properties in these files will be merged with any properties that you have configured in the service. The properties
+in the external config file take precedence over config files that are built with the service.
+
 ## Using
 
 ### Ingest Service
@@ -180,3 +186,25 @@ S3 bucket name, and the credentials the Ingest Service will use to connect to S3
 for the AWS Access Key and the AWS Secret Key. The key values are stored in files called `aws_s3_access.sec` and
 `aws_s3_secret.sec`. These files must be in the same directory as the `docker-compose.yml` and will not be version
 controlled.
+
+Example configs/ingest_config.yml:
+```yaml
+aws:
+	s3:
+		endpointUrl: https://s3.us-west-1.amazonaws.com
+		region: us-west-1
+		bucket:
+			quarantine: ingest-quarantine
+transformation:
+	transformEndpointUrl: http://localhost:1231/transform/
+ingest:
+	callbackEndpointUrl: http://localhost:1232/store/
+	retrieveEndpointUrl: http://localhost:1233/retrieve/
+```
+
+Example configs/mis_config.yml:
+```yaml
+solr:
+	host: localhost
+	port: 9983
+```
