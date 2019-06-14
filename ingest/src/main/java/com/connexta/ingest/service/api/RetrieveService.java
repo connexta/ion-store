@@ -4,12 +4,11 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.ingest.adaptors;
+package com.connexta.ingest.service.api;
 
-import com.connexta.ingest.service.api.IngestRequest;
 import java.io.IOException;
 
-public interface Adaptor {
+public interface RetrieveService {
 
-  void upload(IngestRequest ingestRequest, String key) throws IOException;
+  RetrieveResponse retrieve(String ingestId) throws IOException;
 }

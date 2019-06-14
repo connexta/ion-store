@@ -11,19 +11,17 @@ import com.connexta.ingest.service.api.IngestService;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController()
 public class IngestController implements IngestApi {
 
-  private final IngestService ingestService;
   private static Logger LOGGER = LoggerFactory.getLogger(IngestController.class);
+
+  private final IngestService ingestService;
 
   /**
    * Constructs a new REST Spring Web controller.
@@ -50,12 +48,5 @@ public class IngestController implements IngestApi {
       LOGGER.warn("Unable to ingest", e);
       return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  @GetMapping("/retrieve/{ingestId}")
-  public ResponseEntity<Resource> retrieve(@PathVariable final String ingestId) {
-    LOGGER.info("Attempting to retrieve {}", ingestId);
-    // TODO don't use ingestService here
-    return ingestService.retrieve(ingestId);
   }
 }

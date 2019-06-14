@@ -6,29 +6,34 @@
  */
 package com.connexta.ingest.service.impl;
 
-import com.connexta.ingest.adaptors.S3Adaptor;
-import com.connexta.ingest.service.api.IngestRequest;
+import com.connexta.ingest.adaptors.S3StorageAdaptor;
 import com.connexta.ingest.service.api.IngestService;
+import com.connexta.ingest.service.api.StoreRequest;
 import com.connexta.ingest.transform.TransformClient;
 import com.connexta.transformation.rest.models.TransformRequest;
 import com.connexta.transformation.rest.models.TransformResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-@AllArgsConstructor
 public class IngestServiceImpl implements IngestService {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceImpl.class);
-  private final S3Adaptor s3Adaptor;
-  private final TransformClient transformClient;
+
+  @NotNull private final S3StorageAdaptor s3Adaptor;
+  @NotNull private final TransformClient transformClient;
+
+  public IngestServiceImpl(
+      @NotNull final S3StorageAdaptor s3Adaptor, @NotNull final TransformClient transformClient) {
+    this.s3Adaptor = s3Adaptor;
+    this.transformClient = transformClient;
+  }
 
   @Override
   public void ingest(
@@ -40,9 +45,10 @@ public class IngestServiceImpl implements IngestService {
       String fileName)
       throws IOException {
     final String ingestId = UUID.randomUUID().toString().replace("-", "");
-    s3Adaptor.upload(
-        new IngestRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
+    s3Adaptor.store(
+        new StoreRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
 
+    // TODO get this URL programmatically
     final String url = new URL("TODO/retrieve/" + ingestId).toString();
     LOGGER.info("{} has been successfully stored in S3 and can be downloaded at {}", fileName, url);
 
@@ -57,12 +63,5 @@ public class IngestServiceImpl implements IngestService {
     final TransformResponse transformResponse = transformClient.requestTransform(transformRequest);
 
     LOGGER.warn("Completed transform request, response is {}", transformResponse);
-  }
-
-  @Override
-  public ResponseEntity<Resource> retrieve(final String ingestId) {
-    final ResponseEntity<Resource> resourceResponseEntity = s3Adaptor.retrieve(ingestId);
-    LOGGER.info("Resource \"{}\" has been successfully retrieved from S3", ingestId);
-    return resourceResponseEntity;
   }
 }

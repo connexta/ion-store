@@ -7,20 +7,20 @@
 package com.connexta.ingest.adaptors;
 
 import com.connexta.ingest.config.S3StorageConfiguration;
-import com.connexta.ingest.service.api.IngestRequest;
+import com.connexta.ingest.service.api.RetrieveResponse;
+import com.connexta.ingest.service.api.StoreRequest;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -32,10 +32,11 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+/** TODO one adaptor for quarantine and one adaptor for multi-int-store */
 @Service
-public class S3Adaptor implements Adaptor {
+public class S3StorageAdaptor implements StorageAdaptor {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3Adaptor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3StorageAdaptor.class);
 
   private final String s3AccessKey;
   private final String s3SecretKey;
@@ -46,7 +47,7 @@ public class S3Adaptor implements Adaptor {
   private S3Client s3Client;
 
   @Autowired
-  public S3Adaptor(S3StorageConfiguration configuration) {
+  public S3StorageAdaptor(S3StorageConfiguration configuration) {
     s3AccessKey = configuration.getS3AccessKey();
     s3SecretKey = configuration.getS3SecretKey();
     s3Endpoint = configuration.getS3Endpoint();
@@ -68,23 +69,24 @@ public class S3Adaptor implements Adaptor {
   }
 
   @Override
-  public void upload(IngestRequest ingestRequest, String key) throws IOException {
-    final String fileName = ingestRequest.getFileName();
+  public void store(StoreRequest storeRequest, String key) throws IOException {
+    final String fileName = storeRequest.getFileName();
 
     LOGGER.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
     s3Client.putObject(
         PutObjectRequest.builder()
             .bucket(s3BucketQuarantine)
             .key(key)
-            .contentType(ingestRequest.getMimeType())
-            .contentLength(ingestRequest.getFileSize())
+            .contentType(storeRequest.getMimeType())
+            .contentLength(storeRequest.getFileSize())
             .metadata(ImmutableMap.of("filename", fileName))
             .build(),
         RequestBody.fromInputStream(
-            ingestRequest.getFile().getInputStream(), ingestRequest.getFile().getSize()));
+            storeRequest.getFile().getInputStream(), storeRequest.getFile().getSize()));
   }
 
-  public ResponseEntity<Resource> retrieve(String ingestId) {
+  @Override
+  public RetrieveResponse retrieve(String ingestId) throws IOException {
     LOGGER.info(
         "Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, ingestId);
 
@@ -93,13 +95,18 @@ public class S3Adaptor implements Adaptor {
             GetObjectRequest.builder().bucket(s3BucketQuarantine).key(ingestId).build());
     final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
 
-    return ResponseEntity.ok()
-        .contentType(MediaType.valueOf(getObjectResponse.contentType()))
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\""
-                + getObjectResponse.metadata().getOrDefault("filename", ingestId)
-                + "\"")
-        .body(new InputStreamResource(getObjectResponseResponseInputStream));
+    return new RetrieveResponse(
+        MediaType.valueOf(getObjectResponse.contentType()),
+        new ByteArrayResource(getObjectResponseResponseInputStream.readAllBytes()) {
+          @Override
+          public String getFilename() {
+            final Map<String, String> metadata = getObjectResponse.metadata();
+            final String filename = metadata.get("filename");
+            if (StringUtils.isEmpty(filename)) {
+              return ingestId;
+            }
+            return filename;
+          }
+        });
   }
 }
