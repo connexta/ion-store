@@ -21,7 +21,6 @@ import org.glassfish.grizzly.http.util.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -53,9 +52,6 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
   @Test
   public void testContextLoads() {}
 
-  // TODO: Does not pass because it did not talk to Solr during integration test.
-  //  "IOException occurred when talking to server at: http://localhost:32773/solr"
-  @Ignore
   @Test
   public void handleCSTCallback() throws Exception {
 
