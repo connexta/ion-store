@@ -7,6 +7,7 @@ dependencies {
 	implementation "org.json:json:20180813"
 	implementation "commons-io:commons-io:2.6"
 	implementation "com.connexta.ingest:ingest-api-rest-spring-stubs:0.1.1"
+	implementation "com.connexta.transformation:transformation-api-rest-spring-stubs:0.0.1-SNAPSHOT"
 	implementation "software.amazon.awssdk:s3"
 	implementation platform("software.amazon.awssdk:bom:2.5.29")
 

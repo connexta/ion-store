@@ -6,53 +6,52 @@
  */
 package com.connexta.ingest.transform;
 
+import com.connexta.transformation.rest.models.TransformRequest;
+import com.connexta.transformation.rest.models.TransformResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 public class TransformClient {
 
-  private final RestTemplate restTemplate;
-  private final URI transformEndpoint = new URI("TODO");
+  private static final Logger LOGGER = LoggerFactory.getLogger(TransformClient.class);
 
-  @Autowired
-  public TransformClient(RestTemplate restTemplate) throws URISyntaxException {
-    this.restTemplate = restTemplate;
+  @Autowired private RestTemplate restTemplate;
+
+  private URI transformEndpoint;
+
+  @PostConstruct
+  private void setEndpoint() throws URISyntaxException {
+    // TODO: Set endpoint URL
+    setTransformEndpoint("http://TODO");
   }
 
   public TransformResponse requestTransform(TransformRequest transformRequest) {
-    ResponseErrorHandler originalRequestHandler = restTemplate.getErrorHandler();
-    try {
-      restTemplate.setErrorHandler(new NoOpResponseErrorHandler());
-      return postForTransform(transformRequest);
-    } finally {
-      restTemplate.setErrorHandler(originalRequestHandler);
-    }
+    LOGGER.warn("Entering requestTransform {}", transformEndpoint.toString());
+
+    // TODO: Do not hardcode the accept-version value
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("Accept-Version", "0.0.1-SNAPSHOT");
+
+    HttpEntity<TransformRequest> requestEntity = new HttpEntity<>(transformRequest, headers);
+    return restTemplate.postForObject(transformEndpoint, requestEntity, TransformResponse.class);
   }
 
-  private TransformResponse postForTransform(TransformRequest transformRequest) {
-    return buildTransformResponse(sendRequest(transformRequest), transformRequest.getId());
+  @SuppressWarnings("unused")
+  public void setTransformEndpoint(URI transformEndpoint) {
+    this.transformEndpoint = transformEndpoint;
   }
 
-  private TransformResponse buildTransformResponse(
-      ResponseEntity<TransformResponse> responseEntity, String id) {
-    TransformResponse transformResponse = responseEntity.getBody();
-    if (transformResponse == null) {
-      transformResponse = new TransformResponse();
-      transformResponse.setId(id);
-    }
-    transformResponse.setStatus(responseEntity.getStatusCode());
-    return transformResponse;
-  }
-
-  private ResponseEntity<TransformResponse> sendRequest(TransformRequest transformRequest) {
-    HttpEntity<TransformRequest> request = new HttpEntity<>(transformRequest);
-    return restTemplate.postForEntity(transformEndpoint, request, TransformResponse.class);
+  @SuppressWarnings("unused")
+  public void setTransformEndpoint(String transformEndpoint) throws URISyntaxException {
+    this.transformEndpoint = new URI(transformEndpoint);
   }
 }
