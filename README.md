@@ -171,6 +171,14 @@ docker stack deploy -c docker-compose.yml cdr
 	docker stack rm cdr-stack
 	```
 
+## Configuration
+Services can be configured with an external configuration file that will be applied to the docker container during
+deployment. The configuration YAML files can be found under: `<PROJECT_ROOT>/configs/` and are not verison-controlled.
+The properties in these files will be merged with any properties that you have configured in the service. The properties
+in the external config file take precedence over config files that are built with the service.
+
+Currently only the Ingest Service is configured externally.
+
 ## Using
 
 ### Ingest Service
