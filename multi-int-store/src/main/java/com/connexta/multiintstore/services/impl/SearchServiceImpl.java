@@ -26,7 +26,7 @@ public class SearchServiceImpl implements SearchService {
 
   @Override
   public List<IndexedProductMetadata> find(String keyword) {
-    return indexedMetadataRepository.findByContent(keyword);
+    return indexedMetadataRepository.findByContents(keyword);
   }
 
   @Override

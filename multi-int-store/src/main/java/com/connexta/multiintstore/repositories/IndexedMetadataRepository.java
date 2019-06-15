@@ -15,5 +15,5 @@ import org.springframework.stereotype.Repository;
 public interface IndexedMetadataRepository
     extends SolrCrudRepository<IndexedProductMetadata, String> {
 
-  List<IndexedProductMetadata> findByContent(String keyword);
+  List<IndexedProductMetadata> findByContents(String keyword);
 }
