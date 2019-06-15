@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 /** Java object representation of the ingest request */
 @Getter
 @AllArgsConstructor
-public class IngestRequest {
+public class StoreRequest {
   private final String acceptVersion;
   private final Long fileSize;
   private final String mimeType;

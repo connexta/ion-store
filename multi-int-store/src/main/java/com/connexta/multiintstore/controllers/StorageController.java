@@ -9,6 +9,8 @@ package com.connexta.multiintstore.controllers;
 import com.connexta.multiintstore.callbacks.CallbackValidator;
 import com.connexta.multiintstore.common.StorageManager;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class StorageController {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(StorageController.class);
   private final StorageManager manager;
   private final CallbackValidator validator = new CallbackValidator();
 
@@ -31,6 +34,7 @@ public class StorageController {
   @PostMapping(path = "/store/{ingestId}", consumes = "application/json")
   public ResponseEntity store(
       @PathVariable String ingestId, @RequestBody(required = false) JsonNode body) {
+    LOGGER.info("Received callback for ingestId {}", ingestId);
 
     Object callback = validator.parse(body);
 

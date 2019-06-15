@@ -8,7 +8,9 @@ package com.connexta.ingest.endpoint;
 
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
-import java.util.UUID;
+import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController()
 public class IngestController implements IngestApi {
+
+  private static Logger LOGGER = LoggerFactory.getLogger(IngestController.class);
 
   private final IngestService ingestService;
 
@@ -28,8 +32,6 @@ public class IngestController implements IngestApi {
     this.ingestService = ingestService;
   }
 
-  //  Because ingest is a default method we need to override it
-  //  Thankfully however, Spring keeps the magic of annotations
   @Override
   public ResponseEntity<Void> ingest(
       String acceptVersion,
@@ -38,12 +40,13 @@ public class IngestController implements IngestApi {
       MultipartFile file,
       String title,
       String fileName) {
-    final UUID ingestId =
-        ingestService.ingest(acceptVersion, fileSize, mimeType, file, title, fileName);
-    if (ingestId != null) {
-      return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    LOGGER.info("Attempting to ingest {}", fileName);
+    try {
+      ingestService.ingest(acceptVersion, fileSize, mimeType, file, title, fileName);
+      return new ResponseEntity(HttpStatus.OK);
+    } catch (IOException e) {
+      LOGGER.warn("Unable to ingest", e);
+      return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    // TODO: Send out the Transformation request to process the new data
   }
 }

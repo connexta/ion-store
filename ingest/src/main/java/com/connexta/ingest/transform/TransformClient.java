@@ -31,7 +31,7 @@ public class TransformClient {
   @PostConstruct
   private void setEndpoint() throws URISyntaxException {
     // TODO: Set endpoint URL
-    setTransformEndpoint("http://TODO");
+    setTransformEndpoint("TODO/transform");
   }
 
   public TransformResponse requestTransform(TransformRequest transformRequest) {

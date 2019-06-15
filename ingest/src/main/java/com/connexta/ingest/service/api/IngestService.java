@@ -6,17 +6,18 @@
  */
 package com.connexta.ingest.service.api;
 
-import java.util.UUID;
+import java.io.IOException;
 import org.springframework.web.multipart.MultipartFile;
 
 /** Provides clients with a way to ingest Products into ION for processing and storage */
 public interface IngestService {
 
-  UUID ingest(
+  void ingest(
       String acceptVersion,
       Long fileSize,
       String mimeType,
       MultipartFile file,
       String title,
-      String fileName);
+      String fileName)
+      throws IOException;
 }

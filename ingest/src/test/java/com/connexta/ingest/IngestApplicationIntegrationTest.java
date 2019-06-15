@@ -47,7 +47,7 @@ public class IngestApplicationIntegrationTest {
             multipart("/ingest")
                 .file("file", "some-content".getBytes())
                 .param("fileSize", "10")
-                .param("filename", "file")
+                .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
                 .header("Accept-Version", "1.2.1")
