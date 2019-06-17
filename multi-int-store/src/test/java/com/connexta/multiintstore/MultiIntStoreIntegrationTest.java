@@ -19,23 +19,25 @@ import com.connexta.multiintstore.services.api.SearchService;
 import com.xebialabs.restito.semantics.Action;
 import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
+import java.util.List;
+import lombok.AllArgsConstructor;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+@AllArgsConstructor
 public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestContainers {
 
-  @Autowired private WebApplicationContext wac;
-  @Autowired private IndexedMetadataRepository searchRepository;
-  @Autowired private SearchService searchService;
+  private WebApplicationContext wac;
+  private IndexedMetadataRepository searchRepository;
+  private SearchService searchService;
 
   private MockMvc mockMvc;
   private StubServer server;
@@ -98,11 +100,17 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
   }
 
   @Test
-  public void testSearchEndpointKeyword() throws Exception {
+  public void testSearchService() {
 
     searchService.store(
         new IndexedProductMetadata(
             "1",
             "All the color had been leached from Winterfell until only grey and white remained"));
+
+    List<IndexedProductMetadata> results = searchService.find("Winterfell");
+
+    searchService.delete("1");
+
+    results = searchService.find("Winterfell");
   }
 }

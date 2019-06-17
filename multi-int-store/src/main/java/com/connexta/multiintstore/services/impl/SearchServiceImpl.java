@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class SearchServiceImpl implements SearchService {
 
-  private IndexedMetadataRepository indexedMetadataRepository;
+  private final IndexedMetadataRepository indexedMetadataRepository;
 
   @Override
   public void store(IndexedProductMetadata doc) {
