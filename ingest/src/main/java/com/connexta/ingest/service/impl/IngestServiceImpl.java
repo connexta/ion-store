@@ -13,13 +13,11 @@ import com.connexta.ingest.transform.TransformClient;
 import com.connexta.transformation.rest.models.TransformRequest;
 import com.connexta.transformation.rest.models.TransformResponse;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,19 +29,16 @@ public class IngestServiceImpl implements IngestService {
 
   @NotNull private final S3StorageAdaptor s3Adaptor;
   @NotNull private final TransformClient transformClient;
-  private String callbackUrl;
+  private final String callbackEndpoint;
 
   public IngestServiceImpl(
-      @NotNull final S3StorageAdaptor s3Adaptor, @NotNull final TransformClient transformClient) {
+      @NotNull final S3StorageAdaptor s3Adaptor,
+      @NotNull final TransformClient transformClient,
+      @Value("${endpointUrl.ingest.callback}") String callbackEndpoint) {
     this.s3Adaptor = s3Adaptor;
     this.transformClient = transformClient;
-  }
-
-  @Autowired
-  @Value("${endpointUrl.ingest.callback}")
-  public void setCallbackUrl(String callbackEndpoint) throws URISyntaxException {
-    LOGGER.info("Callback endpoint URL is: {}", callbackEndpoint);
-    this.callbackUrl = callbackEndpoint;
+    this.callbackEndpoint = callbackEndpoint;
+    LOGGER.info("Multi-Int-Store Callback URL: {}", callbackEndpoint);
   }
 
   @Override
@@ -65,7 +60,7 @@ public class IngestServiceImpl implements IngestService {
 
     final TransformRequest transformRequest = new TransformRequest();
     transformRequest.setBytes(fileSize);
-    transformRequest.setCallbackUrl(callbackUrl + ingestId);
+    transformRequest.setCallbackUrl(callbackEndpoint + ingestId);
     transformRequest.setId("1"); // TODO This should be removed from the API
     transformRequest.setMimeType(mimeType);
     transformRequest.setProductLocation("prod"); // TODO This should be removed from the API

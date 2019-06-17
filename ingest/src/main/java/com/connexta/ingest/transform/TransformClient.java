@@ -8,8 +8,6 @@ package com.connexta.ingest.transform;
 
 import com.connexta.transformation.rest.models.TransformRequest;
 import com.connexta.transformation.rest.models.TransformResponse;
-import java.net.URI;
-import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +24,11 @@ public class TransformClient {
 
   @Autowired private RestTemplate restTemplate;
 
-  private URI transformEndpoint;
+  private final String transformEndpoint;
 
-  @Autowired
-  @SuppressWarnings("unused")
-  @Value("${endpointUrl.transform}")
-  public void setTransformEndpoint(String transformEndpoint) throws URISyntaxException {
-    LOGGER.info("Transform endpoint URL is: {}", transformEndpoint);
-    this.transformEndpoint = new URI(transformEndpoint);
+  public TransformClient(@Value("${endpointUrl.transform}") String transformEndpoint) {
+    this.transformEndpoint = transformEndpoint;
+    LOGGER.info("Transformation Service URL: {}", transformEndpoint);
   }
 
   public TransformResponse requestTransform(TransformRequest transformRequest) {
@@ -45,10 +40,5 @@ public class TransformClient {
 
     HttpEntity<TransformRequest> requestEntity = new HttpEntity<>(transformRequest, headers);
     return restTemplate.postForObject(transformEndpoint, requestEntity, TransformResponse.class);
-  }
-
-  @SuppressWarnings("unused")
-  public void setTransformEndpoint(URI transformEndpoint) {
-    this.transformEndpoint = transformEndpoint;
   }
 }

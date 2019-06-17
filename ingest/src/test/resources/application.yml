@@ -8,3 +8,9 @@ aws:
       file: "file02"
     bucket:
       quarantine: "Leaky"
+# Todo: Update these placeholders when we add tests that use them.
+endpointUrl:
+  transform: https://change.me
+  ingest:
+    callback: https://change.me
+    retrieve: https://change.me
