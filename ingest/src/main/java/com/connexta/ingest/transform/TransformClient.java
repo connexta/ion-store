@@ -10,10 +10,10 @@ import com.connexta.transformation.rest.models.TransformRequest;
 import com.connexta.transformation.rest.models.TransformResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -28,14 +28,16 @@ public class TransformClient {
 
   private URI transformEndpoint;
 
-  @PostConstruct
-  private void setEndpoint() throws URISyntaxException {
-    // TODO: Set endpoint URL
-    setTransformEndpoint("TODO/transform");
+  @Autowired
+  @SuppressWarnings("unused")
+  @Value("${endpointUrl.transform}")
+  public void setTransformEndpoint(String transformEndpoint) throws URISyntaxException {
+    LOGGER.info("Transform endpoint URL is: {}", transformEndpoint);
+    this.transformEndpoint = new URI(transformEndpoint);
   }
 
   public TransformResponse requestTransform(TransformRequest transformRequest) {
-    LOGGER.warn("Entering requestTransform {}", transformEndpoint.toString());
+    LOGGER.warn("Entering requestTransform {}", transformEndpoint);
 
     // TODO: Do not hardcode the accept-version value
     HttpHeaders headers = new HttpHeaders();
@@ -48,10 +50,5 @@ public class TransformClient {
   @SuppressWarnings("unused")
   public void setTransformEndpoint(URI transformEndpoint) {
     this.transformEndpoint = transformEndpoint;
-  }
-
-  @SuppressWarnings("unused")
-  public void setTransformEndpoint(String transformEndpoint) throws URISyntaxException {
-    this.transformEndpoint = new URI(transformEndpoint);
   }
 }
