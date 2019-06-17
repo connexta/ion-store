@@ -4,7 +4,7 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.multiintstore.storage.persistence.models;
+package com.connexta.multiintstore.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import org.springframework.data.solr.core.mapping.SolrDocument;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommonSearchTerms implements Storable<String> {
+public class IndexedProductMetadata implements Storable<String> {
 
   @Id
   @Indexed(name = "id", type = "string")

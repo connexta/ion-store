@@ -4,9 +4,9 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.multiintstore.storage.persistence;
+package com.connexta.multiintstore.services.api;
 
-import com.connexta.multiintstore.storage.persistence.models.Storable;
+import com.connexta.multiintstore.models.Storable;
 import java.util.Optional;
 
 public interface Dao<T extends Storable<U>, U> {

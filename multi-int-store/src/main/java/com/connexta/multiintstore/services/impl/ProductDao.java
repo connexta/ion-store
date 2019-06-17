@@ -4,9 +4,10 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.multiintstore.storage.persistence;
+package com.connexta.multiintstore.services.impl;
 
-import com.connexta.multiintstore.storage.persistence.models.Product;
+import com.connexta.multiintstore.models.Product;
+import com.connexta.multiintstore.services.api.Dao;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 

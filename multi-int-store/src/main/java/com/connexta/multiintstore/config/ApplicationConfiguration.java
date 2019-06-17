@@ -16,9 +16,7 @@ import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 
 @Configuration
-@EnableSolrRepositories(
-    basePackages = "com.connexta.multiintstore.storage.persistence.repository",
-    namedQueriesLocation = "classpath:solr-named-queries.properties")
+@EnableSolrRepositories(basePackages = "com.connexta.multiintstore.repositories")
 @ComponentScan
 public class ApplicationConfiguration {
 
@@ -27,6 +25,12 @@ public class ApplicationConfiguration {
 
   @Value("${solr.port}")
   private int solrPort;
+  /**
+   * We use this to check the Accept-Version in the callback request. The name of this should
+   * probably be updated.
+   */
+  @Value("${ion-version}")
+  private String ionVersion;
 
   @Bean
   public SolrClient solrClient() {
@@ -38,13 +42,6 @@ public class ApplicationConfiguration {
   public SolrTemplate solrTemplate(SolrClient client) throws Exception {
     return new SolrTemplate(client);
   }
-
-  /**
-   * We use this to check the Accept-Version in the callback request. The name of this should
-   * probably be updated.
-   */
-  @Value("${ion-version}")
-  private String ionVersion;
 
   public String getIonVersion() {
     return ionVersion;
