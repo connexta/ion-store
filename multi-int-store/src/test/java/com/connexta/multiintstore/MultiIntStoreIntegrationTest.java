@@ -11,33 +11,31 @@ import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
-import com.connexta.multiintstore.services.api.SearchService;
 import com.xebialabs.restito.semantics.Action;
 import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
-import java.util.List;
-import lombok.AllArgsConstructor;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.hamcrest.Matchers;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@AllArgsConstructor
 public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestContainers {
 
-  private WebApplicationContext wac;
-  private IndexedMetadataRepository searchRepository;
-  private SearchService searchService;
+  @Autowired private WebApplicationContext wac;
+  @Autowired private IndexedMetadataRepository indexedMetadataRepository;
 
   private MockMvc mockMvc;
   private StubServer server;
@@ -47,6 +45,8 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
     mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
     server = new StubServer();
     server.start();
+
+    indexedMetadataRepository.deleteAll();
   }
 
   @After
@@ -60,14 +60,14 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
   @Test
   public void handleCSTCallback() throws Exception {
 
-    final String cstContents = "Super cool CST";
+    final String contents = "Super cool CST";
     final String ingestId = "1234";
 
     whenHttp(server)
         .match(Condition.endsWithUri("/location/cst001"))
         .then(
             Action.contentType(MediaType.TEXT_PLAIN.toString()),
-            Action.stringContent(cstContents),
+            Action.stringContent(contents),
             Action.status(HttpStatus.OK_200));
 
     mockMvc
@@ -87,8 +87,8 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
         .andExpect(status().isOk());
 
     assertThat(
-        searchRepository.findById(ingestId),
-        isPresentAnd(Matchers.hasProperty("contents", is(cstContents))));
+        indexedMetadataRepository.findById(ingestId),
+        isPresentAnd(Matchers.hasProperty("contents", is(contents))));
   }
 
   @Test
@@ -100,17 +100,85 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
   }
 
   @Test
-  public void testSearchService() {
+  public void testEmptySearchService() throws Exception {
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/search?q=searchKeyword"))
+        .andExpect(status().isOk())
+        .andExpect(content().json(new JSONArray().toString()));
+  }
 
-    searchService.store(
-        new IndexedProductMetadata(
-            "1",
-            "All the color had been leached from Winterfell until only grey and white remained"));
+  @Test
+  public void testEmptySearchResults() throws Exception {
+    // given:
+    final String contents =
+        "All the color had been leached from Winterfell until only grey and white remained";
+    final String ingestId = "1234";
 
-    List<IndexedProductMetadata> results = searchService.find("Winterfell");
+    whenHttp(server)
+        .match(Condition.endsWithUri("/location/cst001"))
+        .then(
+            Action.contentType(MediaType.TEXT_PLAIN.toString()),
+            Action.stringContent(contents),
+            Action.status(HttpStatus.OK_200));
 
-    searchService.delete("1");
+    mockMvc.perform(
+        MockMvcRequestBuilders.post("/store/" + ingestId)
+            .contentType("application/json")
+            .content(
+                TestUtil.createMetadataCallbackJson(
+                    "1234",
+                    "COMPLETE",
+                    "cst",
+                    MediaType.APPLICATION_JSON.toString(),
+                    256,
+                    "http://localhost:" + server.getPort() + "/location/cst001",
+                    "U",
+                    "ownerProducer")));
 
-    results = searchService.find("Winterfell");
+    // verify:
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/search?q=thisKeywordDoesntMatchAnything"))
+        .andExpect(status().isOk())
+        .andExpect(content().json(new JSONArray().toString()));
+  }
+
+  @Test
+  public void testSearchResults() throws Exception {
+    // given:
+    final String contents =
+        "All the color had been leached from Winterfell until only grey and white remained";
+    final String ingestId = "1234";
+
+    whenHttp(server)
+        .match(Condition.endsWithUri("/location/cst001"))
+        .then(
+            Action.contentType(MediaType.TEXT_PLAIN.toString()),
+            Action.stringContent(contents),
+            Action.status(HttpStatus.OK_200));
+
+    mockMvc.perform(
+        MockMvcRequestBuilders.post("/store/" + ingestId)
+            .contentType("application/json")
+            .content(
+                TestUtil.createMetadataCallbackJson(
+                    "1234",
+                    "COMPLETE",
+                    "cst",
+                    MediaType.APPLICATION_JSON.toString(),
+                    256,
+                    "http://localhost:" + server.getPort() + "/location/cst001",
+                    "U",
+                    "ownerProducer")));
+
+    // verify:
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/search?q=Winterfell"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .json(
+                    new JSONArray()
+                        .put(new JSONObject().put("id", ingestId).put("contents", contents))
+                        .toString()));
   }
 }

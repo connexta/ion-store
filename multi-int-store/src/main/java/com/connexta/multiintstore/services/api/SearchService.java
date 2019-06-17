@@ -14,6 +14,4 @@ public interface SearchService {
   void store(IndexedProductMetadata doc);
 
   List<IndexedProductMetadata> find(String keyword);
-
-  void delete(String id);
 }

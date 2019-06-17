@@ -28,9 +28,4 @@ public class SearchServiceImpl implements SearchService {
   public List<IndexedProductMetadata> find(String keyword) {
     return indexedMetadataRepository.findByContents(keyword);
   }
-
-  @Override
-  public void delete(String id) {
-    indexedMetadataRepository.deleteById(id);
-  }
 }

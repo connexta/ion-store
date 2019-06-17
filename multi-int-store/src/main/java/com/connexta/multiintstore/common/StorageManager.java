@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class StorageManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StorageManager.class);
-  private static final String CST = "cst";
+  private static final String INDEXED_PRODUCT_METADATA_CALLBACK_TYPE = "cst";
 
   private final Dao<Product, String> productDao;
   private final Dao<IndexedProductMetadata, String> cstDao;
@@ -66,14 +66,18 @@ public class StorageManager {
     LOGGER.info("Metadata");
     //  TODO :: Check Markings
 
-    if (callback.getType().equals(CST)) {
+    if (callback.getType().equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
       String contents =
           retriever.getMetadata(
               callback.getLocation().toString(), callback.getMimeType(), String.class);
-      final IndexedProductMetadata cst = new IndexedProductMetadata(ingestId, contents);
-      cstDao.save(cst);
+      final IndexedProductMetadata indexedProductMetadata =
+          new IndexedProductMetadata(ingestId, contents);
+      cstDao.save(indexedProductMetadata);
     } else {
-      LOGGER.info("Received non-CST metadata, which is not yet supported");
+      LOGGER.info(
+          "Received non-"
+              + INDEXED_PRODUCT_METADATA_CALLBACK_TYPE
+              + " metadata, which is not yet supported");
       // TODO
     }
   }
