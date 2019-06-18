@@ -1,27 +1,27 @@
 plugins {
-	id "org.springframework.boot" version "2.1.5.RELEASE"
-	id "com.palantir.docker" version "0.22.1"
+    id "org.springframework.boot" version "2.1.5.RELEASE"
+    id "com.palantir.docker" version "0.22.1"
 }
 
 dependencies {
-	implementation "org.springframework.data:spring-data-solr:4.0.8.RELEASE"
-	implementation("com.google.guava:guava:27.1-jre") {
-		because "CVE-2018-10237 in guava 19.0"
-	}
-	implementation "org.springframework.boot:spring-boot-starter-webflux:2.1.5.RELEASE"
-	testImplementation "org.testcontainers:testcontainers:1.11.2"
-	testImplementation "com.xebialabs.restito:restito:0.9.3"
-	testImplementation "com.github.npathai:hamcrest-optional:2.0.0"
+    implementation "org.springframework.data:spring-data-solr:4.0.8.RELEASE"
+    implementation("com.google.guava:guava:27.1-jre") {
+        because "CVE-2018-10237 in guava 19.0"
+    }
+    implementation "org.springframework.boot:spring-boot-starter-webflux:2.1.5.RELEASE"
+    testImplementation "org.testcontainers:testcontainers:1.11.2"
+    testImplementation "com.xebialabs.restito:restito:0.9.3"
+    testImplementation "com.github.npathai:hamcrest-optional:2.0.0"
 }
 
 bootJar {
-	launchScript()
+    launchScript()
 }
 
 docker {
-	files tasks.bootJar.outputs
-	name "cnxta/cdr-multi-int-store:${project.version}"
-	buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
+    files tasks.bootJar.outputs
+    name "cnxta/cdr-multi-int-store:${project.version}"
+    buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
 }
 
 build.dependsOn("docker")
