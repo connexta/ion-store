@@ -15,6 +15,7 @@ import com.connexta.transformation.rest.models.TransformResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,16 +30,20 @@ public class IngestServiceImpl implements IngestService {
 
   @NotNull private final S3StorageAdaptor s3Adaptor;
   @NotNull private final TransformClient transformClient;
-  private final String callbackEndpoint;
+  @NotEmpty private final String callbackEndpoint;
+  @NotEmpty private final String retrieveEndpoint;
 
   public IngestServiceImpl(
       @NotNull final S3StorageAdaptor s3Adaptor,
       @NotNull final TransformClient transformClient,
-      @Value("${endpointUrl.ingest.callback}") String callbackEndpoint) {
+      @NotEmpty @Value("${endpointUrl.ingest.callback}") final String callbackEndpoint,
+      @NotEmpty @Value("${endpointUrl.ingest.retrieve}") final String retrieveEndpoint) {
     this.s3Adaptor = s3Adaptor;
     this.transformClient = transformClient;
     this.callbackEndpoint = callbackEndpoint;
+    this.retrieveEndpoint = retrieveEndpoint;
     LOGGER.info("Multi-Int-Store Callback URL: {}", callbackEndpoint);
+    LOGGER.info("Retrieve URL: {}", retrieveEndpoint);
   }
 
   @Override
@@ -55,7 +60,7 @@ public class IngestServiceImpl implements IngestService {
         new StoreRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
 
     // TODO get this URL programmatically
-    final String url = new URL("TODO/retrieve/" + ingestId).toString();
+    final String url = new URL(retrieveEndpoint + ingestId).toString();
     LOGGER.info("{} has been successfully stored in S3 and can be downloaded at {}", fileName, url);
 
     final TransformRequest transformRequest = new TransformRequest();
