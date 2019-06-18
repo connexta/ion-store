@@ -56,7 +56,7 @@ pipeline {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     dockerd {}
-                    sh './gradlew build -PskipITests'
+                    sh './gradlew build'
                 }
             }
         }
