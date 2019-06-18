@@ -6,27 +6,19 @@
  */
 package com.connexta.ingest.adaptors;
 
-import com.connexta.ingest.config.S3StorageConfiguration;
 import com.connexta.ingest.service.api.RetrieveResponse;
 import com.connexta.ingest.service.api.StoreRequest;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
-import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
@@ -37,35 +29,12 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class S3StorageAdaptor implements StorageAdaptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StorageAdaptor.class);
-
-  private final String s3AccessKey;
-  private final String s3SecretKey;
-  private final String s3Endpoint;
-  private final String s3Region;
   private final String s3BucketQuarantine;
+  private final S3Client s3Client;
 
-  private S3Client s3Client;
-
-  @Autowired
-  public S3StorageAdaptor(S3StorageConfiguration configuration) {
-    s3AccessKey = configuration.getS3AccessKey();
-    s3SecretKey = configuration.getS3SecretKey();
-    s3Endpoint = configuration.getS3Endpoint();
-    s3Region = configuration.getS3Region();
-    s3BucketQuarantine = configuration.getS3BucketQuarantine();
-  }
-
-  @PostConstruct
-  private void initializeS3() {
-    AwsCredentials credentials = AwsBasicCredentials.create(s3AccessKey, s3SecretKey);
-
-    s3Client =
-        S3Client.builder()
-            .endpointOverride(URI.create(s3Endpoint))
-            .region(Region.of(s3Region))
-            .credentialsProvider(StaticCredentialsProvider.create(credentials))
-            .build();
-    LOGGER.info("S3 Client has been initialized");
+  public S3StorageAdaptor(final S3Client s3Client, final String s3BucketQuarantine) {
+    this.s3Client = s3Client;
+    this.s3BucketQuarantine = s3BucketQuarantine;
   }
 
   @Override
