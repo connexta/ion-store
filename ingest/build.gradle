@@ -1,35 +1,35 @@
 plugins {
-	id "org.springframework.boot" version "2.1.5.RELEASE"
-	id "com.palantir.docker" version "0.22.1"
+    id "org.springframework.boot" version "2.1.5.RELEASE"
+    id "com.palantir.docker" version "0.22.1"
 }
 
 dependencies {
-	implementation "org.json:json:20180813"
-	implementation "commons-io:commons-io:2.6"
-	implementation "com.connexta.ingest:ingest-api-rest-spring-stubs:0.1.1"
-	implementation "com.connexta.transformation:transformation-api-rest-spring-stubs:0.0.1-SNAPSHOT"
-	implementation "software.amazon.awssdk:s3"
-	implementation platform("software.amazon.awssdk:bom:2.5.29")
+    implementation "org.json:json:20180813"
+    implementation "commons-io:commons-io:2.6"
+    implementation "com.connexta.ingest:ingest-api-rest-spring-stubs:0.1.1"
+    implementation "com.connexta.transformation:transformation-api-rest-spring-stubs:0.0.1-SNAPSHOT"
+    implementation "software.amazon.awssdk:s3"
+    implementation platform("software.amazon.awssdk:bom:2.5.29")
 
-	testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.5.RELEASE"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.5.RELEASE"
 }
 
 dependencyCheck {
-	suppressionFile = "${projectDir}/owasp-suppressions.xml"
+    suppressionFile = "${projectDir}/owasp-suppressions.xml"
 }
 
 springBoot {
-	mainClassName = "com.connexta.ingest.IngestApplication"
+    mainClassName = "com.connexta.ingest.IngestApplication"
 }
 
 bootJar {
-	launchScript()
+    launchScript()
 }
 
 docker {
-	files tasks.bootJar.outputs
-	name "cnxta/cdr-ingest:${project.version}"
-	buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
+    files tasks.bootJar.outputs
+    name "cnxta/cdr-ingest:${project.version}"
+    buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
 }
 
 build.dependsOn("docker")
