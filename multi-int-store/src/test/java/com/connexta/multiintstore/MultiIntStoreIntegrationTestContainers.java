@@ -31,12 +31,16 @@ public abstract class MultiIntStoreIntegrationTestContainers {
           .withExposedPorts(8983)
           .waitingFor(Wait.forHttp("/solr/admin/cores?action=STATUS"));
 
+  protected static final String RETRIEVE_ENDPOINT = "http://localhost:9040/retrieve/";
+
   public static class Initializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {
     @Override
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
       TestPropertyValues.of(
-              "solr.host=" + solr.getContainerIpAddress(), "solr.port=" + solr.getMappedPort(8983))
+              "solr.host=" + solr.getContainerIpAddress(),
+              "solr.port=" + solr.getMappedPort(8983),
+              "endpointUrl.ingest.retrieve=" + RETRIEVE_ENDPOINT)
           .applyTo(configurableApplicationContext.getEnvironment());
     }
   }

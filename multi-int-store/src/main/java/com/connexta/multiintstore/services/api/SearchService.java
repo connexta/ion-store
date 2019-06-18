@@ -7,11 +7,13 @@
 package com.connexta.multiintstore.services.api;
 
 import com.connexta.multiintstore.models.IndexedProductMetadata;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 public interface SearchService {
 
   void store(IndexedProductMetadata doc);
 
-  List<IndexedProductMetadata> find(String keyword);
+  List<URL> find(String keyword) throws MalformedURLException;
 }
