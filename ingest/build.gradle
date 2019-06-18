@@ -1,17 +1,19 @@
-plugins {
-    id "org.springframework.boot" version "2.1.5.RELEASE"
-    id "com.palantir.docker" version "0.22.1"
-}
-
+/*
+ * Copyright (c) 2019 Connexta, LLC
+ *
+ * Released under the GNU Lesser General Public License version 3; see
+ * https://www.gnu.org/licenses/lgpl-3.0.html
+ */
+/* Build Script */
 dependencies {
-    implementation "org.json:json:20180813"
-    implementation "commons-io:commons-io:2.6"
-    implementation "com.connexta.ingest:ingest-api-rest-spring-stubs:0.1.1"
-    implementation "com.connexta.transformation:transformation-api-rest-spring-stubs:0.0.1-SNAPSHOT"
-    implementation "software.amazon.awssdk:s3"
-    implementation platform("software.amazon.awssdk:bom:2.5.29")
+    implementation(Dependencies.json())
+    implementation(Dependencies.commonsIO())
+    implementation(Dependencies.ingestAPI())
+    implementation(Dependencies.transformAPI())
+    implementation(Dependencies.awsS3())
+    implementation platform((Dependencies.awsBom()))
 
-    testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.5.RELEASE"
+    testImplementation(Dependencies.springBootTestStarter())
 }
 
 dependencyCheck {
