@@ -21,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -29,12 +30,17 @@ public class IngestApplicationIntegrationTest {
 
   @Autowired WebApplicationContext wac;
 
+  @Autowired S3Client mockS3Client;
+
   private MockMvc mvc;
 
   @Before
   public void beforeEach() {
     mvc = MockMvcBuilders.webAppContextSetup(wac).build();
   }
+
+  @Test
+  public void testContextLoads() {}
 
   @Ignore("TODO Add a stub S3 server or expect that the status is not 400 ")
   @Test
