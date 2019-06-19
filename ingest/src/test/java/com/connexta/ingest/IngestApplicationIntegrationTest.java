@@ -9,7 +9,6 @@ package com.connexta.ingest;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.connexta.ingest.config.S3StorageConfiguration;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,8 +30,6 @@ public class IngestApplicationIntegrationTest {
   @Autowired WebApplicationContext wac;
 
   private MockMvc mvc;
-
-  @Autowired S3StorageConfiguration s3StorageConfiguration;
 
   @Before
   public void beforeEach() {

@@ -11,13 +11,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.PostConstruct;
-import lombok.Getter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -27,8 +25,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
-@ComponentScan
-@Getter
 @Profile("default")
 public class S3StorageConfiguration {
 
@@ -72,9 +68,12 @@ public class S3StorageConfiguration {
     return s3BucketQuarantine;
   }
 
-  @PostConstruct
-  public void initialize() throws IOException {
-    s3AccessKey = FileUtils.readFileToString(new File(awsAccessKeyFile), StandardCharsets.UTF_8);
-    s3SecretKey = FileUtils.readFileToString(new File(awsSecretKeyFile), StandardCharsets.UTF_8);
+  public void S3StorageConfiguration() {
+    try {
+      s3AccessKey = FileUtils.readFileToString(new File(awsAccessKeyFile), StandardCharsets.UTF_8);
+      s3SecretKey = FileUtils.readFileToString(new File(awsSecretKeyFile), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      LOGGER.error("Could not read key files.", e);
+    }
   }
 }
