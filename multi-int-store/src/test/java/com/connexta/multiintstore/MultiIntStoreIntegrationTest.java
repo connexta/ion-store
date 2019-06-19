@@ -20,6 +20,7 @@ import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.hamcrest.Matchers;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,7 +74,7 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
             MockMvcRequestBuilders.post("/store/" + ingestId)
                 .contentType("application/json")
                 .content(
-                    TestUtil.createMetadataCallbackJson(
+                    createMetadataCallbackJson(
                         "1234",
                         "COMPLETE",
                         "cst",
@@ -123,7 +124,7 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
         MockMvcRequestBuilders.post("/store/" + ingestId)
             .contentType("application/json")
             .content(
-                TestUtil.createMetadataCallbackJson(
+                createMetadataCallbackJson(
                     "1234",
                     "COMPLETE",
                     "cst",
@@ -158,7 +159,7 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
         MockMvcRequestBuilders.post("/store/" + ingestId)
             .contentType("application/json")
             .content(
-                TestUtil.createMetadataCallbackJson(
+                createMetadataCallbackJson(
                     "1234",
                     "COMPLETE",
                     "cst",
@@ -173,5 +174,30 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
         .perform(MockMvcRequestBuilders.get("/search?q=Winterfell"))
         .andExpect(status().isOk())
         .andExpect(content().string(String.format("[\"%s%s\"]", RETRIEVE_ENDPOINT, ingestId)));
+  }
+
+  private static String createMetadataCallbackJson(
+      String id,
+      String status,
+      String type,
+      String mimeType,
+      int bytes,
+      String location,
+      String classification,
+      String ownerProducer)
+      throws Exception {
+    return new JSONObject()
+        .put("id", id)
+        .put("status", status)
+        .put("type", type)
+        .put("mimeType", mimeType)
+        .put("bytes", bytes)
+        .put("location", location)
+        .put(
+            "security",
+            new JSONObject()
+                .put("classification", classification)
+                .put("ownerProducer", ownerProducer))
+        .toString();
   }
 }
