@@ -4,6 +4,10 @@
 * Java 11
 * Docker daemon
 
+## Working with IntelliJ or Eclipse
+This repository uses [Lombok](https://projectlombok.org/), which requires additional configurations and plugins to work in IntelliJ / Eclipse.
+Follow the instructions [here](https://www.baeldung.com/lombok-ide) to set up your IDE.
+
 ## Building
 ```bash
 ./gradlew build
