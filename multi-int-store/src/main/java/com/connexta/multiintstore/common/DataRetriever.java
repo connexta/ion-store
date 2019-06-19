@@ -37,10 +37,8 @@ public class DataRetriever {
     mediaTypes.add(MediaType.valueOf(mediaType));
 
     HttpHeaders headers = new HttpHeaders();
-    headers.set("Accept-Version", config.getIonVersion());
+    headers.set("Accept-Version", config.getCallbackAcceptVersion());
     headers.setAccept(mediaTypes);
-
-    LOGGER.info("Ion version = {}", config.getIonVersion());
 
     HttpEntity<String> requestEntity = new HttpEntity<>(headers);
 

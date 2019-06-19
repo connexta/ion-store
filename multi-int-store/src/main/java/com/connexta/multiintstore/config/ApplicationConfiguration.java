@@ -25,12 +25,10 @@ public class ApplicationConfiguration {
 
   @Value("${solr.port}")
   private int solrPort;
-  /**
-   * We use this to check the Accept-Version in the callback request. The name of this should
-   * probably be updated.
-   */
-  @Value("${ion-version}")
-  private String ionVersion;
+
+  /** Used to check the Accept-Version in the callback request */
+  @Value("${callback-accept-version}")
+  private String callbackAcceptVersion;
 
   @Bean
   public SolrClient solrClient() {
@@ -43,7 +41,7 @@ public class ApplicationConfiguration {
     return new SolrTemplate(client);
   }
 
-  public String getIonVersion() {
-    return ionVersion;
+  public String getCallbackAcceptVersion() {
+    return callbackAcceptVersion;
   }
 }
