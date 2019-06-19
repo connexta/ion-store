@@ -10,7 +10,6 @@ import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.Dao;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,7 +17,6 @@ public class IndexedMetadataDao implements Dao<IndexedProductMetadata, String> {
 
   private final IndexedMetadataRepository repository;
 
-  @Autowired
   public IndexedMetadataDao(IndexedMetadataRepository repository) {
     this.repository = repository;
   }

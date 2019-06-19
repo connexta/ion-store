@@ -6,42 +6,32 @@
  */
 package com.connexta.multiintstore.config;
 
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import javax.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.solr.core.SolrTemplate;
-import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
-@EnableSolrRepositories(basePackages = "com.connexta.multiintstore.repositories")
-@ComponentScan
+@Profile("default")
 public class ApplicationConfiguration {
 
-  @Value("${solr.host}")
-  private String solrHost;
-
-  @Value("${solr.port}")
-  private int solrPort;
-
   /** Used to check the Accept-Version in the callback request */
+  @NotEmpty
   @Value("${callback-accept-version}")
   private String callbackAcceptVersion;
 
   @Bean
-  public SolrClient solrClient() {
-    String url = String.format("http://%s:%d/solr", solrHost, solrPort);
-    return new HttpSolrClient.Builder(url).build();
+  public CallbackAcceptVersion callbackAcceptVersion() {
+    return new CallbackAcceptVersion(callbackAcceptVersion);
   }
+
+  @NotEmpty
+  @Value("${endpointUrl.retrieve}")
+  private String endpointUrlRetrieve;
 
   @Bean
-  public SolrTemplate solrTemplate(SolrClient client) throws Exception {
-    return new SolrTemplate(client);
-  }
-
-  public String getCallbackAcceptVersion() {
-    return callbackAcceptVersion;
+  public EndpointUrlRetrieve endpointUrlRetrieve() {
+    return new EndpointUrlRetrieve(endpointUrlRetrieve);
   }
 }
