@@ -5,6 +5,8 @@
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
 /* Build Script */
+import org.gradle.internal.jvm.Jvm
+
 buildscript {
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
@@ -26,6 +28,13 @@ allprojects {
 
     sourceCompatibility = Versions.java
     targetCompatibility = Versions.java
+
+    if(sourceCompatibility != Jvm.current().javaVersion) {
+        throw new Exception("You need Java ${sourceCompatibility} to build and run ${project.name}.\n" +
+                "The current version installed is ${Jvm.current().javaVersion.majorVersion}.\n" +
+                "For further reading see: \n\t> " +
+                "https://github.com/connexta/multi-int-store#prerequisites")
+    }
 
     group = "com.connexta.multiintstore"
     version = Versions.project
