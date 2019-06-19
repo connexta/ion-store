@@ -20,8 +20,6 @@ import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.hamcrest.Matchers;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,7 +102,7 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
     mockMvc
         .perform(MockMvcRequestBuilders.get("/search?q=searchKeyword"))
         .andExpect(status().isOk())
-        .andExpect(content().json(new JSONArray().toString()));
+        .andExpect(content().string("[]"));
   }
 
   @Test
@@ -139,7 +137,7 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
     mockMvc
         .perform(MockMvcRequestBuilders.get("/search?q=thisKeywordDoesntMatchAnything"))
         .andExpect(status().isOk())
-        .andExpect(content().json(new JSONArray().toString()));
+        .andExpect(content().string("[]"));
   }
 
   @Test
@@ -174,11 +172,6 @@ public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestCo
     mockMvc
         .perform(MockMvcRequestBuilders.get("/search?q=Winterfell"))
         .andExpect(status().isOk())
-        .andExpect(
-            content()
-                .json(
-                    new JSONArray()
-                        .put(new JSONObject().put("id", ingestId).put("contents", contents))
-                        .toString()));
+        .andExpect(content().string(String.format("[\"%s%s\"]", RETRIEVE_ENDPOINT, ingestId)));
   }
 }
