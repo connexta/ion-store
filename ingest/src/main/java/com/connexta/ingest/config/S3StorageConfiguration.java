@@ -50,7 +50,7 @@ public class S3StorageConfiguration {
   private String s3BucketQuarantine;
 
   @Bean
-  public S3Client s3Client() {
+  public S3Client s3ClientFactory() {
     AwsCredentials credentials = AwsBasicCredentials.create(s3AccessKey, s3SecretKey);
 
     S3Client s3Client =
@@ -59,7 +59,9 @@ public class S3StorageConfiguration {
             .region(Region.of(s3Region))
             .credentialsProvider(StaticCredentialsProvider.create(credentials))
             .build();
-    LOGGER.info("S3 Client has been initialized");
+    LOGGER.info("S3 Client has been initialized.");
+    LOGGER.info("Region: {}", s3Region);
+    LOGGER.info("Endpoint: {}", s3Endpoint);
     return s3Client;
   }
 
@@ -68,12 +70,9 @@ public class S3StorageConfiguration {
     return s3BucketQuarantine;
   }
 
-  public void S3StorageConfiguration() {
-    try {
-      s3AccessKey = FileUtils.readFileToString(new File(awsAccessKeyFile), StandardCharsets.UTF_8);
-      s3SecretKey = FileUtils.readFileToString(new File(awsSecretKeyFile), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      LOGGER.error("Could not read key files.", e);
-    }
+  @PostConstruct
+  public void readKeysFromFiles() throws IOException {
+    s3AccessKey = FileUtils.readFileToString(new File(awsAccessKeyFile), StandardCharsets.UTF_8);
+    s3SecretKey = FileUtils.readFileToString(new File(awsSecretKeyFile), StandardCharsets.UTF_8);
   }
 }
