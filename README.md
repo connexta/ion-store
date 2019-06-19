@@ -190,11 +190,11 @@ controlled.
 Example configs/ingest_config.yml:
 ```yaml
 aws:
- s3:
-  endpointUrl: https://s3.us-west-1.amazonaws.com
-  region: us-west-1
-  bucket:
-   quarantine: ingest-quarantine
+  s3:
+    endpointUrl: https://s3.us-west-1.amazonaws.com
+    region: us-west-1
+    bucket:
+      quarantine: ingest-quarantine
 endpointUrl:
   transform: http://localhost:1231/transform/
   ingest:
@@ -205,6 +205,8 @@ endpointUrl:
 Example configs/mis_config.yml:
 ```yaml
 solr:
- host: localhost
- port: 9983
+  host: localhost
+  port: 9983
+endpointUrl:
+  retrieve: http://localhost:1233/retrieve/
 ```

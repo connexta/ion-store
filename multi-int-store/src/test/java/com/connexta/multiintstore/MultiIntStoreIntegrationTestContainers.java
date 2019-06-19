@@ -40,7 +40,7 @@ public abstract class MultiIntStoreIntegrationTestContainers {
       TestPropertyValues.of(
               "solr.host=" + solr.getContainerIpAddress(),
               "solr.port=" + solr.getMappedPort(8983),
-              "endpointUrl.ingest.retrieve=" + RETRIEVE_ENDPOINT)
+              "endpointUrl.retrieve=" + RETRIEVE_ENDPOINT)
           .applyTo(configurableApplicationContext.getEnvironment());
     }
   }
