@@ -23,15 +23,51 @@ import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
-public class MultiIntStoreIntegrationTest extends MultiIntStoreIntegrationTestContainers {
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = MultiIntStoreIntegrationTest.Initializer.class)
+@EnableConfigurationProperties
+public class MultiIntStoreIntegrationTest {
+
+  @ClassRule
+  public static final GenericContainer solr =
+      new GenericContainer("solr:8")
+          .withCommand("solr-create -c searchTerms")
+          .withExposedPorts(8983)
+          .waitingFor(Wait.forHttp("/solr/admin/cores?action=STATUS"));
+
+  public static class Initializer
+      implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    @Override
+    public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+      TestPropertyValues.of(
+              "solr.host=" + solr.getContainerIpAddress(),
+              "solr.port=" + solr.getMappedPort(8983),
+              "endpointUrl.retrieve=" + RETRIEVE_ENDPOINT)
+          .applyTo(configurableApplicationContext.getEnvironment());
+    }
+  }
+
+  private static final String RETRIEVE_ENDPOINT = "http://localhost:9040/retrieve/";
 
   @Autowired private WebApplicationContext wac;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
