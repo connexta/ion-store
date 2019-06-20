@@ -43,7 +43,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @ContextConfiguration(initializers = MultiIntStoreIntegrationTest.Initializer.class)
 @EnableConfigurationProperties
 public class MultiIntStoreIntegrationTest {
