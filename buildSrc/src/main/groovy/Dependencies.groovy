@@ -8,8 +8,8 @@
 class Dependencies {
 
   //  Dependencies
-  static def awsBom = { it=Versions.awsBom -> "software.amazon.awssdk:bom:${it}" }
-  static def awsS3 = { "software.amazon.awssdk:s3" }
+  static def awsBom = { it=Versions.aws -> "software.amazon.awssdk:bom:${it}" }
+  static def awsS3 = { it=Versions.aws -> "software.amazon.awssdk:s3:${it}" }
   static def commonsIO = { it=Versions.commonsIO -> "commons-io:commons-io:${it}" }
   static def guava = { it=Versions.guava -> "com.google.guava:guava:${it}" }
   static def ingestAPI = { it=Versions.ingestAPI -> "com.connexta.ingest:ingest-api-rest-spring-stubs:${it}" }
