@@ -5,3 +5,18 @@
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
 /* Build Script */
+plugins {
+    id "org.springframework.boot"
+}
+
+bootJar {
+    launchScript()
+}
+
+docker {
+    files tasks.bootJar.outputs
+    name "cnxta/cdr-search:${project.version}"
+    buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
+}
+
+build.dependsOn("docker")
