@@ -19,7 +19,7 @@ class Versions {
     static String json = "20180813"
     static String lombok = "1.18.6"
     static String springBoot = "2.1.5.RELEASE"
-    static String springData = "4.0.8.RELEASE"
+    static String springData = "4.0.9.RELEASE"
     static String tomcat = "9.0.19"
     static String transformAPI = "0.0.1-SNAPSHOT"
 
