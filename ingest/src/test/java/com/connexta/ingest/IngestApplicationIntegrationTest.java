@@ -53,7 +53,7 @@ public class IngestApplicationIntegrationTest {
   public void testContextLoads() {}
 
   @Test
-  public void testSuccessfulRequest() throws Exception {
+  public void testSuccessfulTransformRequest() throws Exception {
     when(restTemplate.postForObject(
             eq("https://localhost/transform"), any(HttpEntity.class), eq(TransformResponse.class)))
         .thenReturn(new TransformResponse());
@@ -75,6 +75,7 @@ public class IngestApplicationIntegrationTest {
             eq("https://localhost/transform"), any(HttpEntity.class), eq(TransformResponse.class));
   }
 
+  // TODO Test what happens when an error occurs when hitting transform service
   @Test
   public void testUnsuccessfulRequest() {}
 
