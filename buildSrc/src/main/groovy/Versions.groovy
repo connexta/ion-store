@@ -22,6 +22,7 @@ class Versions {
     static String springData = "4.0.9.RELEASE"
     static String tomcat = "9.0.19"
     static String transformAPI = "0.0.1-SNAPSHOT"
+    static String zookeeper = "3.5.5"
 
     //  Test Versions
     static String hamcrest = "2.0.0"

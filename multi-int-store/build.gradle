@@ -8,6 +8,10 @@
 
 dependencies {
     implementation(Dependencies.springFrameworkSolr())
+    implementation(Dependencies.zookeeper()) {
+        force = true
+        because "Zookeeper 3.4.14 is a transitive dependency of org.springframework.data:spring-data-solr:4.0.9.RELEASE and is affected by CVE-2019-0232."
+    }
     implementation(Dependencies.guava()) {
         because "CVE-2018-10237 in guava 19.0"
     }
