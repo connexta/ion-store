@@ -67,7 +67,6 @@ subprojects {
     apply plugin: "org.owasp.dependencycheck"
     apply plugin: "org.sonarqube"
     apply plugin: "com.palantir.docker"
-    apply plugin: "org.springframework.boot"
 
     dependencyCheck {
         failBuildOnCVSS = 4

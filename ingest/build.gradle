@@ -5,6 +5,10 @@
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
 /* Build Script */
+plugins {
+    id "org.springframework.boot"
+}
+
 dependencies {
     implementation(Dependencies.json())
     implementation(Dependencies.commonsIO())
@@ -12,7 +16,7 @@ dependencies {
     implementation(Dependencies.transformAPI())
     implementation(Dependencies.awsS3())
     implementation platform((Dependencies.awsBom()))
-
+    implementation project(":retrieve-api")
     testImplementation(Dependencies.springBootTestStarter())
 }
 

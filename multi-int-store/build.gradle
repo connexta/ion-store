@@ -5,6 +5,9 @@
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
 /* Build Script */
+plugins {
+    id "org.springframework.boot"
+}
 
 dependencies {
     implementation(Dependencies.springFrameworkSolr())
