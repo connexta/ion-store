@@ -68,7 +68,7 @@ public class IngestApplicationIntegrationTest {
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isOk());
+        .andExpect(status().isAccepted());
 
     verify(restTemplate, times(1))
         .postForObject(
