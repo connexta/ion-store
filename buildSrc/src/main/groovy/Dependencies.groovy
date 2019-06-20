@@ -22,6 +22,7 @@ class Dependencies {
   static def tomcatCore = { it=Versions.tomcat -> "org.apache.tomcat.embed:tomcat-embed-core:${it}" }
   static def tomcatWebsocket = { it=Versions.tomcat -> "org.apache.tomcat.embed:tomcat-embed-websocket:${it}" }
   static def transformAPI = { it=Versions.transformAPI -> "com.connexta.transformation:transformation-api-rest-spring-stubs:${it}" }
+  static def zookeeper = { it=Versions.zookeeper -> "org.apache.zookeeper:zookeeper:${it}" }
 
   //  Test Dependencies
   static def hamcrestOptionals = { it=Versions.hamcrest -> "com.github.npathai:hamcrest-optional:${it}" }
