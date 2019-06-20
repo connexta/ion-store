@@ -43,7 +43,7 @@ public class IngestController implements IngestApi {
     LOGGER.info("Attempting to ingest {}", fileName);
     try {
       ingestService.ingest(acceptVersion, fileSize, mimeType, file, title, fileName);
-      return new ResponseEntity(HttpStatus.OK);
+      return new ResponseEntity(HttpStatus.ACCEPTED);
     } catch (IOException e) {
       LOGGER.warn("Unable to ingest", e);
       return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
