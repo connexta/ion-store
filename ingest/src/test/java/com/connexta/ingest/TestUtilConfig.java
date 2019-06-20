@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -32,6 +33,6 @@ public class TestUtilConfig {
 
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
-    return Mockito.mock(RestTemplate.class);
+    return builder.errorHandler(new DefaultResponseErrorHandler()).build();
   }
 }

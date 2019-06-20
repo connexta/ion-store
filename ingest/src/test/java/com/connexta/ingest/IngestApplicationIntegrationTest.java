@@ -7,26 +7,27 @@
 package com.connexta.ingest;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.ExpectedCount.never;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.anything;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.connexta.transformation.rest.models.TransformResponse;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
@@ -42,22 +43,25 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @ActiveProfiles("test")
 public class IngestApplicationIntegrationTest {
 
-  @Autowired S3Client mockS3Client;
+  @Autowired private S3Client mockS3Client;
 
-  @Autowired RestTemplate restTemplate;
+  @Autowired private RestTemplate restTemplate;
 
-  @Autowired WebApplicationContext wac;
+  @Autowired private WebApplicationContext wac;
+
+  private MockRestServiceServer server;
 
   private MockMvc mvc;
 
   @Before
   public void beforeEach() {
     mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+    server = MockRestServiceServer.createServer(restTemplate);
   }
 
   @After
   public void afterEach() {
-    reset(restTemplate);
+    server.reset();
     reset(mockS3Client);
   }
 
@@ -83,7 +87,7 @@ public class IngestApplicationIntegrationTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().is5xxServerError());
 
-    verifyZeroInteractions(restTemplate);
+    server.expect(never(), anything());
   }
 
   @Test
@@ -105,7 +109,7 @@ public class IngestApplicationIntegrationTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().is5xxServerError());
 
-    verifyZeroInteractions(restTemplate);
+    server.expect(never(), anything());
   }
 
   @Test
@@ -127,38 +131,21 @@ public class IngestApplicationIntegrationTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().is5xxServerError());
 
-    verifyZeroInteractions(restTemplate);
+    server.expect(never(), anything());
   }
 
   @Test
   public void testSuccessfulTransformRequest() throws Exception {
-    when(restTemplate.postForObject(
-            eq("https://localhost/transform"), any(HttpEntity.class), eq(TransformResponse.class)))
-        .thenReturn(new TransformResponse());
-
-    mvc.perform(
-            multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
-                .param("fileName", "file")
-                .param("title", "qualityTitle")
-                .param("mimeType", "plain/text")
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isAccepted());
-
-    verify(restTemplate, times(1))
-        .postForObject(
-            eq("https://localhost/transform"), any(HttpEntity.class), eq(TransformResponse.class));
-  }
-
-  // TODO Test what happens when an error occurs when hitting transform service
-  @Test
-  public void testUnsuccessfulRequest() {}
-
-  @Test
-  public void correctlyFormattedIngestRequestTest() throws Exception {
+    server
+        .expect(requestTo("https://localhost/transform"))
+        .andRespond(
+            withStatus(HttpStatus.ACCEPTED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(
+                    new JSONObject()
+                        .put("id", "asdf")
+                        .put("message", "The ID asdf has been accepted")
+                        .toString()));
 
     mvc.perform(
             multipart("/ingest")
@@ -173,9 +160,36 @@ public class IngestApplicationIntegrationTest {
         .andExpect(status().isAccepted());
   }
 
+  // The error handler throws the same exception for all non-202 status codes returned by the
+  // transformation endpoint
   @Test
-  public void incorrectlyFormattedIngestRequestTest() throws Exception {
+  public void testUnsuccessfulRequest() throws Exception {
+    server
+        .expect(requestTo("https://localhost/transform"))
+        .andRespond(
+            withStatus(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(
+                    new JSONObject()
+                        .put("id", "asdf")
+                        .put("message", "The ID asdf has been accepted")
+                        .toString()));
 
+    mvc.perform(
+            multipart("/ingest")
+                .file("file", "some-content".getBytes())
+                .param("fileSize", "10")
+                .param("fileName", "file")
+                .param("title", "qualityTitle")
+                .param("mimeType", "plain/text")
+                .header("Accept-Version", "1.2.1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+        .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  public void testIncorrectlyFormattedIngestRequest() throws Exception {
     mvc.perform(
             multipart("/ingest")
                 .file("file", "some-content".getBytes())
