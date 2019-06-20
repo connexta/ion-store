@@ -9,6 +9,7 @@ package com.connexta.multiintstore.common;
 import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import java.util.Collections;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,7 +22,7 @@ public class DataRetriever {
 
   @NotEmpty private final String callbackAcceptVersion;
 
-  public DataRetriever(@NotEmpty final CallbackAcceptVersion callbackAcceptVersion) {
+  public DataRetriever(@NotNull final CallbackAcceptVersion callbackAcceptVersion) {
     this.callbackAcceptVersion = callbackAcceptVersion.getCallbackAcceptVersion();
   }
 

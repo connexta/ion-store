@@ -6,13 +6,15 @@
  */
 package com.connexta.multiintstore.config;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import lombok.Getter;
 
 public class CallbackAcceptVersion {
 
-  @Getter private String callbackAcceptVersion;
+  @Getter @NotEmpty private String callbackAcceptVersion;
 
-  public CallbackAcceptVersion(String callbackAcceptVersion) {
+  public CallbackAcceptVersion(@NotNull @NotEmpty String callbackAcceptVersion) {
     this.callbackAcceptVersion = callbackAcceptVersion;
   }
 }

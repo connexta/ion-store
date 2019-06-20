@@ -28,7 +28,7 @@ public class SearchServiceImpl implements SearchService {
 
   public SearchServiceImpl(
       @NotNull final IndexedMetadataRepository indexedMetadataRepository,
-      @NotEmpty final EndpointUrlRetrieve endpointUrlRetrieve) {
+      @NotNull final EndpointUrlRetrieve endpointUrlRetrieve) {
     this.indexedMetadataRepository = indexedMetadataRepository;
     this.endpointUrlRetrieve = endpointUrlRetrieve.getEndpointUrlRetrieve();
   }

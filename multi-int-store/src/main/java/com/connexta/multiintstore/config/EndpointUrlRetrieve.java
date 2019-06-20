@@ -6,13 +6,14 @@
  */
 package com.connexta.multiintstore.config;
 
+import javax.validation.constraints.NotEmpty;
 import lombok.Getter;
 
 public class EndpointUrlRetrieve {
 
-  @Getter private String endpointUrlRetrieve;
+  @Getter @NotEmpty private String endpointUrlRetrieve;
 
-  public EndpointUrlRetrieve(String endpointUrlRetrieve) {
+  public EndpointUrlRetrieve(@NotEmpty final String endpointUrlRetrieve) {
     this.endpointUrlRetrieve = endpointUrlRetrieve;
   }
 }
