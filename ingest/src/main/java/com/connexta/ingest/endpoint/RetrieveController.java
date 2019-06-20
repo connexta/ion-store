@@ -32,15 +32,15 @@ public class RetrieveController implements RetrieveApi {
   }
 
   @Override
-  public ResponseEntity<Resource> retrieve(final String ingestId) {
-    LOGGER.info("Attempting to retrieve {}", ingestId);
+  public ResponseEntity<Resource> retrieve(final String id) {
+    LOGGER.info("Attempting to retrieve {}", id);
 
     final RetrieveResponse retrieveResponse;
 
     try {
-      retrieveResponse = retrieveService.retrieve(ingestId);
+      retrieveResponse = retrieveService.retrieve(id);
     } catch (IOException e) {
-      LOGGER.warn("Unable to retrieve {}", ingestId, e);
+      LOGGER.warn("Unable to retrieve {}", id, e);
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
