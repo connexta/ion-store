@@ -61,9 +61,9 @@ public class IngestServiceImpl implements IngestService {
 
     // TODO get this URL programmatically
     final String url = new URL(retrieveEndpoint + ingestId).toString();
+    final TransformRequest transformRequest = new TransformRequest();
     LOGGER.info("{} has been successfully stored in S3 and can be downloaded at {}", fileName, url);
 
-    final TransformRequest transformRequest = new TransformRequest();
     transformRequest.setBytes(fileSize);
     transformRequest.setCallbackUrl(callbackEndpoint + ingestId);
     transformRequest.setId("1"); // TODO This should be removed from the API

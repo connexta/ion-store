@@ -6,6 +6,7 @@
  */
 package com.connexta.ingest.adaptors;
 
+import com.connexta.ingest.exceptions.StorageException;
 import com.connexta.ingest.service.api.RetrieveResponse;
 import com.connexta.ingest.service.api.StoreRequest;
 import com.google.common.collect.ImmutableMap;
@@ -18,6 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -42,16 +45,25 @@ public class S3StorageAdaptor implements StorageAdaptor {
     final String fileName = storeRequest.getFileName();
 
     LOGGER.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
-    s3Client.putObject(
-        PutObjectRequest.builder()
-            .bucket(s3BucketQuarantine)
-            .key(key)
-            .contentType(storeRequest.getMimeType())
-            .contentLength(storeRequest.getFileSize())
-            .metadata(ImmutableMap.of("filename", fileName))
-            .build(),
-        RequestBody.fromInputStream(
-            storeRequest.getFile().getInputStream(), storeRequest.getFile().getSize()));
+    try {
+      s3Client.putObject(
+          PutObjectRequest.builder()
+              .bucket(s3BucketQuarantine)
+              .key(key)
+              .contentType(storeRequest.getMimeType())
+              .contentLength(storeRequest.getFileSize())
+              .metadata(ImmutableMap.of("filename", fileName))
+              .build(),
+          RequestBody.fromInputStream(
+              storeRequest.getFile().getInputStream(), storeRequest.getFile().getSize()));
+
+    } catch (SdkClientException e) {
+      throw new StorageException(
+          "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
+    } catch (SdkServiceException e) {
+      throw new StorageException(
+          "S3 was unavailable and could not store " + key + " in bucket " + s3BucketQuarantine, e);
+    }
   }
 
   @Override
