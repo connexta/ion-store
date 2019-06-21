@@ -6,13 +6,14 @@
  */
 package com.connexta.ingest.adaptors;
 
+import com.connexta.ingest.exceptions.StorageException;
 import com.connexta.ingest.service.api.RetrieveResponse;
 import com.connexta.ingest.service.api.StoreRequest;
 import java.io.IOException;
 
 public interface StorageAdaptor {
 
-  void store(StoreRequest storeRequest, String key) throws IOException;
+  void store(StoreRequest storeRequest, String key) throws IOException, StorageException;
 
   RetrieveResponse retrieve(String key) throws IOException;
 }

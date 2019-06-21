@@ -41,7 +41,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   }
 
   @Override
-  public void store(StoreRequest storeRequest, String key) throws IOException {
+  public void store(StoreRequest storeRequest, String key) throws IOException, StorageException {
     final String fileName = storeRequest.getFileName();
 
     LOGGER.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
@@ -57,12 +57,14 @@ public class S3StorageAdaptor implements StorageAdaptor {
           RequestBody.fromInputStream(
               storeRequest.getFile().getInputStream(), storeRequest.getFile().getSize()));
 
-    } catch (SdkClientException e) {
-      throw new StorageException(
-          "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
     } catch (SdkServiceException e) {
       throw new StorageException(
+          "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
+    } catch (SdkClientException e) {
+      throw new StorageException(
           "S3 was unavailable and could not store " + key + " in bucket " + s3BucketQuarantine, e);
+    } catch (RuntimeException e) {
+      throw new StorageException("Error storing " + key + " in bucket " + s3BucketQuarantine, e);
     }
   }
 

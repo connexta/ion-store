@@ -7,6 +7,7 @@
 package com.connexta.ingest.service.impl;
 
 import com.connexta.ingest.adaptors.S3StorageAdaptor;
+import com.connexta.ingest.exceptions.StorageException;
 import com.connexta.ingest.service.api.IngestService;
 import com.connexta.ingest.service.api.StoreRequest;
 import com.connexta.ingest.transform.TransformClient;
@@ -54,7 +55,7 @@ public class IngestServiceImpl implements IngestService {
       MultipartFile file,
       String title,
       String fileName)
-      throws IOException {
+      throws IOException, StorageException {
     final String ingestId = UUID.randomUUID().toString().replace("-", "");
     s3Adaptor.store(
         new StoreRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);

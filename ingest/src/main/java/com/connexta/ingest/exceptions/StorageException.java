@@ -6,7 +6,11 @@
  */
 package com.connexta.ingest.exceptions;
 
-public class StorageException extends RuntimeException {
+public class StorageException extends Exception {
+  /**
+   * @param message
+   * @param cause
+   */
   public StorageException(String message, Throwable cause) {
     super(message, cause);
   }
