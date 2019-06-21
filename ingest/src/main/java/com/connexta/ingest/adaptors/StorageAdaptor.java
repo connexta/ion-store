@@ -13,7 +13,22 @@ import java.io.IOException;
 
 public interface StorageAdaptor {
 
+  /**
+   * Stores the data in a {@link StoreRequest} in a blob store using the given key.
+   *
+   * @param storeRequest the object that contains the
+   * @param key the key used to reference the stored object
+   * @throws IOException if the file in the Store Request can't be read
+   * @throws StorageException if there is an error when performing the storage request
+   */
   void store(StoreRequest storeRequest, String key) throws IOException, StorageException;
 
+  /**
+   * Retrieves the data in a blob store using the given key.
+   *
+   * @param key the key used to reference the stored object
+   * @return a {@link RetrieveResponse} containing the object for the given key
+   * @throws IOException if the file content cannot be read
+   */
   RetrieveResponse retrieve(String key) throws IOException;
 }
