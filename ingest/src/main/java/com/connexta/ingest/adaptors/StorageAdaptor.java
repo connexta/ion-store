@@ -16,10 +16,10 @@ public interface StorageAdaptor {
   /**
    * Stores the data in a {@link StoreRequest} in a blob store using the given key.
    *
-   * @param storeRequest the object that contains the
+   * @param storeRequest the object that contains the file and metadata
    * @param key the key used to reference the stored object
-   * @throws IOException if the file in the Store Request can't be read
-   * @throws StorageException if there is an error when performing the storage request
+   * @throws IOException if the file in the {@link StoreRequest} can't be read
+   * @throws StorageException if there is an error when attempting to store
    */
   void store(StoreRequest storeRequest, String key) throws IOException, StorageException;
 

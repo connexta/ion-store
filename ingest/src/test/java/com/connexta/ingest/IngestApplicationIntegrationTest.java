@@ -70,6 +70,7 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(SdkServiceException.builder().build());
 
+    // verify
     mvc.perform(
             multipart("/ingest")
                 .file("file", "some-content".getBytes())
@@ -82,7 +83,6 @@ public class IngestApplicationIntegrationTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().is5xxServerError());
 
-    // verify
     verifyZeroInteractions(restTemplate);
   }
 
@@ -92,6 +92,7 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(SdkClientException.builder().build());
 
+    // verify
     mvc.perform(
             multipart("/ingest")
                 .file("file", "some-content".getBytes())
@@ -104,7 +105,6 @@ public class IngestApplicationIntegrationTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().is5xxServerError());
 
-    // verify
     verifyZeroInteractions(restTemplate);
   }
 
@@ -114,6 +114,7 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(new RuntimeException());
 
+    // verify
     mvc.perform(
             multipart("/ingest")
                 .file("file", "some-content".getBytes())
@@ -126,7 +127,6 @@ public class IngestApplicationIntegrationTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().is5xxServerError());
 
-    // verify
     verifyZeroInteractions(restTemplate);
   }
 
