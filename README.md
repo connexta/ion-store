@@ -197,8 +197,7 @@ aws:
   s3:
     endpointUrl: https://s3.us-west-1.amazonaws.com
     region: us-west-1
-    bucket:
-      quarantine: ingest-quarantine
+    bucket: ingest-quarantine
 endpointUrl:
   transform: http://localhost:1231/transform/
   ingest:

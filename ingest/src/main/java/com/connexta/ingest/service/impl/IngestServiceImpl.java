@@ -6,10 +6,9 @@
  */
 package com.connexta.ingest.service.impl;
 
-import com.connexta.ingest.adaptors.S3StorageAdaptor;
 import com.connexta.ingest.service.api.IngestService;
-import com.connexta.ingest.service.api.StoreRequest;
 import com.connexta.ingest.transform.TransformClient;
+import com.connexta.multiintstore.storageadaptor.StorageAdaptor;
 import com.connexta.transformation.rest.models.TransformRequest;
 import com.connexta.transformation.rest.models.TransformResponse;
 import java.io.IOException;
@@ -28,17 +27,17 @@ public class IngestServiceImpl implements IngestService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceImpl.class);
 
-  @NotNull private final S3StorageAdaptor s3Adaptor;
+  @NotNull private final StorageAdaptor storageAdaptor;
   @NotNull private final TransformClient transformClient;
   @NotEmpty private final String callbackEndpoint;
   @NotEmpty private final String retrieveEndpoint;
 
   public IngestServiceImpl(
-      @NotNull final S3StorageAdaptor s3Adaptor,
+      @NotNull final StorageAdaptor storageAdaptor,
       @NotNull final TransformClient transformClient,
       @NotEmpty @Value("${endpointUrl.ingest.callback}") final String callbackEndpoint,
       @NotEmpty @Value("${endpointUrl.ingest.retrieve}") final String retrieveEndpoint) {
-    this.s3Adaptor = s3Adaptor;
+    this.storageAdaptor = storageAdaptor;
     this.transformClient = transformClient;
     this.callbackEndpoint = callbackEndpoint;
     this.retrieveEndpoint = retrieveEndpoint;
@@ -56,8 +55,7 @@ public class IngestServiceImpl implements IngestService {
       String fileName)
       throws IOException {
     final String ingestId = UUID.randomUUID().toString().replace("-", "");
-    s3Adaptor.store(
-        new StoreRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
+    storageAdaptor.store(mimeType, file, fileName, ingestId);
 
     // TODO get this URL programmatically
     final String url = new URL(retrieveEndpoint + ingestId).toString();

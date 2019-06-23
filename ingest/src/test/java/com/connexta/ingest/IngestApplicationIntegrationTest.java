@@ -25,28 +25,27 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
-import software.amazon.awssdk.services.s3.S3Client;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@WebAppConfiguration
+@SpringBootTest(classes = IngestApplication.class)
 @ActiveProfiles("test")
 public class IngestApplicationIntegrationTest {
 
-  @Autowired S3Client mockS3Client;
+  @Autowired private RestTemplate mockRestTemplate;
 
-  @Autowired RestTemplate restTemplate;
+  @Autowired private WebApplicationContext wac;
 
-  @Autowired WebApplicationContext wac;
-
-  private MockMvc mvc;
+  private MockMvc mockMvc;
 
   @Before
-  public void beforeEach() {
-    mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+  public void setup() {
+    this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
   }
 
   @Test
@@ -54,11 +53,12 @@ public class IngestApplicationIntegrationTest {
 
   @Test
   public void testSuccessfulTransformRequest() throws Exception {
-    when(restTemplate.postForObject(
+    when(mockRestTemplate.postForObject(
             eq("https://localhost/transform"), any(HttpEntity.class), eq(TransformResponse.class)))
         .thenReturn(new TransformResponse());
 
-    mvc.perform(
+    mockMvc
+        .perform(
             multipart("/ingest")
                 .file("file", "some-content".getBytes())
                 .param("fileSize", "10")
@@ -70,7 +70,7 @@ public class IngestApplicationIntegrationTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isAccepted());
 
-    verify(restTemplate, times(1))
+    verify(mockRestTemplate, times(1))
         .postForObject(
             eq("https://localhost/transform"), any(HttpEntity.class), eq(TransformResponse.class));
   }
@@ -83,7 +83,8 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void correctlyFormattedIngestRequestTest() throws Exception {
 
-    mvc.perform(
+    mockMvc
+        .perform(
             multipart("/ingest")
                 .file("file", "some-content".getBytes())
                 .param("fileSize", "10")
@@ -99,7 +100,8 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void incorrectlyFormattedIngestRequestTest() throws Exception {
 
-    mvc.perform(
+    mockMvc
+        .perform(
             multipart("/ingest")
                 .file("file", "some-content".getBytes())
                 .param("filename", "file")

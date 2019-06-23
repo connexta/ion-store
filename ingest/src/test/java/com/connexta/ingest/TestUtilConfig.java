@@ -6,32 +6,37 @@
  */
 package com.connexta.ingest;
 
-import org.mockito.Mockito;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import static org.mockito.Mockito.mock;
+
+import com.connexta.multiintstore.storageadaptor.StorageAdaptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
-import software.amazon.awssdk.services.s3.S3Client;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@EnableWebMvc
 @Profile("test")
-public class TestUtilConfig {
+public class TestUtilConfig implements WebMvcConfigurer {
 
   @Bean
   @Primary
-  public S3Client s3Client() {
-    return Mockito.mock(S3Client.class);
+  public StorageAdaptor storageAdaptor() {
+    return mock(StorageAdaptor.class);
   }
 
   @Bean
-  public String s3BucketQuarantine() {
+  @Primary
+  public String s3Bucket() {
     return "test-bucket";
   }
 
   @Bean
-  public RestTemplate restTemplate(RestTemplateBuilder builder) {
-    return Mockito.mock(RestTemplate.class);
+  @Primary
+  public RestTemplate restTemplate() {
+    return mock(RestTemplate.class);
   }
 }

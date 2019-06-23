@@ -6,8 +6,8 @@
  */
 package com.connexta.ingest.endpoint;
 
-import com.connexta.ingest.service.api.RetrieveResponse;
 import com.connexta.ingest.service.api.RetrieveService;
+import com.connexta.multiintstore.storageadaptor.RetrieveResponse;
 import com.connexta.retrieve.rest.spring.RetrieveApi;
 import java.io.IOException;
 import javax.validation.constraints.NotNull;

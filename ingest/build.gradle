@@ -11,11 +11,10 @@ plugins {
 
 dependencies {
     implementation(Dependencies.springBootStarterWeb())
-    implementation(Dependencies.commonsIO())
     implementation(Dependencies.ingestAPI())
     implementation(Dependencies.transformAPI())
-    implementation(Dependencies.awsS3())
     implementation project(":retrieve-api")
+    implementation project(":storage-adaptor")
     testImplementation(Dependencies.springBootStarterTest())
 }
 

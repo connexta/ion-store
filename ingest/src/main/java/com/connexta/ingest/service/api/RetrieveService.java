@@ -6,9 +6,13 @@
  */
 package com.connexta.ingest.service.api;
 
+import com.connexta.multiintstore.storageadaptor.RetrieveResponse;
 import java.io.IOException;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 public interface RetrieveService {
 
-  RetrieveResponse retrieve(String ingestId) throws IOException;
+  @NotNull
+  RetrieveResponse retrieve(@NotEmpty String ingestId) throws IOException;
 }

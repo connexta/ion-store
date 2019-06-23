@@ -4,7 +4,7 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.ingest.service.api;
+package com.connexta.multiintstore.storageadaptor;
 
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
@@ -19,7 +19,7 @@ public class RetrieveResponse {
   @NotNull private final Resource resource;
 
   @Autowired
-  public RetrieveResponse(final MediaType mediaType, final Resource resource) {
+  public RetrieveResponse(@NotNull final MediaType mediaType, @NotNull final Resource resource) {
     this.mediaType = mediaType;
     this.resource = resource;
   }
