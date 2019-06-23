@@ -43,7 +43,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = MultiIntStoreApplication.class)
 @ContextConfiguration(initializers = MultiIntStoreIntegrationTest.Initializer.class)
 @EnableConfigurationProperties
 public class MultiIntStoreIntegrationTest {
