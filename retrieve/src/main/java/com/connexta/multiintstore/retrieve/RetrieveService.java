@@ -4,7 +4,7 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.ingest.service.api;
+package com.connexta.multiintstore.retrieve;
 
 import com.connexta.multiintstore.storageadaptor.RetrieveResponse;
 import java.io.IOException;

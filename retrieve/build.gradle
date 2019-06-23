@@ -8,4 +8,5 @@
 
 dependencies {
     implementation(Dependencies.springBootStarterWeb())
+    implementation project(":storage-adaptor")
 }

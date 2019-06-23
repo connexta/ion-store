@@ -6,6 +6,7 @@
  */
 package com.connexta.multiintstore.config;
 
+import com.connexta.multiintstore.retrieve.impl.spring.RetrieveConfiguration;
 import com.connexta.multiintstore.storageadaptor.impl.s3.spring.S3StorageAdaptorConfiguration;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -17,7 +18,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("default")
-@Import({S3StorageAdaptorConfiguration.class})
+@Import({S3StorageAdaptorConfiguration.class, RetrieveConfiguration.class})
 public class ApplicationConfiguration {
 
   /** Used to check the Accept-Version in the callback request */

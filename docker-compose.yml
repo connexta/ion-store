@@ -44,10 +44,12 @@ services:
     configs:
       - source: ingest_config
         target: /configs/ingest_config.yml
+      - source: aws_config
+        target: /configs/aws_config.yml
     command:
       - "--aws.s3.secret.file=/secrets/aws_s3_secret.sec"
       - "--aws.s3.access.file=/secrets/aws_s3_access.sec"
-      - "--spring.config.additional-location=file:/configs/ingest_config.yml"
+      - "--spring.config.additional-location=file:/configs/ingest_config.yml,file:/configs/aws_config.yml"
   multi-int-store:
     image: ${REGISTRY:-docker.io}/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
     hostname: cdr-store
@@ -63,11 +65,20 @@ services:
     deploy:
       restart_policy:
         condition: any
+    secrets:
+      - source: aws_s3_secret
+        target: /secrets/aws_s3_secret.sec
+      - source: aws_s3_access
+        target: /secrets/aws_s3_access.sec
     configs:
       - source: mis_config
         target: /configs/mis_config.yml
+      - source: aws_config
+        target: /configs/aws_config.yml
     command:
-      - "--spring.config.additional-location=file:/configs/mis_config.yml"
+      - "--aws.s3.secret.file=/secrets/aws_s3_secret.sec"
+      - "--aws.s3.access.file=/secrets/aws_s3_access.sec"
+      - "--spring.config.additional-location=file:/configs/mis_config.yml,file:/configs/aws_config.yml"
   search:
     image: ${REGISTRY:-docker.io}/cnxta/cdr-search:0.1.0-SNAPSHOT
     hostname: cdr-search
@@ -108,3 +119,5 @@ configs:
     file: ./configs/ingest_config.yml
   mis_config:
     file: ./configs/mis_config.yml
+  aws_config:
+    file: ./configs/aws_config.yml

@@ -6,6 +6,7 @@
  */
 package com.connexta.ingest.config;
 
+import com.connexta.multiintstore.retrieve.impl.spring.RetrieveConfiguration;
 import com.connexta.multiintstore.storageadaptor.impl.s3.spring.S3StorageAdaptorConfiguration;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -21,7 +22,7 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 @EnableAutoConfiguration
 @Profile("default")
-@Import({S3StorageAdaptorConfiguration.class})
+@Import({S3StorageAdaptorConfiguration.class, RetrieveConfiguration.class})
 public class ApplicationConfiguration {
 
   @NotNull

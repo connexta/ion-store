@@ -13,7 +13,7 @@ dependencies {
     implementation(Dependencies.springBootStarterWeb())
     implementation(Dependencies.ingestAPI())
     implementation(Dependencies.transformAPI())
-    implementation project(":retrieve-api")
+    implementation project(":retrieve")
     implementation project(":storage-adaptor")
     testImplementation(Dependencies.springBootStarterTest())
 }
