@@ -10,14 +10,13 @@ plugins {
 }
 
 dependencies {
-    implementation(Dependencies.json())
+    implementation(Dependencies.springBootStarterWeb())
     implementation(Dependencies.commonsIO())
     implementation(Dependencies.ingestAPI())
     implementation(Dependencies.transformAPI())
     implementation(Dependencies.awsS3())
-    implementation platform((Dependencies.awsBom()))
     implementation project(":retrieve-api")
-    testImplementation(Dependencies.springBootTestStarter())
+    testImplementation(Dependencies.springBootStarterTest())
 }
 
 dependencyCheck {

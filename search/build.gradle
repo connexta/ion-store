@@ -9,6 +9,10 @@ plugins {
     id "org.springframework.boot"
 }
 
+dependencies {
+    implementation(Dependencies.springBootStarterWeb())
+}
+
 bootJar {
     launchScript()
 }

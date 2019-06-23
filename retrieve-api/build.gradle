@@ -7,5 +7,5 @@
 /* Build Script */
 
 dependencies {
-    implementation(Dependencies.springBootWebStarter())
+    implementation(Dependencies.springBootStarterWeb())
 }
