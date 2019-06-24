@@ -72,6 +72,10 @@ subprojects {
         failBuildOnCVSS = 4
         failOnError = true
 
+        analyzers {
+            ossIndexEnabled = false
+        }
+
         // Add support for NVD mirror
         if (project.hasProperty("dependencyCheckUrlModified") && project.hasProperty("dependencyCheckUrlBase")) {
             println "Using NVD Mirrors: ${dependencyCheckUrlBase} and ${dependencyCheckUrlModified}"
