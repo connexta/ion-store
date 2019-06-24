@@ -72,6 +72,10 @@ subprojects {
         failBuildOnCVSS = 4
         failOnError = true
 
+        analyzers {
+            ossIndexEnabled = false
+        }
+
         // Add support for NVD mirror
         if (project.hasProperty("dependencyCheckUrlModified") && project.hasProperty("dependencyCheckUrlBase")) {
             println "Using NVD Mirrors: ${dependencyCheckUrlBase} and ${dependencyCheckUrlModified}"
@@ -167,27 +171,11 @@ subprojects {
     }
 
     dependencies {
-        implementation(Dependencies.springBootWebStarter())
-        implementation(Dependencies.jacksonDatabind()) {
-            force = true
-            because "CVE-2019-12086 is contained within 2.9.8 the version Spring-Web 2.1.5 uses"
-        }
-        implementation(Dependencies.tomcatWebsocket()) {
-            force = true
-            because "CVE-2019-0232 in the transitive tomcat-embed-websocket dependency"
-        }
-        implementation(Dependencies.tomcatCore()) {
-            force = true
-            because "CVE-2019-0232 in the transitive tomcat-embed-core dependency"
-        }
-
         compileOnly(Dependencies.lombok())
         annotationProcessor(Dependencies.lombok())
 
-        //  Test Dependencies :
-        testImplementation(Dependencies.springBootTestStarter())
-        testCompile(Dependencies.junit())
-        // required if you want to use Mockito for unit tests
+        //  Test Dependencies
+        testImplementation(Dependencies.junit())
         testImplementation(Dependencies.mockito())
     }
 
