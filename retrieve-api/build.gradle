@@ -6,6 +6,16 @@
  */
 /* Build Script */
 
+configurations {
+    implementation {
+        exclude group: "org.jdom", module: "jdom" // CVE-2019-12814
+    }
+}
+
 dependencies {
     implementation(Dependencies.springBootStarterWeb())
+}
+
+dependencyCheck {
+    suppressionFile = "${projectDir}/owasp-suppressions.xml"
 }
