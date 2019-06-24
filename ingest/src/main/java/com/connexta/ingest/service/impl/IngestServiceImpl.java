@@ -7,6 +7,7 @@
 package com.connexta.ingest.service.impl;
 
 import com.connexta.ingest.adaptors.S3StorageAdaptor;
+import com.connexta.ingest.exceptions.StorageException;
 import com.connexta.ingest.service.api.IngestService;
 import com.connexta.ingest.service.api.StoreRequest;
 import com.connexta.ingest.transform.TransformClient;
@@ -54,16 +55,16 @@ public class IngestServiceImpl implements IngestService {
       MultipartFile file,
       String title,
       String fileName)
-      throws IOException {
+      throws IOException, StorageException {
     final String ingestId = UUID.randomUUID().toString().replace("-", "");
     s3Adaptor.store(
         new StoreRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
 
     // TODO get this URL programmatically
     final String url = new URL(retrieveEndpoint + ingestId).toString();
+    final TransformRequest transformRequest = new TransformRequest();
     LOGGER.info("{} has been successfully stored in S3 and can be downloaded at {}", fileName, url);
 
-    final TransformRequest transformRequest = new TransformRequest();
     transformRequest.setBytes(fileSize);
     transformRequest.setCallbackUrl(callbackEndpoint + ingestId);
     transformRequest.setId("1"); // TODO This should be removed from the API

@@ -6,6 +6,7 @@
  */
 package com.connexta.ingest.service.api;
 
+import com.connexta.ingest.exceptions.StorageException;
 import java.io.IOException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,5 +20,5 @@ public interface IngestService {
       MultipartFile file,
       String title,
       String fileName)
-      throws IOException;
+      throws IOException, StorageException;
 }
