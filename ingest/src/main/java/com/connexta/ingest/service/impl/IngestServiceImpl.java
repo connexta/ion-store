@@ -8,6 +8,7 @@ package com.connexta.ingest.service.impl;
 
 import com.connexta.ingest.adaptors.S3StorageAdaptor;
 import com.connexta.ingest.exceptions.StorageException;
+import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.service.api.IngestService;
 import com.connexta.ingest.service.api.StoreRequest;
 import com.connexta.ingest.transform.TransformClient;
@@ -22,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.UnknownHttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -55,7 +58,7 @@ public class IngestServiceImpl implements IngestService {
       MultipartFile file,
       String title,
       String fileName)
-      throws IOException, StorageException {
+      throws IOException, StorageException, TransformException {
     final String ingestId = UUID.randomUUID().toString().replace("-", "");
     s3Adaptor.store(
         new StoreRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
@@ -72,8 +75,12 @@ public class IngestServiceImpl implements IngestService {
     transformRequest.setProductLocation("prod"); // TODO This should be removed from the API
     transformRequest.setStagedLocation(url);
 
-    final TransformResponse transformResponse = transformClient.requestTransform(transformRequest);
-
+    final TransformResponse transformResponse;
+    try {
+      transformResponse = transformClient.requestTransform(transformRequest);
+    } catch (HttpClientErrorException | UnknownHttpStatusCodeException e) {
+      throw new TransformException();
+    }
     LOGGER.warn("Completed transform request, response is {}", transformResponse);
   }
 }

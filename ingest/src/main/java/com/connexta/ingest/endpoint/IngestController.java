@@ -7,6 +7,7 @@
 package com.connexta.ingest.endpoint;
 
 import com.connexta.ingest.exceptions.StorageException;
+import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class IngestController implements IngestApi {
     try {
       ingestService.ingest(acceptVersion, fileSize, mimeType, file, title, fileName);
       return new ResponseEntity(HttpStatus.ACCEPTED);
-    } catch (IOException | StorageException e) {
+    } catch (IOException | StorageException | TransformException e) {
       LOGGER.warn("Unable to ingest", e);
       return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
