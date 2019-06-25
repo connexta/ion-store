@@ -7,7 +7,12 @@
 package com.connexta.multiintstore.controllers;
 
 import com.connexta.multiintstore.callbacks.CallbackValidator;
+import com.connexta.multiintstore.callbacks.UnsupportedCallbackException;
+import com.connexta.multiintstore.common.ClientException;
+import com.connexta.multiintstore.common.ServerException;
 import com.connexta.multiintstore.common.StorageManager;
+import com.connexta.multiintstore.services.api.DuplicateIdException;
+import com.connexta.multiintstore.services.api.StorageException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,16 +41,20 @@ public class StorageController {
       @PathVariable String ingestId, @RequestBody(required = false) JsonNode body) {
     LOGGER.info("Received callback for ingestId {}", ingestId);
 
-    Object callback = validator.parse(body);
-
-    if (callback != null) {
+    try {
+      final Object callback = validator.parse(body);
       manager.handleGeneralCallback(callback, ingestId);
-    } else {
+    } catch (UnsupportedCallbackException e) {
+      LOGGER.info("Returning Bad Request", e);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } catch (ClientException | ServerException e) {
+      LOGGER.info("Returning Internal Error due to retrieval", e);
+      return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (StorageException | DuplicateIdException e) {
+      LOGGER.info("Returning Internal Error due to storage", e);
+      return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-    // Todo: Implement path for requesting data from the Transformation Service
-
+    LOGGER.info("Returning OK");
     return new ResponseEntity(HttpStatus.OK);
   }
 }

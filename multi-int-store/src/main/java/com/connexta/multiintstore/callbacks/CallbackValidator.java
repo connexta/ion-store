@@ -24,7 +24,7 @@ public class CallbackValidator {
 
   public CallbackValidator() {}
 
-  public Object parse(JsonNode body) {
+  public Object parse(JsonNode body) throws UnsupportedCallbackException {
     //  Put these in the order of largest to smallest?
     Class<?>[] list = {MetadataCallback.class, ProductCallback.class, FinishedCallback.class};
 
@@ -37,7 +37,7 @@ public class CallbackValidator {
 
     LOGGER.warn("{} is not a valid callback", body);
 
-    return null;
+    throw new UnsupportedCallbackException(body.toString());
   }
 
   private Object parseCallback(JsonNode body, Class<?> clas) {

@@ -9,6 +9,8 @@ package com.connexta.multiintstore.services.impl;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.Dao;
+import com.connexta.multiintstore.services.api.DuplicateIdException;
+import com.connexta.multiintstore.services.api.StorageException;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -23,16 +25,34 @@ public class IndexedMetadataDao implements Dao<IndexedProductMetadata, String> {
 
   @Override
   public Optional<IndexedProductMetadata> getById(String id) {
-    return repository.findById(id);
+    try {
+      return repository.findById(id);
+    } catch (RuntimeException e) {
+      throw new StorageException("Could not connect to Solr");
+    }
   }
 
   @Override
   public void save(IndexedProductMetadata indexedProductMetadata) {
-    repository.save(indexedProductMetadata);
+    Optional<IndexedProductMetadata> document = getById(indexedProductMetadata.getId());
+    document.ifPresent(
+        (metadata) -> {
+          throw new DuplicateIdException(
+              "Metadata with id " + metadata.getId() + " already exists");
+        });
+    try {
+      repository.save(indexedProductMetadata);
+    } catch (RuntimeException e) {
+      throw new StorageException("Could not connect to Solr");
+    }
   }
 
   @Override
   public void delete(String id) {
-    repository.deleteById(id);
+    try {
+      repository.deleteById(id);
+    } catch (RuntimeException e) {
+      throw new StorageException("Could not connect to Solr");
+    }
   }
 }

@@ -50,9 +50,6 @@ public class StorageManager {
   }
 
   public void handleGeneralCallback(Object callback, String ingestId) {
-    if (callback == null) {
-      return;
-    }
     sortCallbacks(callback, ingestId);
   }
 
@@ -66,10 +63,12 @@ public class StorageManager {
     LOGGER.info("Metadata");
     //  TODO :: Check Markings
 
+    String contents = null;
     if (callback.getType().equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
-      String contents =
+      contents =
           retriever.getMetadata(
               callback.getLocation().toString(), callback.getMimeType(), String.class);
+
       final IndexedProductMetadata indexedProductMetadata =
           new IndexedProductMetadata(ingestId, contents);
       cstDao.save(indexedProductMetadata);

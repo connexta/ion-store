@@ -15,9 +15,9 @@ import com.connexta.multiintstore.callbacks.CallbackValidator;
 import com.connexta.multiintstore.callbacks.FinishedCallback;
 import com.connexta.multiintstore.callbacks.MetadataCallback;
 import com.connexta.multiintstore.callbacks.ProductCallback;
+import com.connexta.multiintstore.callbacks.UnsupportedCallbackException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import org.junit.Test;
 
 public class CallbackValidatorTest {
@@ -26,7 +26,7 @@ public class CallbackValidatorTest {
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Test
-  public void MetadataCallbackTest() throws IOException {
+  public void MetadataCallbackTest() throws Exception {
     JsonNode validMetadata =
         mapper.readTree(
             "{\n"
@@ -45,7 +45,7 @@ public class CallbackValidatorTest {
   }
 
   @Test
-  public void ProductCallbackTest() throws IOException {
+  public void ProductCallbackTest() throws Exception {
     JsonNode validMetadata =
         mapper.readTree(
             "{\n"
@@ -61,14 +61,14 @@ public class CallbackValidatorTest {
   }
 
   @Test
-  public void FinishedCallbackTest() throws IOException {
+  public void FinishedCallbackTest() throws Exception {
     JsonNode validMetadata =
         mapper.readTree("{\n" + "\t\"id\": \"42\",\n" + "\"status\": \"COMPLETE\"}\n");
     assertThat(validator.parse(validMetadata), is(instanceOf(FinishedCallback.class)));
   }
 
-  @Test
-  public void InvalidSecurityMetadataCallbackTest() throws IOException {
+  @Test(expected = UnsupportedCallbackException.class)
+  public void InvalidSecurityMetadataCallbackTest() throws Exception {
     JsonNode validMetadata =
         mapper.readTree(
             "{\n"
@@ -82,11 +82,10 @@ public class CallbackValidatorTest {
                 + "\t\"ownerProducer\": \"ownerProducer\"\n"
                 + "}\n"
                 + "}");
-    assertThat(validator.parse(validMetadata), nullValue());
   }
 
-  @Test
-  public void MetadataCallbackMissingBytesTest() throws IOException {
+  @Test(expected = UnsupportedCallbackException.class)
+  public void MetadataCallbackMissingBytesTest() throws Exception {
     JsonNode validMetadata =
         mapper.readTree(
             "{\n"
@@ -99,11 +98,10 @@ public class CallbackValidatorTest {
                 + "\t\"ownerProducer\": \"ownerProducer\"\n"
                 + "}\n"
                 + "}");
-    assertThat(validator.parse(validMetadata), nullValue());
   }
 
-  @Test
-  public void MetadataCallbackStringBytesTest() throws IOException {
+  @Test(expected = UnsupportedCallbackException.class)
+  public void MetadataCallbackStringBytesTest() throws Exception {
     JsonNode validMetadata =
         mapper.readTree(
             "{\n"
@@ -118,11 +116,10 @@ public class CallbackValidatorTest {
                 + "\t\"ownerProducer\": \"ownerProducer\"\n"
                 + "}\n"
                 + "}");
-    assertThat(validator.parse(validMetadata), nullValue());
   }
 
   @Test
-  public void FinishedCallbackWithMessageTest() throws IOException {
+  public void FinishedCallbackWithMessageTest() throws Exception {
     JsonNode validMetadata =
         mapper.readTree(
             "{\n"
