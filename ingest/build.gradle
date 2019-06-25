@@ -11,7 +11,7 @@ plugins {
 
 configurations {
     implementation {
-        exclude group: "org.jdom", module: "jdom" // CVE-2019-12814
+        exclude group: "org.jdom" // CVE-2019-12814
     }
 }
 
