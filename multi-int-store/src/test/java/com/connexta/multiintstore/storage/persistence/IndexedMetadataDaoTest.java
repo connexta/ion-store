@@ -1,14 +1,10 @@
+/*
+ * Copyright (c) 2019 Connexta, LLC
+ *
+ * Released under the GNU Lesser General Public License version 3; see
+ * https://www.gnu.org/licenses/lgpl-3.0.html
+ */
 package com.connexta.multiintstore.storage.persistence;
-
-import com.connexta.multiintstore.models.IndexedProductMetadata;
-import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
-import com.connexta.multiintstore.services.api.Dao;
-import com.connexta.multiintstore.services.api.DuplicateIdException;
-import com.connexta.multiintstore.services.api.StorageException;
-import com.connexta.multiintstore.services.impl.IndexedMetadataDao;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import static com.github.npathai.hamcrestopt.OptionalMatchers.isPresentAnd;
 import static org.hamcrest.Matchers.is;
@@ -17,6 +13,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.connexta.multiintstore.models.IndexedProductMetadata;
+import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
+import com.connexta.multiintstore.services.api.Dao;
+import com.connexta.multiintstore.services.api.DuplicateIdException;
+import com.connexta.multiintstore.services.api.StorageException;
+import com.connexta.multiintstore.services.impl.IndexedMetadataDao;
+import org.junit.Before;
+import org.junit.Test;
 
 public class IndexedMetadataDaoTest {
 
@@ -44,7 +49,7 @@ public class IndexedMetadataDaoTest {
     assertThat(dao.getById(ipm.getId()), isPresentAnd(is(ipm)));
   }
 
-  @Test (expected = DuplicateIdException.class)
+  @Test(expected = DuplicateIdException.class)
   public void testDuplicateIds() {
     IndexedProductMetadata ipm = new IndexedProductMetadata("nice.id", "and some cool content");
     dao.save(ipm);
@@ -52,11 +57,10 @@ public class IndexedMetadataDaoTest {
     dao.save(ipm);
   }
 
-  @Test (expected = StorageException.class)
+  @Test(expected = StorageException.class)
   public void testExpectedStorageFailure() {
     when(repository.save(any())).thenThrow(new RuntimeException("Internal Server Error"));
     IndexedProductMetadata ipm = new IndexedProductMetadata("nice.id", "and some cool content");
     dao.save(ipm);
   }
-
 }
