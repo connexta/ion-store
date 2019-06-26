@@ -17,21 +17,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/mis")
 public class RetrieveController {
   @GetMapping(value = "/product/{resourceId}")
-  public ResponseEntity retrieveProduct(@PathVariable("resourceId") String resourceID) {
+  public ResponseEntity retrieveProduct(@PathVariable("resourceId") String resourceId) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-        .body("Yay, you retrieved a product with ID: " + resourceID + "!!");
+        .body("Yay, you retrieved a product with ID: " + resourceId + "!!");
   }
 
   @GetMapping(value = "/product/{resourceId}/{metadataType}")
   public ResponseEntity retrieveMetadata(
-      @PathVariable("resourceId") String resourceID,
+      @PathVariable("resourceId") String resourceId,
       @PathVariable(name = "metadataType") String metadataType) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
         .body(
             "Yay, you retrieved "
                 + metadataType
                 + " for the the product with ID: "
-                + resourceID
+                + resourceId
                 + "!!");
   }
 }

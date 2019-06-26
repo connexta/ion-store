@@ -15,23 +15,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/mis")
 public class StoreController {
-  @PutMapping(value = "/product", consumes = "*/*")
-  public ResponseEntity storeProduct(@RequestBody MultipartFile product) {
-    String resourceID = UUID.randomUUID().toString().replace("-", "");
+  @PutMapping(value = "/product/{resourceId}", consumes = "*/*")
+  public ResponseEntity storeProduct(
+      @PathVariable String resourceId, @RequestBody MultipartFile product) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-        .body("Yay, you stored a product with ID: " + resourceID + "!!");
+        .body("Yay, you stored a product with ID: " + resourceId + "!!");
   }
 
   @PutMapping(
       value = {"/product/{resourceId}/{metadataType}"},
       consumes = "*/*")
   public ResponseEntity storeMetadata(
-      @PathVariable("resourceId") String resourceID,
+      @PathVariable("resourceId") String resourceId,
       @PathVariable(name = "resourceId") String metadataType,
       @RequestBody MultipartFile metadata) {
 
