@@ -7,6 +7,7 @@
 package com.connexta.multiintstore.controllers;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/mis")
 public class StoreController {
-  @PutMapping(value = "/product/{resourceId}", consumes = "*/*")
+  @PutMapping(value = "/products/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity storeProduct(
       @PathVariable String resourceId, @RequestBody MultipartFile product) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
@@ -26,8 +27,8 @@ public class StoreController {
   }
 
   @PutMapping(
-      value = {"/product/{resourceId}/{metadataType}"},
-      consumes = "*/*")
+      value = {"/products/{resourceId}/{metadataType}"},
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity storeMetadata(
       @PathVariable("resourceId") String resourceId,
       @PathVariable(name = "resourceId") String metadataType,
