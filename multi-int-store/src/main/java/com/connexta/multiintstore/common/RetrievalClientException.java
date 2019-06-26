@@ -6,12 +6,12 @@
  */
 package com.connexta.multiintstore.common;
 
-public class ClientException extends RuntimeException {
-  public ClientException(String message) {
+public class RetrievalClientException extends RuntimeException {
+  public RetrievalClientException(String message) {
     super(message);
   }
 
-  public ClientException(String message, Throwable cause) {
+  public RetrievalClientException(String message, Throwable cause) {
     super(message, cause);
   }
 }

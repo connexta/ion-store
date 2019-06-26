@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.UnknownHttpStatusCodeException;
 
 @Service
 public class DataRetriever {
@@ -34,11 +35,13 @@ public class DataRetriever {
   }
 
   /**
-   * @throws ClientException if there is a 400 status code when sending the request
-   * @throws ServerException if there was a 500 status code when sending the request
+   * @throws RetrievalClientException if there is a 400 status code when sending the request
+   * @throws RetrievalServerException if there was a 500 status code when sending the request
    * @return The metadata in the format of the clazz parameter
    */
-  public <T> T getMetadata(String url, String mediaType, Class<T> clazz) {
+  public <T> T getMetadata(String url, String mediaType, Class<T> clazz)
+      throws RetrievalServerException, RetrievalClientException {
+
     final HttpHeaders headers = new HttpHeaders();
     headers.set("Accept-Version", callbackAcceptVersion);
     headers.setAccept(Collections.singletonList(MediaType.valueOf(mediaType)));
@@ -48,9 +51,12 @@ public class DataRetriever {
           .exchange(url, HttpMethod.GET, new HttpEntity<String>(headers), clazz)
           .getBody();
     } catch (HttpClientErrorException e) {
-      throw new ClientException("Failed to retrieve metadata due to a Client error", e);
+      throw new RetrievalClientException("Failed to retrieve metadata due to a Client error", e);
     } catch (HttpServerErrorException e) {
-      throw new ServerException("Failed to retrieve metadata due to a Server error", e);
+      throw new RetrievalServerException("Failed to retrieve metadata due to a Server error", e);
+    } catch (UnknownHttpStatusCodeException e) {
+      throw new RetrievalServerException(
+          "Failed to retrieve metadata due to an illegal HTTP status code", e);
     }
   }
 }

@@ -8,8 +8,8 @@ package com.connexta.multiintstore.controllers;
 
 import com.connexta.multiintstore.callbacks.CallbackValidator;
 import com.connexta.multiintstore.callbacks.UnsupportedCallbackException;
-import com.connexta.multiintstore.common.ClientException;
-import com.connexta.multiintstore.common.ServerException;
+import com.connexta.multiintstore.common.RetrievalClientException;
+import com.connexta.multiintstore.common.RetrievalServerException;
 import com.connexta.multiintstore.common.StorageManager;
 import com.connexta.multiintstore.services.api.DuplicateIdException;
 import com.connexta.multiintstore.services.api.StorageException;
@@ -47,11 +47,11 @@ public class StorageController {
     } catch (UnsupportedCallbackException e) {
       LOGGER.info("Returning Bad Request", e);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } catch (ClientException | ServerException e) {
-      LOGGER.info("Returning Internal Error due to retrieval", e);
+    } catch (RetrievalClientException | RetrievalServerException e) {
+      LOGGER.info("Returning Internal Error because the metadata retrieval failed", e);
       return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (StorageException | DuplicateIdException e) {
-      LOGGER.info("Returning Internal Error due to storage", e);
+      LOGGER.info("Returning Internal Error because the metadata storage failed", e);
       return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
     LOGGER.info("Returning OK");

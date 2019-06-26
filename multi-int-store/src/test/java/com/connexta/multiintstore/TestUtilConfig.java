@@ -11,12 +11,12 @@ import static org.mockito.Mockito.mock;
 import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import com.connexta.multiintstore.config.EndpointUrlRetrieve;
 import org.apache.solr.client.solrj.SolrClient;
+import org.mockito.Mockito;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -38,12 +38,12 @@ public class TestUtilConfig {
   @Bean
   @Primary
   public CallbackAcceptVersion callbackAcceptVersion() {
-    return new CallbackAcceptVersion("https://localhost:1222/");
+    return new CallbackAcceptVersion("4.2.x");
   }
 
   @Bean
   @Primary
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
-    return builder.errorHandler(new DefaultResponseErrorHandler()).build();
+    return Mockito.mock(RestTemplate.class);
   }
 }

@@ -12,6 +12,8 @@ import com.connexta.multiintstore.callbacks.ProductCallback;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.models.Product;
 import com.connexta.multiintstore.services.api.Dao;
+import com.connexta.multiintstore.services.api.DuplicateIdException;
+import com.connexta.multiintstore.services.api.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +39,20 @@ public class StorageManager {
     this.retriever = retriever;
   }
 
-  private void sortCallbacks(Object callback, String ingestId) {
+  /**
+   * @throws RetrievalClientException if there is a 400 status code when sending the request from
+   *     the callback
+   * @throws RetrievalServerException if there was a 500 status code when sending the request from
+   *     the callback
+   * @throws com.connexta.multiintstore.services.api.DuplicateIdException if there was an Id that
+   *     already exists
+   * @throws com.connexta.multiintstore.services.api.StorageException if there was an error storing
+   *     the callback
+   */
+  public void handleGeneralCallback(Object callback, String ingestId)
+      throws StorageException, DuplicateIdException, RetrievalServerException,
+          RetrievalClientException {
+
     if (callback instanceof ProductCallback) {
       handleCallback((ProductCallback) callback);
     }
@@ -49,23 +64,21 @@ public class StorageManager {
     }
   }
 
-  public void handleGeneralCallback(Object callback, String ingestId) {
-    sortCallbacks(callback, ingestId);
-  }
-
   private void handleCallback(ProductCallback callback) {
     LOGGER.info("Product");
     //  TODO :: Check Markings
     //  TODO :: Store Product
   }
 
-  private void handleCallback(MetadataCallback callback, String ingestId) {
+  private void handleCallback(MetadataCallback callback, String ingestId)
+      throws StorageException, DuplicateIdException, RetrievalServerException,
+          RetrievalClientException {
+
     LOGGER.info("Metadata");
     //  TODO :: Check Markings
 
-    String contents = null;
     if (callback.getType().equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
-      contents =
+      String contents =
           retriever.getMetadata(
               callback.getLocation().toString(), callback.getMimeType(), String.class);
 

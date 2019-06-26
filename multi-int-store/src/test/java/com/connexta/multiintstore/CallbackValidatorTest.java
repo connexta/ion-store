@@ -8,7 +8,6 @@ package com.connexta.multiintstore;
 
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.connexta.multiintstore.callbacks.CallbackValidator;
@@ -82,6 +81,7 @@ public class CallbackValidatorTest {
                 + "\t\"ownerProducer\": \"ownerProducer\"\n"
                 + "}\n"
                 + "}");
+    validator.parse(validMetadata);
   }
 
   @Test(expected = UnsupportedCallbackException.class)
@@ -98,6 +98,7 @@ public class CallbackValidatorTest {
                 + "\t\"ownerProducer\": \"ownerProducer\"\n"
                 + "}\n"
                 + "}");
+    validator.parse(validMetadata);
   }
 
   @Test(expected = UnsupportedCallbackException.class)
@@ -116,6 +117,7 @@ public class CallbackValidatorTest {
                 + "\t\"ownerProducer\": \"ownerProducer\"\n"
                 + "}\n"
                 + "}");
+    validator.parse(validMetadata);
   }
 
   @Test
