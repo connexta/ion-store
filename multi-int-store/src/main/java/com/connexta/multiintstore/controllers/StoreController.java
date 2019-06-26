@@ -6,7 +6,6 @@
  */
 package com.connexta.multiintstore.controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,27 +13,27 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/mis")
 public class StoreController {
-  @PutMapping(value = "/{resourceId}", consumes = "*/*")
-  public ResponseEntity storeProduct(
-      @PathVariable("resourceId") String resourceID,
-      @PathVariable(name = "metadataType", required = false) String metadataType,
-      @RequestBody(required = false) JsonNode body) {
-
+  @PutMapping(value = "/product", consumes = "*/*")
+  public ResponseEntity storeProduct(@RequestBody MultipartFile product) {
+    String resourceID = UUID.randomUUID().toString().replace("-", "");
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
         .body("Yay, you stored a product with ID: " + resourceID + "!!");
   }
 
   @PutMapping(
-      value = {"/{resourceId}/{metadataType}"},
-      consumes = "application/json")
+      value = {"/product/{resourceId}/{metadataType}"},
+      consumes = "*/*")
   public ResponseEntity storeMetadata(
       @PathVariable("resourceId") String resourceID,
-      @PathVariable(name = "resourceId", required = false) String metadataType,
-      @RequestBody(required = false) JsonNode body) {
+      @PathVariable(name = "resourceId") String metadataType,
+      @RequestBody MultipartFile metadata) {
 
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
         .body("Yay, you stored " + metadataType + "!!");
