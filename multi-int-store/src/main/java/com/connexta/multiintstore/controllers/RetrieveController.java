@@ -16,22 +16,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/mis")
 public class RetrieveController {
-  @GetMapping(value = "/products/{resourceId}")
-  public ResponseEntity retrieveProduct(@PathVariable("resourceId") String resourceId) {
+  @GetMapping(value = "/product/{productId}")
+  public ResponseEntity retrieveProduct(@PathVariable("productId") String productId) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-        .body("Yay, you retrieved a product with ID: " + resourceId + "!!");
+        .body("Yay, you retrieved a product with ID: " + productId + "!!");
   }
 
-  @GetMapping(value = "/products/{resourceId}/{metadataType}")
+  @GetMapping(value = "/product/{productId}/{metadataType}")
   public ResponseEntity retrieveMetadata(
-      @PathVariable("resourceId") String resourceId,
-      @PathVariable(name = "metadataType") String metadataType) {
+      @PathVariable("productId") String productId,
+      @PathVariable("metadataType") String metadataType) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
         .body(
             "Yay, you retrieved "
                 + metadataType
                 + " for the the product with ID: "
-                + resourceId
+                + productId
                 + "!!");
   }
 }

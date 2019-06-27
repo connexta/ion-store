@@ -6,33 +6,38 @@
  */
 package com.connexta.multiintstore.controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/mis")
 public class StoreController {
-  @PutMapping(value = "/products/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PutMapping(value = "/product/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity storeProduct(
-      @PathVariable String resourceId, @RequestBody MultipartFile product) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-        .body("Yay, you stored a product with ID: " + resourceId + "!!");
+      @RequestHeader("Accept-Version") String acceptVersion,
+      @RequestPart("productInfo") JsonNode productInfo,
+      @RequestPart("file") MultipartFile file) {
+    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Yay, you stored a product!!");
   }
 
   @PutMapping(
-      value = {"/products/{resourceId}/{metadataType}"},
+      value = "/product/{productId}/{metadataType}",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity storeMetadata(
-      @PathVariable("resourceId") String resourceId,
-      @PathVariable(name = "resourceId") String metadataType,
-      @RequestBody MultipartFile metadata) {
+      @RequestHeader("Accept-Version") String acceptVersion,
+      @PathVariable("productId") String productId,
+      @PathVariable("metadataType") String metadataType,
+      @RequestPart("productInfo") JsonNode productInfo,
+      @RequestPart("file") MultipartFile file) {
 
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
         .body("Yay, you stored " + metadataType + "!!");
