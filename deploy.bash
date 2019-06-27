@@ -3,41 +3,45 @@
 # No failures allowed
 set -e
 
+SET_DOCKER_REG=""
+SET_DOCKER_W=""
+
+DOCKER_REG=${DOCKER_REGISTRY:-${SET_DOCKER_REG}}
+
 # The name of the preface for the docker images
 DOCKER_NAME="cnxta/cdr-"
 
-# The IP For the place you're storing this
-DEPLOY_IP=""
-
-# The port used by docker
-PORT=""
+# DOCKER_REGISTRY
 
 # The stack you want the docker compose file named
 STACK="cdr-stack"
 
-# The command to build docker images
-BUILD_CMD="./gradlew clean build -x test"
-
 # The path to the Docker Wrapper
-DOCKER_W=""
+# IMPORTANT!
+# >>> The base gc-docker script has to be in the same location as this file
 
-GITHUB_PATCH=""
+DOCKER_W=${DOCKER_WRAPPER:-${SET_DOCKER_W}}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Tests that variables are correct for the docker compose and docker wrapper
 
-if [ -z ${DEPLOY_IP} ] && [ -z ${PORT} ] && [ -z ${DOCKER_W} ]; then
-    echo "Set the global variables at the top of $0"
-    exit 1
-
-elif [ ! -f docker-compose.yml ]; then
-    echo "$0 needs to be ran in the same directory as a docker-compose.yml"
-    exit 1
-elif [ ! -f ${DOCKER_W} ]; then
-    echo "\"${DOCKER_W}\" does not exist!"
-    exit 1
-fi
+function checkVars() {
+    if [ -z ${DOCKER_REG} ]; then
+        echo "> export DOCKER_REGISTRY=ip:port"
+        return 1
+    elif [ ! -f docker-compose.yml ]; then
+        echo "$0 needs to be ran in the same directory as a docker-compose.yml"
+        return 1
+    elif [ ! -f ${DOCKER_W} ]; then
+        echo "\"${DOCKER_W}\" does not exist"
+        return 1
+    elif [ ! -x ${DOCKER_W} ]; then
+        echo "${DOCKER_W} is not executable"
+        return 1
+    fi
+    return 0
+}
 
 function run() {
     echo " $ $@"
@@ -51,12 +55,7 @@ function header() {
     echo ""
 }
 
-if [[ ! -z GITHUB_PATCH ]]; then
-    run "git apply ${GITHUB_PATCH}"
-fi
-
-header "Building Docker Images"
-run ${BUILD_CMD}
+checkVars || exit 1
 
 listOfImages=$(docker image ls | egrep "^${DOCKER_NAME}" | awk '{print $1,$2}' OFS=':')
 
@@ -65,23 +64,23 @@ if [[ -z ${listOfImages} ]]; then
     exit 1
 fi
 
-header "Tagging and pushing docker images to ${DEPLOY_IP}:${PORT}"
+header "Tagging and pushing docker images to ${DOCKER_REG}"
 for i in $(echo ${listOfImages}); do
-    run "docker tag ${i} ${DEPLOY_IP}:${PORT}/${i}"
-    run "docker push ${DEPLOY_IP}:${PORT}/${i}"
+    run "docker tag ${i} ${DOCKER_REG}/${i}"
+    run "docker push ${DOCKER_REG}/${i}"
 done
 
-header "Pulling and tagging docker images on ${DEPLOY_IP}:${PORT}"
+header "Pulling the docker images on ${DOCKER_REG}"
 
 for i in $(echo ${listOfImages}); do
-    run "${DOCKER_W} pull ${DEPLOY_IP}:${PORT}/${i}"
-    run "${DOCKER_W} tag ${DEPLOY_IP}:${PORT}/${i} ${i}"
+    run "${DOCKER_W} pull ${DOCKER_REG}/${i}"
 done
 
 header "Deploying the application on ${STACK}"
 
 run "${DOCKER_W} stack rm ${STACK}"
 
-run "${DOCKER_W} stack deploy -c docker-compose.yml ${STACK}"
+echo " $ ${DOCKER_W} stack deploy -c <(REGISTRY=${DOCKER_REG} docker-compose -f docker-compose.yml config) ${STACK}"
+${DOCKER_W} stack deploy -c <(REGISTRY=${DOCKER_REG} docker-compose -f docker-compose.yml config) ${STACK}
 
 run "${DOCKER_W} stack services ${STACK}"

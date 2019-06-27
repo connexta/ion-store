@@ -42,4 +42,4 @@ docker {
     buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
 }
 
-build.dependsOn("docker")
+build.finalizedBy("docker")
