@@ -10,6 +10,8 @@ import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import java.util.Collections;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -23,6 +25,8 @@ import org.springframework.web.client.UnknownHttpStatusCodeException;
 
 @Service
 public class DataRetriever {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataRetriever.class);
 
   @NotEmpty private final String callbackAcceptVersion;
 
@@ -48,6 +52,7 @@ public class DataRetriever {
     headers.set("Accept-Version", callbackAcceptVersion);
     headers.setAccept(Collections.singletonList(MediaType.valueOf(mediaType)));
 
+    LOGGER.info("Sending {} request to {}", HttpMethod.GET.name(), url);
     try {
       ResponseEntity<T> exchange =
           restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<String>(headers), clazz);
@@ -56,7 +61,10 @@ public class DataRetriever {
         throw new RetrievalServerException(
             HttpMethod.GET.name() + ": " + url + " returned an empty body");
       }
-
+      LOGGER.info(
+          "returning status code {} with body contents [{}]",
+          exchange.getStatusCodeValue(),
+          exchange.getBody());
       return exchange.getBody();
 
     } catch (HttpClientErrorException e) {
