@@ -9,6 +9,8 @@ package com.connexta.multiintstore.services.impl;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.Dao;
+import com.connexta.multiintstore.services.api.DuplicateIdException;
+import com.connexta.multiintstore.services.api.StorageException;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -22,17 +24,36 @@ public class IndexedMetadataDao implements Dao<IndexedProductMetadata, String> {
   }
 
   @Override
-  public Optional<IndexedProductMetadata> getById(String id) {
-    return repository.findById(id);
+  public Optional<IndexedProductMetadata> getById(String id) throws StorageException {
+    try {
+      return repository.findById(id);
+    } catch (RuntimeException e) {
+      throw new StorageException("A problem occurred while using Solr", e);
+    }
   }
 
   @Override
-  public void save(IndexedProductMetadata indexedProductMetadata) {
-    repository.save(indexedProductMetadata);
+  public void save(IndexedProductMetadata indexedProductMetadata)
+      throws StorageException, DuplicateIdException {
+    Optional<IndexedProductMetadata> document = getById(indexedProductMetadata.getId());
+    document.ifPresent(
+        (metadata) -> {
+          throw new DuplicateIdException(
+              "Metadata with id " + metadata.getId() + " already exists");
+        });
+    try {
+      repository.save(indexedProductMetadata);
+    } catch (RuntimeException e) {
+      throw new StorageException("A problem occurred while using Solr", e);
+    }
   }
 
   @Override
-  public void delete(String id) {
-    repository.deleteById(id);
+  public void delete(String id) throws StorageException {
+    try {
+      repository.deleteById(id);
+    } catch (RuntimeException e) {
+      throw new StorageException("A problem occurred while using Solr", e);
+    }
   }
 }
