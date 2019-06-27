@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.xebialabs.restito.semantics.Action;
 import com.xebialabs.restito.semantics.Condition;
@@ -76,6 +77,7 @@ public class MultiIntStoreIntegrationTest {
 
   @Autowired private WebApplicationContext wac;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
+  @Autowired private CallbackAcceptVersion acceptVersion;
 
   private MockMvc mockMvc;
   private StubServer server;
@@ -253,7 +255,7 @@ public class MultiIntStoreIntegrationTest {
                   request.setMethod(HttpMethod.PUT.toString());
                   return request;
                 })
-            .header("Accept-Version", "0.1.0");
+            .header("Accept-Version", acceptVersion.getCallbackAcceptVersion());
 
     mockMvc
         .perform(builder)
@@ -293,7 +295,7 @@ public class MultiIntStoreIntegrationTest {
                   request.setMethod(HttpMethod.PUT.toString());
                   return request;
                 })
-            .header("Accept-Version", "0.1.0");
+            .header("Accept-Version", acceptVersion.getCallbackAcceptVersion());
 
     mockMvc
         .perform(builder)
