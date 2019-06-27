@@ -214,3 +214,14 @@ solr:
 endpointUrl:
   retrieve: http://localhost:1233/retrieve/
 ```
+
+## Deploying
+To deploy to a docker registry there are two options.
+1. Edit `deploy.bash` to set the docker registry and docker wrapper for the external server.
+2. Export the 2 configurations by running:
+```bash
+export DOCKER_REGISTRY="port:ip"
+export DOCKER_WRAPPER="/path/to/docker/wrapper/"
+```
+
+Then run `./gradlew deploy`
