@@ -53,7 +53,8 @@ public class DataRetriever {
           restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<String>(headers), clazz);
 
       if (!exchange.hasBody()) {
-        throw new RetrievalServerException("Server returned an empty body!");
+        throw new RetrievalServerException(
+            HttpMethod.GET.name() + ": " + url + " returned an empty body");
       }
 
       return exchange.getBody();
