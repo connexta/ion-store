@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/mis")
 public class StoreController {
-  @PutMapping(value = "/product/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PutMapping(value = "/product", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity storeProduct(
       @RequestHeader("Accept-Version") String acceptVersion,
       @RequestPart("productInfo") JsonNode productInfo,

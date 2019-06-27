@@ -32,11 +32,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.containers.GenericContainer;
@@ -210,6 +215,90 @@ public class MultiIntStoreIntegrationTest {
         .perform(MockMvcRequestBuilders.get("/search?q=Winterfell"))
         .andExpect(status().isOk())
         .andExpect(content().string(String.format("[\"%s%s\"]", RETRIEVE_ENDPOINT, ingestId)));
+  }
+
+  // TODO: Update the MIS itests when we remove the deprecated endpoints
+
+  /*
+   * ================================================================
+   * ==================== New MIS endpoint tests ====================
+   * ================================================================
+   */
+  @Test
+  public void testGetProduct() throws Exception {
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/mis/product/1"))
+        .andDo(print())
+        .andExpect(status().isNotImplemented());
+  }
+
+  @Test
+  public void testPutProduct() throws Exception {
+
+    MockMultipartFile productInfo =
+        new MockMultipartFile(
+            "productInfo",
+            "test.json",
+            "application/json",
+            "{\"title\": \"Where's Kyle?\"}".getBytes());
+    MockMultipartFile file =
+        new MockMultipartFile("file", "test.txt", "application/octet-stream", "data".getBytes());
+
+    MockHttpServletRequestBuilder builder =
+        MockMvcRequestBuilders.multipart("/mis/product")
+            .file(productInfo)
+            .file(file)
+            .with(
+                request -> {
+                  request.setMethod(HttpMethod.PUT.toString());
+                  return request;
+                })
+            .header("Accept-Version", "0.1.0");
+
+    mockMvc
+        .perform(builder)
+        .andExpect(MockMvcResultMatchers.status().isNotImplemented())
+        .andDo(MockMvcResultHandlers.print());
+  }
+
+  @Test
+  public void testGetMetadata() throws Exception {
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/mis/product/1/cst"))
+        .andDo(print())
+        .andExpect(status().isNotImplemented());
+  }
+
+  @Test
+  public void testPutMetadata() throws Exception {
+    MockMultipartFile productInfo =
+        new MockMultipartFile(
+            "productInfo",
+            "test.json",
+            "application/json",
+            "{\"title\": \"Where's Kyle?\"}".getBytes());
+    MockMultipartFile file =
+        new MockMultipartFile(
+            "file",
+            "test.txt",
+            "application/octet-stream",
+            "{\"title\": \"Where's Kyle?\"}".getBytes());
+
+    MockHttpServletRequestBuilder builder =
+        MockMvcRequestBuilders.multipart("/mis/product/1/cst")
+            .file(productInfo)
+            .file(file)
+            .with(
+                request -> {
+                  request.setMethod(HttpMethod.PUT.toString());
+                  return request;
+                })
+            .header("Accept-Version", "0.1.0");
+
+    mockMvc
+        .perform(builder)
+        .andExpect(MockMvcResultMatchers.status().isNotImplemented())
+        .andDo(MockMvcResultHandlers.print());
   }
 
   private static String createMetadataCallbackJson(
