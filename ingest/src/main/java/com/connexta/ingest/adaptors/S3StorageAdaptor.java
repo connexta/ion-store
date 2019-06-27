@@ -8,7 +8,6 @@ package com.connexta.ingest.adaptors;
 
 import com.connexta.ingest.exceptions.StorageException;
 import com.connexta.ingest.service.api.RetrieveResponse;
-import com.connexta.ingest.service.api.StoreRequest;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.Map;
@@ -18,6 +17,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
@@ -41,19 +41,22 @@ public class S3StorageAdaptor implements StorageAdaptor {
   }
 
   @Override
-  public void store(StoreRequest storeRequest, String key) throws IOException, StorageException {
-    final String fileName = storeRequest.getFileName();
+  public void store(
+      final String mimeType,
+      final MultipartFile file,
+      final Long fileSize,
+      final String fileName,
+      final String key)
+      throws IOException, StorageException {
     final PutObjectRequest putObjectRequest =
         PutObjectRequest.builder()
             .bucket(s3BucketQuarantine)
             .key(key)
-            .contentType(storeRequest.getMimeType())
-            .contentLength(storeRequest.getFileSize())
+            .contentType(mimeType)
+            .contentLength(fileSize)
             .metadata(ImmutableMap.of("filename", fileName))
             .build();
-    final RequestBody requestBody =
-        RequestBody.fromInputStream(
-            storeRequest.getFile().getInputStream(), storeRequest.getFile().getSize());
+    final RequestBody requestBody = RequestBody.fromInputStream(file.getInputStream(), fileSize);
 
     LOGGER.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
     try {

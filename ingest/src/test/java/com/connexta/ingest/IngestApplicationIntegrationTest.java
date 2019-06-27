@@ -74,11 +74,13 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(SdkServiceException.builder().build());
 
+    final byte[] bytes = "some-content".getBytes();
+
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", bytes)
+                .param("fileSize", String.valueOf(bytes.length))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -96,11 +98,13 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(SdkClientException.builder().build());
 
+    final byte[] bytes = "some-content".getBytes();
+
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", bytes)
+                .param("fileSize", String.valueOf(bytes.length))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -118,11 +122,13 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(new RuntimeException());
 
+    final byte[] bytes = "some-content".getBytes();
+
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", bytes)
+                .param("fileSize", String.valueOf(bytes.length))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -147,10 +153,11 @@ public class IngestApplicationIntegrationTest {
                         .put("message", "The ID asdf has been accepted")
                         .toString()));
 
+    final byte[] bytes = "some-content".getBytes();
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", bytes)
+                .param("fileSize", String.valueOf(bytes.length))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -175,10 +182,11 @@ public class IngestApplicationIntegrationTest {
                         .put("message", "The ID asdf has been accepted")
                         .toString()));
 
+    final byte[] bytes = "some-content".getBytes();
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", bytes)
+                .param("fileSize", String.valueOf(bytes.length))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -199,6 +207,22 @@ public class IngestApplicationIntegrationTest {
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().is4xxClientError());
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void testIngestRequestFileSizeMismatch() throws Exception {
+    final byte[] bytes = "some-content".getBytes();
+    mvc.perform(
+            multipart("/ingest")
+                .file("file", bytes)
+                .param("fileSize", String.valueOf(bytes.length + 1))
+                .param("fileName", "file")
+                .param("title", "qualityTitle")
+                .param("mimeType", "plain/text")
+                .header("Accept-Version", "1.2.1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+        .andExpect(status().isBadRequest());
   }
 }
