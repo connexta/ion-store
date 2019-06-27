@@ -95,4 +95,16 @@ public class DataRetrieverTest {
 
     dataRetriever.getMetadata(url, mediaType.toString(), String.class);
   }
+
+  @Test(expected = RetrievalServerException.class)
+  public void emptyBodyRetrieverTest() throws Exception {
+    String url = "nice.local";
+    MediaType mediaType = MediaType.APPLICATION_JSON;
+
+    when(restTemplate.exchange(
+            anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+        .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+    dataRetriever.getMetadata(url, mediaType.toString(), String.class);
+  }
 }

@@ -14,6 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -36,7 +37,8 @@ public class DataRetriever {
 
   /**
    * @throws RetrievalClientException if there is a 400 status code when sending the request
-   * @throws RetrievalServerException if there was a 500 status code when sending the request
+   * @throws RetrievalServerException if there was a 500 status code when sending the request or if
+   *     the server returned a request with an empty body
    * @return The metadata in the format of the clazz parameter
    */
   public <T> T getMetadata(String url, String mediaType, Class<T> clazz)
@@ -47,9 +49,15 @@ public class DataRetriever {
     headers.setAccept(Collections.singletonList(MediaType.valueOf(mediaType)));
 
     try {
-      return restTemplate
-          .exchange(url, HttpMethod.GET, new HttpEntity<String>(headers), clazz)
-          .getBody();
+      ResponseEntity<T> exchange =
+          restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<String>(headers), clazz);
+
+      if (!exchange.hasBody()) {
+        throw new RetrievalServerException("Server returned an empty body!");
+      }
+
+      return exchange.getBody();
+
     } catch (HttpClientErrorException e) {
       throw new RetrievalClientException("Failed to retrieve metadata due to a Client error", e);
     } catch (HttpServerErrorException e) {
