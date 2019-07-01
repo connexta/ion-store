@@ -39,6 +39,7 @@ public class TransformClient {
     headers.set("Accept-Version", "0.0.1-SNAPSHOT");
 
     HttpEntity<TransformRequest> requestEntity = new HttpEntity<>(transformRequest, headers);
+    LOGGER.info("Transformation requestEntity: {}", requestEntity.toString());
     return restTemplate.postForObject(transformEndpoint, requestEntity, TransformResponse.class);
   }
 }

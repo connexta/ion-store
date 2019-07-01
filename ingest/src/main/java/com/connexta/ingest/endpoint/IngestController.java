@@ -43,12 +43,29 @@ public class IngestController implements IngestApi {
       String title,
       String fileName) {
     LOGGER.info("Attempting to ingest {}", fileName);
+
+    final long actualFileSize = file.getSize();
+    if (fileSize != actualFileSize) {
+      final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+      LOGGER.info(
+          "File size request param ({}) does not match the size of the file ({}). Returning {}.",
+          fileSize,
+          actualFileSize,
+          httpStatus);
+      return new ResponseEntity(httpStatus);
+    }
+
     try {
-      ingestService.ingest(acceptVersion, fileSize, mimeType, file, title, fileName);
-      return new ResponseEntity(HttpStatus.ACCEPTED);
+      ingestService.ingest(mimeType, file, fileSize, fileName);
     } catch (IOException | StorageException | TransformException e) {
-      LOGGER.warn("Unable to ingest", e);
+      LOGGER.warn(
+          String.format(
+              "Unable to complete ingest request with params acceptVersion=%s, fileSize=%d, mimeType=%s, title=%s, fileName=%s",
+              acceptVersion, fileSize, mimeType, title, fileName),
+          e);
       return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    return new ResponseEntity(HttpStatus.ACCEPTED);
   }
 }

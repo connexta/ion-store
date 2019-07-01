@@ -43,6 +43,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @ActiveProfiles("test")
 public class IngestApplicationIntegrationTest {
 
+  private static final byte[] TEST_FILE = "some-content".getBytes();
+  private static final int TEST_FILE_SIZE = TEST_FILE.length;
+
   @Autowired private S3Client mockS3Client;
 
   @Autowired private RestTemplate restTemplate;
@@ -77,8 +80,8 @@ public class IngestApplicationIntegrationTest {
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -99,8 +102,8 @@ public class IngestApplicationIntegrationTest {
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -121,8 +124,8 @@ public class IngestApplicationIntegrationTest {
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -149,8 +152,8 @@ public class IngestApplicationIntegrationTest {
 
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -177,8 +180,8 @@ public class IngestApplicationIntegrationTest {
 
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
-                .param("fileSize", "10")
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -192,13 +195,28 @@ public class IngestApplicationIntegrationTest {
   public void testIncorrectlyFormattedIngestRequest() throws Exception {
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
+                .file("file", TEST_FILE)
                 .param("filename", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().is4xxClientError());
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void testIngestRequestFileSizeMismatch() throws Exception {
+    mvc.perform(
+            multipart("/ingest")
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE + 1))
+                .param("fileName", "file")
+                .param("title", "qualityTitle")
+                .param("mimeType", "plain/text")
+                .header("Accept-Version", "1.2.1")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+        .andExpect(status().isBadRequest());
   }
 }
