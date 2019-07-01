@@ -4,7 +4,7 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.ingest.config;
+package com.connexta.multiintstore.config;
 
 import java.io.File;
 import java.io.IOException;

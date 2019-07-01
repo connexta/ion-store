@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @Profile("test")
@@ -27,6 +28,17 @@ public class TestUtilConfig {
   @Primary
   public SolrClient solrClient() {
     return mock(SolrClient.class);
+  }
+
+  @Bean
+  @Primary
+  public S3Client s3Client() {
+    return Mockito.mock(S3Client.class);
+  }
+
+  @Bean
+  public String s3BucketQuarantine() {
+    return "test-bucket";
   }
 
   @Bean

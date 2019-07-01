@@ -4,28 +4,20 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.ingest.adaptors;
+package com.connexta.multiintstore.common.adaptors;
 
-import com.connexta.ingest.exceptions.StorageException;
-import com.connexta.ingest.service.api.RetrieveResponse;
-import com.google.common.collect.ImmutableMap;
+import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.utils.ImmutableMap;
 
 /** TODO one adaptor for quarantine and one adaptor for multi-int-store */
 @Service
@@ -72,28 +64,29 @@ public class S3StorageAdaptor implements StorageAdaptor {
     }
   }
 
-  @Override
-  public RetrieveResponse retrieve(String ingestId) throws IOException {
-    LOGGER.info(
-        "Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, ingestId);
-
-    final ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream =
-        s3Client.getObject(
-            GetObjectRequest.builder().bucket(s3BucketQuarantine).key(ingestId).build());
-    final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
-
-    return new RetrieveResponse(
-        MediaType.valueOf(getObjectResponse.contentType()),
-        new ByteArrayResource(getObjectResponseResponseInputStream.readAllBytes()) {
-          @Override
-          public String getFilename() {
-            final Map<String, String> metadata = getObjectResponse.metadata();
-            final String filename = metadata.get("filename");
-            if (StringUtils.isEmpty(filename)) {
-              return ingestId;
-            }
-            return filename;
-          }
-        });
-  }
+  // Uncomment when the MIS implements retrieval
+  //  @Override
+  //  public RetrieveResponse retrieve(String ingestId) throws IOException {
+  //    LOGGER.info(
+  //        "Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, ingestId);
+  //
+  //    final ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream =
+  //        s3Client.getObject(
+  //            GetObjectRequest.builder().bucket(s3BucketQuarantine).key(ingestId).build());
+  //    final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
+  //
+  //    return new RetrieveResponse(
+  //        MediaType.valueOf(getObjectResponse.contentType()),
+  //        new ByteArrayResource(getObjectResponseResponseInputStream.readAllBytes()) {
+  //          @Override
+  //          public String getFilename() {
+  //            final Map<String, String> metadata = getObjectResponse.metadata();
+  //            final String filename = metadata.get("filename");
+  //            if (StringUtils.isEmpty(filename)) {
+  //              return ingestId;
+  //            }
+  //            return filename;
+  //          }
+  //        });
+  //  }
 }
