@@ -1,7 +1,0 @@
-callback-accept-version: 0.1.0-SNAPSHOT
-aws:
-  s3:
-    endpointUrl: https://change.me
-    region: us-west-1
-    bucket:
-      quarantine: test-bucket

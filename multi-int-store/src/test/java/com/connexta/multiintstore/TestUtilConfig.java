@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import com.connexta.multiintstore.config.EndpointUrlRetrieve;
 import org.apache.solr.client.solrj.SolrClient;
-import org.mockito.Mockito;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,7 +32,7 @@ public class TestUtilConfig {
   @Bean
   @Primary
   public S3Client s3Client() {
-    return Mockito.mock(S3Client.class);
+    return mock(S3Client.class);
   }
 
   @Bean
@@ -56,6 +55,6 @@ public class TestUtilConfig {
   @Bean
   @Primary
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
-    return Mockito.mock(RestTemplate.class);
+    return mock(RestTemplate.class);
   }
 }
