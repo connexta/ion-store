@@ -43,6 +43,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @ActiveProfiles("test")
 public class IngestApplicationIntegrationTest {
 
+  private static final byte[] TEST_FILE = "some-content".getBytes();
+  private static final int TEST_FILE_SIZE = TEST_FILE.length;
+
   @Autowired private S3Client mockS3Client;
 
   @Autowired private RestTemplate restTemplate;
@@ -74,13 +77,11 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(SdkServiceException.builder().build());
 
-    final byte[] bytes = "some-content".getBytes();
-
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", bytes)
-                .param("fileSize", String.valueOf(bytes.length))
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -98,13 +99,11 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(SdkClientException.builder().build());
 
-    final byte[] bytes = "some-content".getBytes();
-
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", bytes)
-                .param("fileSize", String.valueOf(bytes.length))
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -122,13 +121,11 @@ public class IngestApplicationIntegrationTest {
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(new RuntimeException());
 
-    final byte[] bytes = "some-content".getBytes();
-
     // verify
     mvc.perform(
             multipart("/ingest")
-                .file("file", bytes)
-                .param("fileSize", String.valueOf(bytes.length))
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -153,11 +150,10 @@ public class IngestApplicationIntegrationTest {
                         .put("message", "The ID asdf has been accepted")
                         .toString()));
 
-    final byte[] bytes = "some-content".getBytes();
     mvc.perform(
             multipart("/ingest")
-                .file("file", bytes)
-                .param("fileSize", String.valueOf(bytes.length))
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -182,11 +178,10 @@ public class IngestApplicationIntegrationTest {
                         .put("message", "The ID asdf has been accepted")
                         .toString()));
 
-    final byte[] bytes = "some-content".getBytes();
     mvc.perform(
             multipart("/ingest")
-                .file("file", bytes)
-                .param("fileSize", String.valueOf(bytes.length))
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -200,7 +195,7 @@ public class IngestApplicationIntegrationTest {
   public void testIncorrectlyFormattedIngestRequest() throws Exception {
     mvc.perform(
             multipart("/ingest")
-                .file("file", "some-content".getBytes())
+                .file("file", TEST_FILE)
                 .param("filename", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")
@@ -212,11 +207,10 @@ public class IngestApplicationIntegrationTest {
 
   @Test
   public void testIngestRequestFileSizeMismatch() throws Exception {
-    final byte[] bytes = "some-content".getBytes();
     mvc.perform(
             multipart("/ingest")
-                .file("file", bytes)
-                .param("fileSize", String.valueOf(bytes.length + 1))
+                .file("file", TEST_FILE)
+                .param("fileSize", String.valueOf(TEST_FILE_SIZE + 1))
                 .param("fileName", "file")
                 .param("title", "qualityTitle")
                 .param("mimeType", "plain/text")

@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface StorageAdaptor {
 
   /**
-   * Stores the {@code file} in a in a blob store using the given {@code key}.
+   * Stores the {@code file} in a blob store using the given {@code key}.
    *
    * @throws IOException if the file can't be read
    * @throws StorageException if there is an error when attempting to store
