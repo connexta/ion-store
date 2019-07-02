@@ -216,12 +216,19 @@ endpointUrl:
 ```
 
 ## Deploying
-To deploy to a docker registry there are two options.
-1. Edit `deploy.bash` to set the docker registry and docker wrapper for the external server.
-2. Export the 2 configurations by running:
-```bash
-export DOCKER_REGISTRY="port:ip"
-export DOCKER_WRAPPER="/path/to/docker/wrapper/"
-```
+There are two ways to configure the build system to deploy the CDR service to a cloud:
+- Edit the`deploy.bash` file. Set two variables near the top of the file:
+  - `SET_DOCKER_REG="ip:port"`
+  - `SET_DOCKER_W="/path/to/docker/wrapper/"`
 
-Then run `./gradlew deploy`
+OR
+
+- Avoid editing a file in source control by exporting values:
+
+      export DOCKER_REGISTRY="ip:port"
+      export DOCKER_WRAPPER="/path/to/docker/wrapper/"
+
+
+After configuring the build system, run the gradle task `deploy`:
+
+      ./gradlew deploy
