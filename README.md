@@ -218,19 +218,17 @@ endpointUrl:
 ## Deploying
 There are two ways to configure the build system to deploy the CDR service to a cloud:
 - Edit the`deploy.bash` file. Set two variables near the top of the file:
-  - Set `SET_DOCKER_REG="ip:port"`
-  - Set `SET_DOCKER_W=/path/to/docker/wrapper/"`
+  - `SET_DOCKER_REG="ip:port"`
+  - `SET_DOCKER_W="/path/to/docker/wrapper/"`
 
 OR
 
 - Avoid editing a file in source control by exporting values:
-```bash
-export DOCKER_REGISTRY="ip:port"
-export DOCKER_WRAPPER="/path/to/docker/wrapper/"
-```
 
-After configuring the build system, run the gradle task `deploy` 
-```bash
-./gradlew deploy
-```
+      export DOCKER_REGISTRY="ip:port"
+      export DOCKER_WRAPPER="/path/to/docker/wrapper/"
 
+
+After configuring the build system, run the gradle task `deploy`:
+
+      ./gradlew deploy
