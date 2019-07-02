@@ -4,10 +4,9 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.ingest.adaptors;
+package com.connexta.multiintstore.common.adaptors;
 
-import com.connexta.ingest.exceptions.StorageException;
-import com.connexta.ingest.service.api.RetrieveResponse;
+import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,12 +26,13 @@ public interface StorageAdaptor {
       final String key)
       throws IOException, StorageException;
 
-  /**
-   * Retrieves the data in a blob store using the given key.
-   *
-   * @param key the key used to reference the stored object
-   * @return a {@link RetrieveResponse} containing the object for the given key
-   * @throws IOException if the file content cannot be read
-   */
-  RetrieveResponse retrieve(String key) throws IOException;
+  // Todo uncomment when the MIS implements retrieval
+  //  /**
+  //   * Retrieves the data in a blob store using the given key.
+  //   *
+  //   * @param key the key used to reference the stored object
+  //   * @return a {@link RetrieveResponse} containing the object for the given key
+  //   * @throws IOException if the file content cannot be read
+  //   */
+  //  RetrieveResponse retrieve(String key) throws IOException;
 }

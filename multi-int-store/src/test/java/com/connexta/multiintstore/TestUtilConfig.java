@@ -11,13 +11,13 @@ import static org.mockito.Mockito.mock;
 import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import com.connexta.multiintstore.config.EndpointUrlRetrieve;
 import org.apache.solr.client.solrj.SolrClient;
-import org.mockito.Mockito;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @Profile("test")
@@ -27,6 +27,17 @@ public class TestUtilConfig {
   @Primary
   public SolrClient solrClient() {
     return mock(SolrClient.class);
+  }
+
+  @Bean
+  @Primary
+  public S3Client s3Client() {
+    return mock(S3Client.class);
+  }
+
+  @Bean
+  public String s3BucketQuarantine() {
+    return "test-bucket";
   }
 
   @Bean
@@ -44,6 +55,6 @@ public class TestUtilConfig {
   @Bean
   @Primary
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
-    return Mockito.mock(RestTemplate.class);
+    return mock(RestTemplate.class);
   }
 }
