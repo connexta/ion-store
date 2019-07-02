@@ -16,6 +16,7 @@ configurations {
 }
 
 dependencies {
+    implementation(Dependencies.awsS3())
     implementation(Dependencies.springBootStarterWeb())
     implementation(Dependencies.zookeeper()) {
         force = true
