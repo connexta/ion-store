@@ -194,6 +194,7 @@ controlled.
 Example configs/ingest_config.yml:
 ```yaml
 endpointUrl:
+  store: http://localhost:1232/store/
   transform: http://localhost:1231/transform/
   ingest:
     retrieve: http://localhost:1233/retrieve/
@@ -211,7 +212,6 @@ solr:
   host: localhost
   port: 9983
 endpointUrl:
-  store: http://localhost:1232/store/
   retrieve: http://localhost:1233/retrieve/
 ```
 
