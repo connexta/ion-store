@@ -8,6 +8,7 @@ package com.connexta.multiintstore.repositories;
 
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import java.util.List;
+import org.springframework.data.solr.UncategorizedSolrException;
 import org.springframework.data.solr.repository.SolrCrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,5 @@ import org.springframework.stereotype.Repository;
 public interface IndexedMetadataRepository
     extends SolrCrudRepository<IndexedProductMetadata, String> {
 
-  List<IndexedProductMetadata> findByContents(String keyword);
+  List<IndexedProductMetadata> findByContents(String keyword) throws UncategorizedSolrException;
 }

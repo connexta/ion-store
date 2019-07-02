@@ -6,16 +6,16 @@
  */
 package com.connexta.multiintstore.controllers;
 
+import com.connexta.multiintstore.exception.SearchException;
 import com.connexta.multiintstore.services.api.SearchService;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.solr.UncategorizedSolrException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,12 +34,16 @@ public class QueryController {
   @RequestMapping(method = RequestMethod.GET, params = "q")
   @ResponseBody
   public ResponseEntity<List<URL>> searchKeyword(@RequestParam(value = "q") String keyword) {
+    if (StringUtils.isEmpty(keyword)) {
+      final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+      LOGGER.warn(String.format("Unable to search for empty keyword. Returning %s.", httpStatus));
+      return new ResponseEntity<>(httpStatus);
+    }
+
     try {
       return new ResponseEntity<>(searchService.find(keyword), HttpStatus.OK);
-    } catch (MalformedURLException e) {
-      LOGGER.warn("Unable to construct URLs when querying for {}", keyword, e);
-    } catch (UncategorizedSolrException e) {
-      LOGGER.warn("Error querying solr for {}", keyword, e);
+    } catch (SearchException e) {
+      LOGGER.warn("Unable to search for {}", keyword, e);
     }
 
     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
