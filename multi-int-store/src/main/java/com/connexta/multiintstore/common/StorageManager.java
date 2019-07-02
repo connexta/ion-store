@@ -6,95 +6,60 @@
  */
 package com.connexta.multiintstore.common;
 
-import com.connexta.multiintstore.callbacks.FinishedCallback;
-import com.connexta.multiintstore.callbacks.MetadataCallback;
-import com.connexta.multiintstore.callbacks.ProductCallback;
-import com.connexta.multiintstore.common.exceptions.RetrievalClientException;
-import com.connexta.multiintstore.common.exceptions.RetrievalServerException;
-import com.connexta.multiintstore.models.IndexedProductMetadata;
-import com.connexta.multiintstore.models.Product;
-import com.connexta.multiintstore.services.api.Dao;
-import com.connexta.multiintstore.services.api.DuplicateIdException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.connexta.multiintstore.common.adaptors.S3StorageAdaptor;
+import com.connexta.multiintstore.common.exceptions.StorageException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.UUID;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 public class StorageManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(StorageManager.class);
+  @NotNull private final S3StorageAdaptor s3;
+
+  @NotEmpty private final String retrieveEndpoint;
+
   private static final String INDEXED_PRODUCT_METADATA_CALLBACK_TYPE = "cst";
 
-  private final Dao<Product, String> productDao;
-  private final Dao<IndexedProductMetadata, String> cstDao;
-  private final DataRetriever retriever;
-
-  @Autowired
   public StorageManager(
-      Dao<Product, String> productDao,
-      Dao<IndexedProductMetadata, String> cstDao,
-      DataRetriever retriever) {
-    this.productDao = productDao;
-    this.cstDao = cstDao;
-    this.retriever = retriever;
+      @NotEmpty @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
+      S3StorageAdaptor s3) {
+    this.retrieveEndpoint = retrieveEndpoint;
+    this.s3 = s3;
   }
 
-  /**
-   * @throws RetrievalClientException if there is a 400 status code when sending the request from
-   *     the callback
-   * @throws RetrievalServerException if there was a 500 status code when sending the request from
-   *     the callback
-   * @throws DuplicateIdException if there was an Id that already exists
-   * @throws StorageException if there was an error storing the callback
-   */
-  public void handleGeneralCallback(Object callback, String ingestId)
-      throws StorageException, DuplicateIdException, RetrievalServerException,
-          RetrievalClientException {
+  public URL storeProduct(
+      String acceptVersion, Long fileSize, String mimeType, MultipartFile file, String fileName)
+      throws IOException, StorageException {
+    final String key = UUID.randomUUID().toString().replace("-", "");
 
-    if (callback instanceof ProductCallback) {
-      handleCallback((ProductCallback) callback);
-    }
-    if (callback instanceof FinishedCallback) {
-      handleCallback((FinishedCallback) callback);
-    }
-    if (callback instanceof MetadataCallback) {
-      handleCallback((MetadataCallback) callback, ingestId);
-    }
+    // Store in S3
+    s3.store(mimeType, file, fileSize, fileName, key);
+    // return product location
+    return new URL(retrieveEndpoint + key);
   }
 
-  private void handleCallback(ProductCallback callback) {
-    LOGGER.info("Product");
-    //  TODO :: Check Markings
-    //  TODO :: Store Product
-  }
-
-  private void handleCallback(MetadataCallback callback, String ingestId)
-      throws StorageException, DuplicateIdException, RetrievalServerException,
-          RetrievalClientException {
-
-    LOGGER.info("Metadata");
-    //  TODO :: Check Markings
-
-    if (callback.getType().equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
-      String contents =
-          retriever.getMetadata(
-              callback.getLocation().toString(), callback.getMimeType(), String.class);
-
-      final IndexedProductMetadata indexedProductMetadata =
-          new IndexedProductMetadata(ingestId, contents);
-      cstDao.save(indexedProductMetadata);
-    } else {
-      LOGGER.info(
-          "Received non-"
-              + INDEXED_PRODUCT_METADATA_CALLBACK_TYPE
-              + " metadata, which is not yet supported");
-      // TODO
-    }
-  }
-
-  private void handleCallback(FinishedCallback callback) {
-    LOGGER.info("Finished");
-    //  TODO :: Remove from Temp-Store
-  }
+  //  public URI storeMetdata() {
+  //    if (callback.getType().equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
+  //      String contents =
+  //              retriever.getMetadata(
+  //                      callback.getLocation().toString(), callback.getMimeType(), String.class);
+  //
+  //      final IndexedProductMetadata indexedProductMetadata =
+  //              new IndexedProductMetadata(ingestId, contents);
+  //      cstDao.save(indexedProductMetadata);
+  //    } else {
+  //      log.info(
+  //              "Received non-"
+  //                      + INDEXED_PRODUCT_METADATA_CALLBACK_TYPE
+  //                      + " metadata, which is not yet supported");
+  //    }
+  //  }
 }

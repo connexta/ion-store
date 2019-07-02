@@ -19,7 +19,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.utils.ImmutableMap;
 
-/** TODO one adaptor for quarantine and one adaptor for multi-int-store */
 @Service
 public class S3StorageAdaptor implements StorageAdaptor {
 
