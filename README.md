@@ -130,7 +130,6 @@ docker stack deploy -c docker-compose.yml cdr
     REPOSITORY                                     TAG                 IMAGE ID            CREATED             SIZE
     cnxta/cdr-ingest                               0.1.0-SNAPSHOT      4ca707d86ddb        2 hours ago         290MB
     cnxta/cdr-multi-int-store                      0.1.0-SNAPSHOT      39b44248f9c1        19 hours ago        308MB
-    cnxta/cdr-search                               0.1.0-SNAPSHOT      4c29a3d8b5fa        25 hours ago        290MB
     ```
 
     For each image, use `docker tag SOURCE TARGET` to create an alias with the address of the target registry. For
@@ -138,14 +137,12 @@ docker stack deploy -c docker-compose.yml cdr
     ```bash
     docker tag cnxta/cdr-ingest:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
     docker tag cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
-    docker tag cnxta/cdr-search:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-search:0.1.0-SNAPSHOT
     ```
 2. Push each image.
 
     ```bash
     docker push <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
     docker push <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
-    docker push <docker_registry>/cnxta/cdr-search:0.1.0-SNAPSHOT
     ```
 3. Deploy the service in the cloud.
     > **Note**: All of the commands in this section must be executed from the cloud environment, not the local
