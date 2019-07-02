@@ -13,6 +13,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.connexta.multiintstore.common.exceptions.RetrievalClientException;
+import com.connexta.multiintstore.common.exceptions.RetrievalServerException;
 import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import java.util.Objects;
 import org.json.JSONObject;

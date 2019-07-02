@@ -6,6 +6,8 @@
  */
 package com.connexta.multiintstore.common;
 
+import com.connexta.multiintstore.common.exceptions.RetrievalClientException;
+import com.connexta.multiintstore.common.exceptions.RetrievalServerException;
 import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import java.util.Collections;
 import javax.validation.constraints.NotEmpty;

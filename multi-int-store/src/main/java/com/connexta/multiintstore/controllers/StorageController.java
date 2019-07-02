@@ -13,6 +13,7 @@ import com.connexta.multiintstore.common.RetrievalServerException;
 import com.connexta.multiintstore.common.StorageException;
 import com.connexta.multiintstore.common.StorageManager;
 import com.connexta.multiintstore.services.api.DuplicateIdException;
+import com.connexta.multiintstore.services.api.StorageException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

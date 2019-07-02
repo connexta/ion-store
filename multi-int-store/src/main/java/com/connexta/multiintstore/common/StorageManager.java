@@ -9,6 +9,8 @@ package com.connexta.multiintstore.common;
 import com.connexta.multiintstore.callbacks.FinishedCallback;
 import com.connexta.multiintstore.callbacks.MetadataCallback;
 import com.connexta.multiintstore.callbacks.ProductCallback;
+import com.connexta.multiintstore.common.exceptions.RetrievalClientException;
+import com.connexta.multiintstore.common.exceptions.RetrievalServerException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.models.Product;
 import com.connexta.multiintstore.services.api.Dao;
