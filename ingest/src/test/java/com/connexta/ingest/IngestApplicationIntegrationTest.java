@@ -38,6 +38,7 @@ public class IngestApplicationIntegrationTest {
 
   private static final byte[] TEST_FILE = "some-content".getBytes();
   private static final int TEST_FILE_SIZE = TEST_FILE.length;
+  private static final String ENDPOINT_URL_TRANSFORM = "https://localhost/transform";
 
   @Autowired private RestTemplate restTemplate;
 
@@ -59,14 +60,13 @@ public class IngestApplicationIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testContextLoads() {}
 
   @Test
   @Ignore
-  public void testSuccessfulTransformRequest() throws Exception {
+  public void testSuccessfulIngestRequest() throws Exception {
     server
-        .expect(requestTo("https://localhost/transform"))
+        .expect(requestTo(ENDPOINT_URL_TRANSFORM))
         .andRespond(
             withStatus(HttpStatus.ACCEPTED)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -89,13 +89,19 @@ public class IngestApplicationIntegrationTest {
         .andExpect(status().isAccepted());
   }
 
+  @Test
+  @Ignore
+  public void testUnsuccessfulStoreRequest() {
+    // TODO
+  }
+
   // The error handler throws the same exception for all non-202 status codes returned by the
   // transformation endpoint
   @Test
   @Ignore
-  public void testUnsuccessfulRequest() throws Exception {
+  public void testUnsuccessfulTransformRequest() throws Exception {
     server
-        .expect(requestTo("https://localhost/transform"))
+        .expect(requestTo(ENDPOINT_URL_TRANSFORM))
         .andRespond(
             withStatus(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -118,7 +124,6 @@ public class IngestApplicationIntegrationTest {
         .andExpect(status().isInternalServerError());
   }
 
-  @Ignore
   @Test
   public void testIncorrectlyFormattedIngestRequest() throws Exception {
     mvc.perform(
@@ -134,7 +139,6 @@ public class IngestApplicationIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testIngestRequestFileSizeMismatch() throws Exception {
     mvc.perform(
             multipart("/ingest")
