@@ -193,8 +193,7 @@ Example configs/ingest_config.yml:
 endpointUrl:
   store: http://localhost:1232/store/
   transform: http://localhost:1231/transform/
-  ingest:
-    retrieve: http://localhost:1233/retrieve/
+  retrieve: http://localhost:1233/retrieve/
 ```
 
 Example configs/mis_config.yml:
