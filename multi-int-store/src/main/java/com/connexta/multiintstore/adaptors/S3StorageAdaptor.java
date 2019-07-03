@@ -8,8 +8,7 @@ package com.connexta.multiintstore.adaptors;
 
 import com.connexta.multiintstore.common.StorageException;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -19,10 +18,10 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.utils.ImmutableMap;
 
+@Slf4j
 @Service
 public class S3StorageAdaptor implements StorageAdaptor {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3StorageAdaptor.class);
   private final String s3BucketQuarantine;
   private final S3Client s3Client;
 
@@ -49,9 +48,14 @@ public class S3StorageAdaptor implements StorageAdaptor {
             .build();
     final RequestBody requestBody = RequestBody.fromInputStream(file.getInputStream(), fileSize);
 
-    LOGGER.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
+    log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
     try {
       s3Client.putObject(putObjectRequest, requestBody);
+      log.info(
+          "Successfully stored \"{}\" in bucket \"{}\" with key \"{}\"",
+          fileName,
+          s3BucketQuarantine,
+          key);
     } catch (SdkServiceException e) {
       throw new StorageException(
           "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
@@ -66,7 +70,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   // Uncomment when the MIS implements retrieval
   //  @Override
   //  public RetrieveResponse retrieve(String ingestId) throws IOException {
-  //    LOGGER.info(
+  //    log.info(
   //        "Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, ingestId);
   //
   //    final ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream =

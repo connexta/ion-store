@@ -8,6 +8,8 @@ package com.connexta.multiintstore.common;
 
 import com.connexta.multiintstore.common.adaptors.S3StorageAdaptor;
 import com.connexta.multiintstore.common.exceptions.StorageException;
+import com.connexta.multiintstore.models.IndexedProductMetadata;
+import com.connexta.multiintstore.services.api.Dao;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
@@ -22,22 +24,27 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class StorageManager {
 
-  @NotNull private final S3StorageAdaptor s3;
+  private static final String INDEXED_PRODUCT_METADATA_CALLBACK_TYPE = "cst";
 
   @NotEmpty private final String retrieveEndpoint;
 
-  private static final String INDEXED_PRODUCT_METADATA_CALLBACK_TYPE = "cst";
+  @NotNull private final S3StorageAdaptor s3;
+  @NotNull private final Dao<IndexedProductMetadata, String> cstDao;
 
   public StorageManager(
       @NotEmpty @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
-      S3StorageAdaptor s3) {
+      @NotNull final S3StorageAdaptor s3,
+      @NotNull final Dao<IndexedProductMetadata, String> cstDao) {
     this.retrieveEndpoint = retrieveEndpoint;
     this.s3 = s3;
+    this.cstDao = cstDao;
   }
 
   public URL storeProduct(
       String acceptVersion, Long fileSize, String mimeType, MultipartFile file, String fileName)
       throws IOException, StorageException {
+
+    // TODO: Validate Accept-Version
     final String key = UUID.randomUUID().toString().replace("-", "");
 
     // Store in S3
@@ -46,20 +53,25 @@ public class StorageManager {
     return new URL(retrieveEndpoint + key);
   }
 
-  //  public URI storeMetdata() {
-  //    if (callback.getType().equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
-  //      String contents =
-  //              retriever.getMetadata(
-  //                      callback.getLocation().toString(), callback.getMimeType(), String.class);
-  //
-  //      final IndexedProductMetadata indexedProductMetadata =
-  //              new IndexedProductMetadata(ingestId, contents);
-  //      cstDao.save(indexedProductMetadata);
-  //    } else {
-  //      log.info(
-  //              "Received non-"
-  //                      + INDEXED_PRODUCT_METADATA_CALLBACK_TYPE
-  //                      + " metadata, which is not yet supported");
-  //    }
-  //  }
+  public void storeMetdata(
+      String acceptVersion,
+      String productId,
+      String metadataType,
+      String mimeType,
+      MultipartFile file,
+      String fileName)
+      throws IOException, StorageException {
+
+    if (metadataType.equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
+      final IndexedProductMetadata indexedProductMetadata =
+          new IndexedProductMetadata(productId, file.getInputStream().toString());
+      log.info("Attempting to store {} with name \"{}\" in Solr", metadataType, fileName);
+      cstDao.save(indexedProductMetadata);
+    } else {
+      log.info(
+          "Received non-"
+              + INDEXED_PRODUCT_METADATA_CALLBACK_TYPE
+              + " metadata, which is not yet supported");
+    }
+  }
 }
