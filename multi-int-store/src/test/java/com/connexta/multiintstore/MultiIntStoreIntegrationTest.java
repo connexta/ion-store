@@ -39,6 +39,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -66,6 +67,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 @SpringBootTest
 @ContextConfiguration(initializers = MultiIntStoreIntegrationTest.Initializer.class)
 @EnableConfigurationProperties
+@DirtiesContext
 @ActiveProfiles("test")
 public class MultiIntStoreIntegrationTest {
 
@@ -141,7 +143,6 @@ public class MultiIntStoreIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testEmptySearchResults() throws Exception {
     // given:
     final String contents =
@@ -155,19 +156,7 @@ public class MultiIntStoreIntegrationTest {
             Action.stringContent(contents),
             Action.status(HttpStatus.OK_200));
 
-    mockMvc.perform(
-        MockMvcRequestBuilders.post("/store/" + ingestId)
-            .contentType("application/json")
-            .content(
-                createMetadataCallbackJson(
-                    "1234",
-                    "COMPLETE",
-                    "cst",
-                    MediaType.APPLICATION_JSON.toString(),
-                    256,
-                    "http://localhost:" + server.getPort() + "/location/cst001",
-                    "U",
-                    "ownerProducer")));
+    mockMvc.perform(getMetadataRequest());
 
     // verify:
     mockMvc
@@ -283,7 +272,6 @@ public class MultiIntStoreIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testStoreMetadata() throws Exception {
 
     mockMvc

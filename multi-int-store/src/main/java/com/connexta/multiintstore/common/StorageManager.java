@@ -64,7 +64,7 @@ public class StorageManager {
 
     if (metadataType.equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
       final IndexedProductMetadata indexedProductMetadata =
-          new IndexedProductMetadata(productId, file.getInputStream().toString());
+          new IndexedProductMetadata(productId, new String(file.getBytes(), "UTF-8"));
       log.info("Attempting to store {} with name \"{}\" in Solr", metadataType, fileName);
       cstDao.save(indexedProductMetadata);
     } else {

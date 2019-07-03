@@ -12,10 +12,8 @@ import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.Dao;
 import com.connexta.multiintstore.services.api.DuplicateIdException;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 public class IndexedMetadataDao implements Dao<IndexedProductMetadata, String> {
 
@@ -45,7 +43,6 @@ public class IndexedMetadataDao implements Dao<IndexedProductMetadata, String> {
         });
     try {
       repository.save(indexedProductMetadata);
-      log.info("Successfully stored CST with productId \"{}\" in Solr", document.get().getId());
     } catch (RuntimeException e) {
       throw new StorageException("A problem occurred while using Solr", e);
     }
