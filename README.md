@@ -225,10 +225,14 @@ OR
 
 - Avoid editing a file in source control by exporting values:
 
-      export DOCKER_REGISTRY="ip:port"
-      export DOCKER_WRAPPER="/path/to/docker/wrapper/"
+    ```bash
+    export DOCKER_REGISTRY="ip:port"
+    export DOCKER_WRAPPER="/path/to/docker/wrapper/"
+    ```
 
 
 After configuring the build system, run the gradle task `deploy`:
 
-      ./gradlew deploy
+```bash
+./gradlew deploy
+```
