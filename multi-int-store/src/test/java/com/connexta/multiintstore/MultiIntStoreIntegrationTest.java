@@ -160,14 +160,6 @@ public class MultiIntStoreIntegrationTest {
   }
 
   @Test
-  public void testRetrieve() throws Exception {
-    mockMvc
-        .perform(MockMvcRequestBuilders.get("/retrieve/1"))
-        .andDo(print())
-        .andExpect(status().isOk());
-  }
-
-  @Test
   @Ignore
   public void testEmptySearchService() throws Exception {
     mockMvc

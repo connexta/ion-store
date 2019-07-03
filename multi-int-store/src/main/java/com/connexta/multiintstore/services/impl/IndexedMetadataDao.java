@@ -6,11 +6,11 @@
  */
 package com.connexta.multiintstore.services.impl;
 
+import com.connexta.multiintstore.common.StorageException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.Dao;
 import com.connexta.multiintstore.services.api.DuplicateIdException;
-import com.connexta.multiintstore.services.api.StorageException;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -43,15 +43,6 @@ public class IndexedMetadataDao implements Dao<IndexedProductMetadata, String> {
         });
     try {
       repository.save(indexedProductMetadata);
-    } catch (RuntimeException e) {
-      throw new StorageException("A problem occurred while using Solr", e);
-    }
-  }
-
-  @Override
-  public void delete(String id) throws StorageException {
-    try {
-      repository.deleteById(id);
     } catch (RuntimeException e) {
       throw new StorageException("A problem occurred while using Solr", e);
     }
