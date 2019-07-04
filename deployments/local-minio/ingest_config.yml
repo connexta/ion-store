@@ -1,10 +1,3 @@
-aws:
-  s3:
-    endpointUrl: http://minio:9000
-    region: local
-    bucket:
-      quarantine: ingest-quarantine
- 
 endpointUrl:
   transform: http://cdr-store:9041/transform/
   ingest:
