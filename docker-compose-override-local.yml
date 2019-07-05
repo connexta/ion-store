@@ -11,17 +11,21 @@ services:
       - MINIO_ACCESS_KEY=miniokey
       - MINIO_SECRET_KEY=miniokey
     networks:
-      - cdr
+      - cdr-local
     command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
 
-configs:
-  ingest_config:
-    file: deployments/local-minio/ingest_config.yml
-  mis_config:
-    file: deployments/local-minio/mis_config.yml
+networks:
+  cdr-local:
+    external: true
 
 secrets:
   aws_s3_secret:
     file: deployments/local-minio/minio_secret.notsec
   aws_s3_access:
     file: deployments/local-minio/minio_access.notsec
+
+configs:
+  ingest_config:
+    file: deployments/local-minio/ingest_config.yml
+  mis_config:
+    file: deployments/local-minio/mis_config.yml

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name to give the docker network and stack. Update network instances in docker-compose.yml file if modified.
-name="cdr_local-minio"
+name="cdr-local"
 
 function wait_for_containers () {
     waiting=$(docker service ls | grep ""$name"_.*0/1 ")
@@ -16,46 +16,34 @@ function wait_for_containers () {
 
 # Deploy docker-compose.yml file via docker stacks
 function deploy_images () {
-    printf "Deploying Docker Images...\n"
-    echo $(pwd)
     docker stack deploy -c docker-compose.yml -c docker-compose-override-local.yml $name
 }
 
-# Create attachable overlay docker network
-function create_network () {
-    printf "Creating docker '$name' network...\n"
-    docker network create --driver=overlay --attachable $name
+# Secrets and configs are immutable. Docker swarm reports error "only updates to Labels are allowed"
+# when attempting to modify their values. Remove any existing configs and secrets before
+# attempting to create new ones.
+function clean () {
+    # Docker swarm prevents configs and secrets from being removed
+    # if they are being used by a service, so shut down the stack if it is running.
+    running_stack=$(docker stack ls | grep -w $name)
+    [ ! -z "$running_stack" ] && docker stack rm $name > /dev/null && echo "Removed stack: $name"
+
+    configs=$(docker config ls  | grep $name | tr -s " " | cut -d" " -f2)
+    [ ! -z "$configs" ] && docker config rm $configs && echo "Removed configs: $configs"
+
+    secrets=$(docker secret ls | grep $name | tr -s " " | cut -d" " -f2)
+    [ ! -z "$secrets" ] && docker config rm $secrets && echo "Removed secrets: $secrets"
 }
 
-# Check is network already does not exist or is not attachable.
-# Prompt to create if nonexistent or continue if network exists and is attachable.
-function check_network_configuration () {
-    printf "Checking Docker Network...\n"
-    network=`docker network ls | grep "$name"`
-    networktype=$(docker network inspect $name 2>/dev/null | grep -i "\"driver\": \"overlay\"")
-    attachable=$(docker network inspect $name 2>/dev/null | grep -i "\"attachable\": true")
-    if [ -z "$network" ]; then
-        read -p "Network '$name' does not exist, create it now? (y/N) " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            create_network
-        else
-            printf "Exiting...\n"
-            exit 0
-        fi
-    elif [ -z "$networktype" ] || [ -z "$attachable" ]; then
-        printf  "ERROR: The docker network '$name' exists, but is not an attachable overlay network. Please update/remove this docker network and re-run this script. The network can be removed manually with 'docker network rm $name'.\n"
-        exit 1
-    fi
+function recreate_network () {
+    # Remove network in case it has the wrong options
+    docker network rm $name 2&> /dev/null
+    docker network create --driver=overlay --attachable $name > /dev/null
 }
 
-# Warning message and beginning of script
-printf "\
-====== WARNING: TEST DEPLOYMENT ======\n\
-This docker deployment will create a local minio server with default secret and key. Make sure this isn't being deployed into production.\n\n"
 
-if
-
-check_network_configuration
+# Begin script
+clean
+recreate_network
 deploy_images
 wait_for_containers
