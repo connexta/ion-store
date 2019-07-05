@@ -1,23 +1,10 @@
 #!/usr/bin/env bash
 
+set -x
+trap read debug
+
 # Name to give the docker network and stack. Update network instances in docker-compose.yml file if modified.
 name="cdr-local"
-
-function wait_for_containers () {
-    waiting=$(docker service ls | grep ""$name"_.*0/1 ")
-    printf "\nWaiting for docker services to start."
-    while [ ! -z "$waiting" ]; do
-        sleep 2
-        printf "."
-        waiting=$(docker service ls | grep ""$name"_.*0/1 ")
-    done
-    printf "\nDone!\n"
-}
-
-# Deploy docker-compose.yml file via docker stacks
-function deploy_images () {
-    docker stack deploy -c docker-compose.yml -c docker-compose-override-local.yml $name
-}
 
 # Secrets and configs are immutable. Docker swarm reports error "only updates to Labels are allowed"
 # when attempting to modify their values. Remove any existing configs and secrets before
@@ -41,9 +28,25 @@ function recreate_network () {
     docker network create --driver=overlay --attachable $name > /dev/null
 }
 
+# Deploy docker-compose.yml file via docker stacks
+function deploy_images () {
+    docker stack deploy -c docker-compose.yml -c docker-compose-override-local.yml $name
+}
 
-# Begin script
+function wait_for_containers () {
+    waiting=$(docker service ls | grep ""$name"_.*0/[[:digit:]] ")
+    printf "\nWaiting for docker services to start."
+    while [ ! -z "$waiting" ]; do
+        sleep 2
+        printf "."
+        waiting=$(docker service ls | grep ""$name"_.*0/[[:digit:]] ")
+    done
+    printf "\nDone!\n"
+}
+
+# ----- BEGIN -----
 clean
 recreate_network
 deploy_images
 wait_for_containers
+# ------ END ------
