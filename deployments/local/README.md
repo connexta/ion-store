@@ -20,7 +20,7 @@ the docker network or deploying the images.
 
 ## Minio
 The minio web client is exposed on port 9000 with the default login information
-These minio keys are in the test files `minio_access.notsec` and `minio_secret.notsec`
+These minio keys are in the text files `minio_access.notsec` and `minio_secret.notsec`
 
 ## Additional Information
 Any additional information about the services started can be found in the README.md at the root of the project.
