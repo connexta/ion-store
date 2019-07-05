@@ -42,7 +42,7 @@ function deploy_stack () {
 function wait_for_services () {
   printf "Starting services"
   wait_for_empty_results "docker service ls | grep $name_.*0/[[:digit:]]"
-  echo "\n"
+  printf "\n"
 }
 
 # ----- BEGIN -----
@@ -50,5 +50,5 @@ remove_stack
 recreate_network
 deploy_stack
 wait_for_services
-printf "\nDone\n"
+echo "Done"
 # ------ END ------
