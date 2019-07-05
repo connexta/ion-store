@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
 
-#set -x
-#trap read debug
-
 # Name to give the docker network and stack. Update network instances in docker-compose.yml file if modified.
 name=cdr
 
-# Evaluate the first parameter passed to the function every 2 seconds.
+# Evaluate the first parameter passed to the function every periodically.
 # When the expression evaluates to an empty string, return.
 function wait_for_empty_results() {
   sleep 1
-  while [[ ! -z  $(eval $1) ]]; do
+  while [[ -n  $(eval $1) ]]; do
     sleep 1
-    printf "." >& 2
+    printf "." >&2
   done
 }
 
@@ -25,29 +22,16 @@ function remove_stack () {
   docker stack rm $name 2&> /dev/null
 }
 
-# Return true if the network $name exists
-function network_exists() {
-  # Match only on the exact name (-w for whole word)
-  result=$(docker network ls | grep -w $name)
-  if [[ ! -z $result ]];
-    then
-      return 0
-    else
-      return 1
-  fi
-}
 function recreate_network () {
-  if network_exists
-    then
-      printf "Removing network $name"
-      docker network rm $name > /dev/null
-      wait_for_empty_results "docker network ls | grep -w $name" >&2
-      echo ""
-  fi
+  docker network rm $name 2&> /dev/null
+  printf "Recreating network $name"
 
-  # Once network is gone, recreate it
+  # Match only on the exact name (-w for whole word)
+  wait_for_empty_results "docker network ls | grep -w $name"
+  printf "\n"
+
+  # Once network is gone, create it
   docker network create --driver=overlay --attachable $name > /dev/null
-
 }
 
 # Deploy docker-compose.yml file via docker stacks
@@ -58,7 +42,7 @@ function deploy_stack () {
 function wait_for_services () {
   printf "Starting services"
   wait_for_empty_results "docker service ls | grep $name_.*0/[[:digit:]]"\
-  echo ""
+  echo "\n"
 }
 
 # ----- BEGIN -----
@@ -66,5 +50,5 @@ remove_stack
 recreate_network
 deploy_stack
 wait_for_services
-echo Exiting
+printf "\nDone\n"
 # ------ END ------
