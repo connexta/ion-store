@@ -41,7 +41,7 @@ function deploy_stack () {
 
 function wait_for_services () {
   printf "Starting services"
-  wait_for_empty_results "docker service ls | grep $name_.*0/[[:digit:]]"\
+  wait_for_empty_results "docker service ls | grep $name_.*0/[[:digit:]]"
   echo "\n"
 }
 
