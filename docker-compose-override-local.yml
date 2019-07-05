@@ -11,12 +11,8 @@ services:
       - MINIO_ACCESS_KEY=miniokey
       - MINIO_SECRET_KEY=miniokey
     networks:
-      - cdr-local
+      - cdr #Variable substitution causes and underscore to added to $name. Use hard-coded network name. (version 3.7)
     command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
-
-networks:
-  cdr-local:
-    external: true
 
 secrets:
   aws_s3_secret:
