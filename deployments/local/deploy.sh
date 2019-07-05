@@ -29,6 +29,8 @@ function remove_stack () {
   docker stack rm $name 2&> /dev/null
 }
 
+
+# Attachable networks cannot be created in compose files. Create the network in this script.
 function recreate_network () {
   docker network rm $name 2&> /dev/null
   printf "Recreating network $name"
