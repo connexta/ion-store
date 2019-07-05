@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 
-# Name to give the docker network and stack. Update network instances in docker-compose.yml file if modified.
+# Name to give the docker network and stack.
+
+# Warning: $name is used for both the stack name and network name. The network name is hard-coded
+# in the compose-override file  in this directory
+# because variable substitution would append an underscore to $name in
+# in the compose-override file.
+# The consequence is that If the value of name is modified here, the compose-override file
+# should be edited and the string "cdr" replaced with the new value of name.
 name=cdr
 
 # Evaluate the first parameter passed to the function every periodically.
@@ -36,7 +43,7 @@ function recreate_network () {
 
 # Deploy docker-compose.yml file via docker stacks
 function deploy_stack () {
-  docker stack deploy -c docker-compose.yml -c docker-compose-override-local.yml $name
+  docker stack deploy -c ../../docker-compose.yml -c docker-compose-override-local.yml $name
 }
 
 function wait_for_services () {
