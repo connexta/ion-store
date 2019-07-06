@@ -180,4 +180,10 @@ subprojects {
     }
 
     task listDependencies(type: DependencyReportTask)
+
+}
+
+task deploy(type:Exec) {
+    dependsOn subprojects.build
+    commandLine "./deploy.bash"
 }

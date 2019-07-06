@@ -130,7 +130,6 @@ docker stack deploy -c docker-compose.yml cdr
     REPOSITORY                                     TAG                 IMAGE ID            CREATED             SIZE
     cnxta/cdr-ingest                               0.1.0-SNAPSHOT      4ca707d86ddb        2 hours ago         290MB
     cnxta/cdr-multi-int-store                      0.1.0-SNAPSHOT      39b44248f9c1        19 hours ago        308MB
-    cnxta/cdr-search                               0.1.0-SNAPSHOT      4c29a3d8b5fa        25 hours ago        290MB
     ```
 
     For each image, use `docker tag SOURCE TARGET` to create an alias with the address of the target registry. For
@@ -138,14 +137,12 @@ docker stack deploy -c docker-compose.yml cdr
     ```bash
     docker tag cnxta/cdr-ingest:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
     docker tag cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
-    docker tag cnxta/cdr-search:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-search:0.1.0-SNAPSHOT
     ```
 2. Push each image.
 
     ```bash
     docker push <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
     docker push <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
-    docker push <docker_registry>/cnxta/cdr-search:0.1.0-SNAPSHOT
     ```
 3. Deploy the service in the cloud.
     > **Note**: All of the commands in this section must be executed from the cloud environment, not the local
@@ -183,15 +180,23 @@ in the external config file take precedence over config files that are built wit
 
 ## Using
 
-### Ingest Service
-The Ingest service is capable of storing data in an S3-compatible data store. The configuration to access S3 is found as
+### Multi-Int Store Service
+The Multi-Int Store service is capable of storing data in an S3-compatible data store. The configuration to access S3 is found as
 a list of commands under the ingest service in the `docker-compose.yml` file. Here you can change the endpoint URL, the
-S3 bucket name, and the credentials the Ingest Service will use to connect to S3. The Ingest Service uses docker secrets
+S3 bucket name, and the credentials the service will use to connect to S3. The Multi-Int Store uses docker secrets
 for the AWS Access Key and the AWS Secret Key. The key values are stored in files called `aws_s3_access.sec` and
 `aws_s3_secret.sec`. These files must be in the same directory as the `docker-compose.yml` and will not be version
 controlled.
 
 Example configs/ingest_config.yml:
+```yaml
+endpointUrl:
+  store: http://localhost:1232/store/
+  transform: http://localhost:1231/transform/
+  retrieve: http://localhost:1233/retrieve/
+```
+
+Example configs/mis_config.yml:
 ```yaml
 aws:
   s3:
@@ -199,18 +204,31 @@ aws:
     region: us-west-1
     bucket:
       quarantine: ingest-quarantine
-endpointUrl:
-  transform: http://localhost:1231/transform/
-  ingest:
-    callback: http://localhost:1232/store/
-    retrieve: http://localhost:1233/retrieve/
-```
-
-Example configs/mis_config.yml:
-```yaml
 solr:
   host: localhost
   port: 9983
 endpointUrl:
   retrieve: http://localhost:1233/retrieve/
+```
+
+## Deploying
+There are two ways to configure the build system to deploy the CDR service to a cloud:
+- Edit the`deploy.bash` file. Set two variables near the top of the file:
+  - `SET_DOCKER_REG="ip:port"`
+  - `SET_DOCKER_W="/path/to/docker/wrapper/"`
+
+OR
+
+- Avoid editing a file in source control by exporting values:
+
+    ```bash
+    export DOCKER_REGISTRY="ip:port"
+    export DOCKER_WRAPPER="/path/to/docker/wrapper/"
+    ```
+
+
+After configuring the build system, run the gradle task `deploy`:
+
+```bash
+./gradlew deploy
 ```

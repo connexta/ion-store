@@ -6,11 +6,8 @@
  */
 package com.connexta.ingest.service.impl;
 
-import com.connexta.ingest.adaptors.S3StorageAdaptor;
-import com.connexta.ingest.exceptions.StorageException;
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.service.api.IngestService;
-import com.connexta.ingest.service.api.StoreRequest;
 import com.connexta.ingest.transform.TransformClient;
 import com.connexta.transformation.rest.models.TransformRequest;
 import com.connexta.transformation.rest.models.TransformResponse;
@@ -32,17 +29,14 @@ public class IngestServiceImpl implements IngestService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceImpl.class);
 
-  @NotNull private final S3StorageAdaptor s3Adaptor;
   @NotNull private final TransformClient transformClient;
   @NotEmpty private final String callbackEndpoint;
   @NotEmpty private final String retrieveEndpoint;
 
   public IngestServiceImpl(
-      @NotNull final S3StorageAdaptor s3Adaptor,
       @NotNull final TransformClient transformClient,
-      @NotEmpty @Value("${endpointUrl.ingest.callback}") final String callbackEndpoint,
-      @NotEmpty @Value("${endpointUrl.ingest.retrieve}") final String retrieveEndpoint) {
-    this.s3Adaptor = s3Adaptor;
+      @NotEmpty @Value("${endpointUrl.store}") final String callbackEndpoint,
+      @NotEmpty @Value("${endpointUrl.retrieve}") final String retrieveEndpoint) {
     this.transformClient = transformClient;
     this.callbackEndpoint = callbackEndpoint;
     this.retrieveEndpoint = retrieveEndpoint;
@@ -52,16 +46,12 @@ public class IngestServiceImpl implements IngestService {
 
   @Override
   public void ingest(
-      String acceptVersion,
-      Long fileSize,
-      String mimeType,
-      MultipartFile file,
-      String title,
-      String fileName)
-      throws IOException, StorageException, TransformException {
+      final String mimeType, final MultipartFile file, final Long fileSize, final String fileName)
+      throws IOException, TransformException {
     final String ingestId = UUID.randomUUID().toString().replace("-", "");
-    s3Adaptor.store(
-        new StoreRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
+    // Todo Delegate storing products to the MIS
+    //    s3Adaptor.store(
+    //        new StoreRequest(acceptVersion, fileSize, mimeType, file, title, fileName), ingestId);
 
     // TODO get this URL programmatically
     final String url = new URL(retrieveEndpoint + ingestId).toString();
@@ -79,7 +69,7 @@ public class IngestServiceImpl implements IngestService {
     try {
       transformResponse = transformClient.requestTransform(transformRequest);
     } catch (HttpClientErrorException | UnknownHttpStatusCodeException e) {
-      throw new TransformException();
+      throw new TransformException("The transform request failed", e);
     }
     LOGGER.warn("Completed transform request, response is {}", transformResponse);
   }

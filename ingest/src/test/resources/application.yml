@@ -1,6 +1,5 @@
 # Todo: Update these placeholders when we add tests that use them.
 endpointUrl:
+  store: https://localhost/store
   transform: https://localhost/transform
-  ingest:
-    callback: https://change.me
-    retrieve: https://change.me
+  retrieve: https://localhost/retrieve

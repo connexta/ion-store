@@ -6,4 +6,9 @@
  */
 package com.connexta.ingest.exceptions;
 
-public class TransformException extends Exception {}
+public class TransformException extends Exception {
+
+  public TransformException(String message, Throwable cause) {
+    super(message, cause);
+  }
+}
