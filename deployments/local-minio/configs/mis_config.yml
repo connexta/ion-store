@@ -1,0 +1,6 @@
+solr:
+  host: solr
+  port: 8983
+ 
+endpointUrl:
+  retrieve: http://cdr-ingest:9040/retrieve/
