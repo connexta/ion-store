@@ -21,7 +21,4 @@ public class ProductDao implements Dao<Product, String> {
 
   @Override
   public void save(Product product) {}
-
-  @Override
-  public void delete(String id) {}
 }
