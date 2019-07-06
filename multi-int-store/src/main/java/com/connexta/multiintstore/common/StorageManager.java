@@ -13,7 +13,6 @@ import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.models.Product;
 import com.connexta.multiintstore.services.api.Dao;
 import com.connexta.multiintstore.services.api.DuplicateIdException;
-import com.connexta.multiintstore.services.api.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,10 +43,8 @@ public class StorageManager {
    *     the callback
    * @throws RetrievalServerException if there was a 500 status code when sending the request from
    *     the callback
-   * @throws com.connexta.multiintstore.services.api.DuplicateIdException if there was an Id that
-   *     already exists
-   * @throws com.connexta.multiintstore.services.api.StorageException if there was an error storing
-   *     the callback
+   * @throws DuplicateIdException if there was an Id that already exists
+   * @throws StorageException if there was an error storing the callback
    */
   public void handleGeneralCallback(Object callback, String ingestId)
       throws StorageException, DuplicateIdException, RetrievalServerException,

@@ -4,9 +4,9 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.multiintstore.common.adaptors;
+package com.connexta.multiintstore.adaptors;
 
-import com.connexta.multiintstore.common.exceptions.StorageException;
+import com.connexta.multiintstore.common.StorageException;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
