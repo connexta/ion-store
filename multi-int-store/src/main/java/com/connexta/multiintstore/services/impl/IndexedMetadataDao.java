@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.services.impl;
 
-import com.connexta.multiintstore.common.StorageException;
+import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.Dao;

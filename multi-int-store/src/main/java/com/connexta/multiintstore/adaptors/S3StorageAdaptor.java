@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.adaptors;
 
-import com.connexta.multiintstore.common.StorageException;
+import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.common;
 
-import com.connexta.multiintstore.common.adaptors.S3StorageAdaptor;
+import com.connexta.multiintstore.adaptors.StorageAdaptor;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.services.api.Dao;
@@ -28,12 +28,12 @@ public class StorageManager {
 
   @NotEmpty private final String retrieveEndpoint;
 
-  @NotNull private final S3StorageAdaptor s3;
+  @NotNull private final StorageAdaptor s3;
   @NotNull private final Dao<IndexedProductMetadata, String> cstDao;
 
   public StorageManager(
       @NotEmpty @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
-      @NotNull final S3StorageAdaptor s3,
+      @NotNull final StorageAdaptor s3,
       @NotNull final Dao<IndexedProductMetadata, String> cstDao) {
     this.retrieveEndpoint = retrieveEndpoint;
     this.s3 = s3;

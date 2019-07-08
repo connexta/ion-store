@@ -8,12 +8,11 @@ package com.connexta.multiintstore.controllers;
 
 import com.connexta.multiintstore.callbacks.CallbackValidator;
 import com.connexta.multiintstore.callbacks.UnsupportedCallbackException;
-import com.connexta.multiintstore.common.RetrievalClientException;
-import com.connexta.multiintstore.common.RetrievalServerException;
-import com.connexta.multiintstore.common.StorageException;
 import com.connexta.multiintstore.common.StorageManager;
+import com.connexta.multiintstore.common.exceptions.RetrievalClientException;
+import com.connexta.multiintstore.common.exceptions.RetrievalServerException;
+import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.services.api.DuplicateIdException;
-import com.connexta.multiintstore.services.api.StorageException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,7 @@ public class StorageController {
 
     try {
       final Object callback = validator.parse(body);
-      manager.handleGeneralCallback(callback, ingestId);
+      // manager.handleGeneralCallback(callback, ingestId);
     } catch (UnsupportedCallbackException e) {
       LOGGER.info("Returning Bad Request", e);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
