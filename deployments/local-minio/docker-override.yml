@@ -11,25 +11,8 @@ services:
       - MINIO_ACCESS_KEY=MINIOEXAMPLEACCESSKEY
       - MINIO_SECRET_KEY=MINIOEXAMPLESECRETKEY
     networks:
-      - cdr_local-minio #Variable substitution causes and underscore to added to $name. Use hard-coded network name. (version 3.7)
-
+      - cdr
     command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
-
-  ingest:
-    networks:
-      - cdr_local-minio
-
-  multi-int-store:
-    networks:
-      - cdr_local-minio
-
-  solr:
-    networks:
-      - cdr_local-minio
-
-networks:
-  cdr_local-minio:
-    external: true
 
 secrets:
   # Directories relative to the master compose file
@@ -43,4 +26,4 @@ configs:
   ingest_config:
     file: deployments/local-minio/configs/ingest_config.yml
   mis_config:
-    file: deployments/local-minio/configs/mis_config.yml
+    file: deployments/local-minio/configs/mis_config.ymlk
