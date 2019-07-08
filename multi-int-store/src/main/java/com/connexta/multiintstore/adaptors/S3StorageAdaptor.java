@@ -51,11 +51,6 @@ public class S3StorageAdaptor implements StorageAdaptor {
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
     try {
       s3Client.putObject(putObjectRequest, requestBody);
-      log.info(
-          "Successfully stored \"{}\" in bucket \"{}\" with key \"{}\"",
-          fileName,
-          s3BucketQuarantine,
-          key);
     } catch (SdkServiceException e) {
       throw new StorageException(
           "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
@@ -65,9 +60,15 @@ public class S3StorageAdaptor implements StorageAdaptor {
     } catch (RuntimeException e) {
       throw new StorageException("Error storing " + key + " in bucket " + s3BucketQuarantine, e);
     }
+    log.info(
+        "Successfully stored \"{}\" in bucket \"{}\" with key \"{}\"",
+        fileName,
+        s3BucketQuarantine,
+        key);
   }
 
-  // Uncomment when the MIS implements retrieval
+  // TODO: Uncomment when the MIS implements retrieval
+
   //  @Override
   //  public RetrieveResponse retrieve(String ingestId) throws IOException {
   //    log.info(

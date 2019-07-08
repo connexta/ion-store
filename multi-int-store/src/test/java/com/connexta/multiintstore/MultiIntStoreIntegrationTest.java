@@ -39,7 +39,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -67,7 +66,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 @SpringBootTest
 @ContextConfiguration(initializers = MultiIntStoreIntegrationTest.Initializer.class)
 @EnableConfigurationProperties
-@DirtiesContext
 @ActiveProfiles("test")
 public class MultiIntStoreIntegrationTest {
 

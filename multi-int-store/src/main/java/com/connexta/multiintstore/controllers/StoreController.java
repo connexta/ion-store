@@ -38,7 +38,7 @@ public class StoreController implements StoreApi {
       URL location = storageManager.storeProduct(acceptVersion, fileSize, mimeType, file, fileName);
       return new ResponseEntity("\"location\": " + location, HttpStatus.ACCEPTED);
     } catch (IOException | StorageException e) {
-      log.error(String.format("Unable to store product: \"{}\"", fileName), e);
+      log.error(String.format("Unable to store product: \"%s\"", fileName), e);
       return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -53,7 +53,8 @@ public class StoreController implements StoreApi {
       @Valid MultipartFile file,
       String fileName) {
     try {
-      storageManager.storeMetdata(acceptVersion, productId, metadataType, mimeType, file, fileName);
+      storageManager.storeMetadata(
+          acceptVersion, productId, metadataType, mimeType, file, fileName);
       return new ResponseEntity(HttpStatus.CREATED);
     } catch (IOException | StorageException e) {
       log.error(String.format("Unable to store metadata: \"%s\"", fileName), e);
