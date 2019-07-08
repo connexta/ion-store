@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+  minio:
+    image: minio/minio
+    entrypoint: sh
+    hostname: minio
+    ports:
+      - "9000:9000"
+    environment:
+      - MINIO_ACCESS_KEY=MINIOEXAMPLEACCESSKEY
+      - MINIO_SECRET_KEY=MINIOEXAMPLESECRETKEY
+    networks:
+      - cdr #Variable substitution causes and underscore to added to $name. Use hard-coded network name. (version 3.7)
+
+    command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
+
+  ingest:
+    networks:
+      - cdr
+
+  multi-int-store:
+    networks:
+      - cdr
+
+  solr:
+    networks:
+      - cdr
+
+networks:
+  cdr:
+    external: true
+
+secrets:
+  # Directories relative to the master compose file
+  aws_s3_secret:
+    file: deployments/local-minio/secrets/minio_secret.notsec
+  aws_s3_access:
+    file: deployments/local-minio/secrets/minio_access.notsec
+
+configs:
+  # Directories relative to the master compose file
+  ingest_config:
+    file: deployments/local-minio/configs/ingest_config.yml
+  mis_config:
+    file: deployments/local-minio/configs/mis_config.yml
