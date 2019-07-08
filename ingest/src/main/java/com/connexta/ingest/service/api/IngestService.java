@@ -6,14 +6,19 @@
  */
 package com.connexta.ingest.service.api;
 
+import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
-import java.io.IOException;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
 
 /** Provides clients with a way to ingest Products into ION for processing and storage */
 public interface IngestService {
 
   void ingest(
-      final String mimeType, final MultipartFile file, final Long fileSize, final String fileName)
-      throws IOException, TransformException;
+      final Long fileSize,
+      @NotEmpty final String mimeType,
+      @NotNull final MultipartFile file,
+      @NotEmpty final String fileName)
+      throws StoreException, TransformException;
 }

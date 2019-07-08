@@ -13,6 +13,7 @@ class Dependencies {
   static def ingestAPI = { it=Versions.ingestAPI -> "com.connexta.ingest:ingest-api-rest-spring-stubs:${it}" }
   static def lombok = { it=Versions.lombok -> "org.projectlombok:lombok:${it}" }
   static def springBootStarterWeb = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-web:${it}" }
+  static def springBootStarterWebFlux = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-webflux:${it}" }
   static def springDataSolr = { it=Versions.springData -> "org.springframework.data:spring-data-solr:${it}" }
   static def transformAPI = { it=Versions.transformAPI -> "com.connexta.transformation:transformation-api-rest-spring-stubs:${it}" }
 

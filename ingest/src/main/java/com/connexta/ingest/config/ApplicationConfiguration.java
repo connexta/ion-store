@@ -6,22 +6,41 @@
  */
 package com.connexta.ingest.config;
 
+import javax.validation.constraints.NotEmpty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @Configuration
 @EnableAutoConfiguration
-@Profile("default")
 public class ApplicationConfiguration {
+
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
     return builder.errorHandler(new DefaultResponseErrorHandler()).build();
+  }
+
+  @NotEmpty
+  @Value("${endpointUrl.store}")
+  private String storeEndpoint;
+
+  @Bean("storeEndpoint")
+  public String storeEndpoint() {
+    return storeEndpoint;
+  }
+
+  @NotEmpty
+  @Value("${endpointUrl.transform}")
+  private String transformEndpoint;
+
+  @Bean("transformEndpoint")
+  public String transformEndpoint() {
+    return transformEndpoint;
   }
 
   @Bean
