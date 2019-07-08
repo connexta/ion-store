@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name to give the docker network and stack. Update network instances in docker-compose.yml file if modified.
-name="cdr"
+name="cdr_local-minio"
 
 function wait_for_containers () {
     waiting=$(docker service ls | grep ""$name"_.*0/1 ")
