@@ -8,13 +8,21 @@ package com.connexta.multiintstore.adaptors;
 
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.utils.ImmutableMap;
 
@@ -67,30 +75,29 @@ public class S3StorageAdaptor implements StorageAdaptor {
         key);
   }
 
-  // TODO: Uncomment when the MIS implements retrieval
+  @Override
+  public RetrieveResponse retrieve(String key) throws StorageException {
+    log.info("Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, key);
 
-  //  @Override
-  //  public RetrieveResponse retrieve(String ingestId) throws IOException {
-  //    log.info(
-  //        "Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, ingestId);
-  //
-  //    final ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream =
-  //        s3Client.getObject(
-  //            GetObjectRequest.builder().bucket(s3BucketQuarantine).key(ingestId).build());
-  //    final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
-  //
-  //    return new RetrieveResponse(
-  //        MediaType.valueOf(getObjectResponse.contentType()),
-  //        new ByteArrayResource(getObjectResponseResponseInputStream.readAllBytes()) {
-  //          @Override
-  //          public String getFilename() {
-  //            final Map<String, String> metadata = getObjectResponse.metadata();
-  //            final String filename = metadata.get("filename");
-  //            if (StringUtils.isEmpty(filename)) {
-  //              return ingestId;
-  //            }
-  //            return filename;
-  //          }
-  //        });
-  //  }
+    try (final ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream =
+        s3Client.getObject(
+            GetObjectRequest.builder().bucket(s3BucketQuarantine).key(key).build())) {
+      final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
+      return new RetrieveResponse(
+          MediaType.valueOf(getObjectResponse.contentType()),
+          new ByteArrayResource(getObjectResponseResponseInputStream.readAllBytes()) {
+            @Override
+            public String getFilename() {
+              final Map<String, String> metadata = getObjectResponse.metadata();
+              final String filename = metadata.get("filename");
+              if (StringUtils.isEmpty(filename)) {
+                return key;
+              }
+              return filename;
+            }
+          });
+    } catch (SdkException | IOException e) {
+      throw new StorageException("Unable to retrieve product with key " + key, e);
+    }
+  }
 }

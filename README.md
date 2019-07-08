@@ -191,9 +191,9 @@ controlled.
 Example configs/ingest_config.yml:
 ```yaml
 endpointUrl:
-  store: http://localhost:1232/store/
-  transform: http://localhost:1231/transform/
-  retrieve: http://localhost:1233/retrieve/
+  store: http://localhost:9041/mis/product/
+  transform: http://localhost:9090/transform/
+  retrieve: http://localhost:9041/mis/product/
 ```
 
 Example configs/mis_config.yml:
@@ -208,7 +208,7 @@ solr:
   host: localhost
   port: 9983
 endpointUrl:
-  retrieve: http://localhost:1233/retrieve/
+  retrieve: http://localhost:9041/mis/product/
 ```
 
 ## Deploying

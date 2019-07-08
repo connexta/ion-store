@@ -6,11 +6,11 @@
  */
 package com.connexta.multiintstore.services.impl;
 
+import com.connexta.multiintstore.common.exceptions.DuplicateIdException;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.Dao;
-import com.connexta.multiintstore.services.api.DuplicateIdException;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 

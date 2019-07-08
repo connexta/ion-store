@@ -26,13 +26,11 @@ public interface StorageAdaptor {
       final String key)
       throws IOException, StorageException;
 
-  // Todo uncomment when the MIS implements retrieval
-  //  /**
-  //   * Retrieves the data in a blob store using the given key.
-  //   *
-  //   * @param key the key used to reference the stored object
-  //   * @return a {@link RetrieveResponse} containing the object for the given key
-  //   * @throws IOException if the file content cannot be read
-  //   */
-  //  RetrieveResponse retrieve(String key) throws IOException;
+  /**
+   * Retrieves the data in a blob store using the given key.
+   *
+   * @param key the key used to reference the stored object
+   * @throws StorageException
+   */
+  RetrieveResponse retrieve(String key) throws StorageException;
 }
