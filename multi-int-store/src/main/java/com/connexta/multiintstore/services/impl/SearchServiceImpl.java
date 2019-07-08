@@ -6,7 +6,6 @@
  */
 package com.connexta.multiintstore.services.impl;
 
-import com.connexta.multiintstore.config.EndpointUrlRetrieve;
 import com.connexta.multiintstore.exception.SearchException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
@@ -19,6 +18,7 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -31,9 +31,9 @@ public class SearchServiceImpl implements SearchService {
 
   public SearchServiceImpl(
       @NotNull final IndexedMetadataRepository indexedMetadataRepository,
-      @NotNull final EndpointUrlRetrieve endpointUrlRetrieve) {
+      @NotEmpty @Value("${endpointUrl.retrieve}") final String retrieveEndpoint) {
     this.indexedMetadataRepository = indexedMetadataRepository;
-    this.endpointUrlRetrieve = endpointUrlRetrieve.getEndpointUrlRetrieve();
+    this.endpointUrlRetrieve = retrieveEndpoint;
   }
 
   @Override

@@ -30,15 +30,6 @@ public class ApplicationConfiguration {
     return new CallbackAcceptVersion(callbackAcceptVersion);
   }
 
-  @NotEmpty
-  @Value("${endpointUrl.retrieve}")
-  private String endpointUrlRetrieve;
-
-  @Bean
-  public EndpointUrlRetrieve endpointUrlRetrieve() {
-    return new EndpointUrlRetrieve(endpointUrlRetrieve);
-  }
-
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
     return builder.errorHandler(new DefaultResponseErrorHandler()).build();

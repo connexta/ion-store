@@ -23,7 +23,6 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -41,8 +40,6 @@ import org.springframework.web.context.WebApplicationContext;
 @ActiveProfiles("test")
 public class MultiIntStoreMockSolrIntegrationTest {
 
-  // TODO: Fix the Solr configurations issues and remove the @Ignore annotations
-
   @Autowired private WebApplicationContext wac;
   @Autowired private SolrClient mockSolrClient;
 
@@ -59,11 +56,9 @@ public class MultiIntStoreMockSolrIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testContextLoads() {}
 
   @Test
-  @Ignore
   public void testSearchSolrCommunicationError() throws Exception {
     when(mockSolrClient.query(eq("searchTerms"), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
         .thenThrow(IOException.class);
@@ -74,7 +69,6 @@ public class MultiIntStoreMockSolrIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testSearchSolrServerError() throws Exception {
     when(mockSolrClient.query(eq("searchTerms"), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
         .thenThrow(SolrServerException.class);
