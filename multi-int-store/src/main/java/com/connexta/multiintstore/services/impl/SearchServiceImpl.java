@@ -7,6 +7,7 @@
 package com.connexta.multiintstore.services.impl;
 
 import com.connexta.multiintstore.config.EndpointUrlRetrieve;
+import com.connexta.multiintstore.exception.SearchException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.SearchService;
@@ -17,8 +18,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class SearchServiceImpl implements SearchService {
 
@@ -39,12 +42,31 @@ public class SearchServiceImpl implements SearchService {
   }
 
   @Override
-  public List<URL> find(String keyword) throws MalformedURLException {
-    final List<URL> urls = new ArrayList<>();
-    for (final IndexedProductMetadata indexedProductMetadata :
-        indexedMetadataRepository.findByContents(keyword)) {
-      urls.add(new URL(endpointUrlRetrieve + indexedProductMetadata.getId()));
+  public List<URL> find(String keyword) throws SearchException {
+    final List<IndexedProductMetadata> matchingIndexedProductMetadatas;
+    try {
+      matchingIndexedProductMetadatas = indexedMetadataRepository.findByContents(keyword);
+    } catch (RuntimeException e) {
+      throw new SearchException("Unable to search for " + keyword, e);
     }
+
+    final List<URL> urls = new ArrayList<>();
+    for (final IndexedProductMetadata indexedProductMetadata : matchingIndexedProductMetadatas) {
+      final String id = indexedProductMetadata.getId();
+      final URL url;
+      try {
+        url = new URL(endpointUrlRetrieve + id);
+      } catch (MalformedURLException e) {
+        throw new SearchException(
+            "Unable to construct retrieve URL from endpointUrlRetrieve="
+                + endpointUrlRetrieve
+                + " and id="
+                + id,
+            e);
+      }
+      urls.add(url);
+    }
+
     return Collections.unmodifiableList(urls);
   }
 }
