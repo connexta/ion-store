@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.services.api;
 
-import com.connexta.multiintstore.exception.SearchException;
+import com.connexta.multiintstore.common.exceptions.SearchException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import java.net.URL;
 import java.util.List;

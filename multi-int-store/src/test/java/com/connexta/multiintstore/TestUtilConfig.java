@@ -9,7 +9,6 @@ package com.connexta.multiintstore;
 import static org.mockito.Mockito.mock;
 
 import com.connexta.multiintstore.config.CallbackAcceptVersion;
-import com.connexta.multiintstore.config.EndpointUrlRetrieve;
 import org.apache.solr.client.solrj.SolrClient;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -38,12 +37,6 @@ public class TestUtilConfig {
   @Bean
   public String s3BucketQuarantine() {
     return "test-bucket";
-  }
-
-  @Bean
-  @Primary
-  public EndpointUrlRetrieve endpointUrlRetrieve() {
-    return new EndpointUrlRetrieve("https://localhost:1234/");
   }
 
   @Bean

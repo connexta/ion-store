@@ -12,8 +12,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.ExpectedCount.never;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.anything;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,7 +39,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -61,6 +58,7 @@ import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 // Todo fix failing tests when we replace Callback API with the MIS API
 
@@ -124,41 +122,7 @@ public class MultiIntStoreIntegrationTest {
   @Test
   public void testContextLoads() {}
 
-  @Test
-  @Ignore
-  public void handleCSTCallback() throws Exception {
-
-    final String contents = "Super cool CST";
-    final String ingestId = "1234";
-
-    whenHttp(server)
-        .match(Condition.endsWithUri("/location/cst001"))
-        .then(
-            Action.contentType(MediaType.TEXT_PLAIN.toString()),
-            Action.stringContent(contents),
-            Action.status(HttpStatus.OK_200));
-
-    mockMvc
-        .perform(
-            MockMvcRequestBuilders.post("/store/" + ingestId)
-                .contentType("application/json")
-                .content(
-                    createMetadataCallbackJson(
-                        "1234",
-                        "COMPLETE",
-                        "cst",
-                        MediaType.APPLICATION_JSON.toString(),
-                        256,
-                        "http://localhost:" + server.getPort() + "/location/cst001",
-                        "U",
-                        "ownerProducer")))
-        .andExpect(status().isOk());
-
-    assertThat(
-        indexedMetadataRepository.findById(ingestId),
-        isPresentAnd(Matchers.hasProperty("contents", is(contents))));
-  }
-
+  // TODO: Fix Solr itests
   @Test
   @Ignore
   public void testEmptySearchService() throws Exception {
@@ -183,19 +147,7 @@ public class MultiIntStoreIntegrationTest {
             Action.stringContent(contents),
             Action.status(HttpStatus.OK_200));
 
-    mockMvc.perform(
-        MockMvcRequestBuilders.post("/store/" + ingestId)
-            .contentType("application/json")
-            .content(
-                createMetadataCallbackJson(
-                    "1234",
-                    "COMPLETE",
-                    "cst",
-                    MediaType.APPLICATION_JSON.toString(),
-                    256,
-                    "http://localhost:" + server.getPort() + "/location/cst001",
-                    "U",
-                    "ownerProducer")));
+    mockMvc.perform(getMetadataRequest());
 
     // verify:
     mockMvc
@@ -244,11 +196,11 @@ public class MultiIntStoreIntegrationTest {
 
   /*
    * ================================================================
-   * ==================== New MIS endpoint tests ====================
+   * ==================== Store Controller Tests ====================
    * ================================================================
    */
   @Test
-  public void testGetProduct() throws Exception {
+  public void testRetrieveProduct() throws Exception {
     mockMvc
         .perform(MockMvcRequestBuilders.get("/mis/product/1"))
         .andDo(print())
@@ -256,36 +208,19 @@ public class MultiIntStoreIntegrationTest {
   }
 
   @Test
-  public void testPutProduct() throws Exception {
-
-    MockMultipartFile productInfo =
-        new MockMultipartFile(
-            "productInfo",
-            "test.json",
-            "application/json",
-            "{\"title\": \"Where's Kyle?\"}".getBytes());
-    MockMultipartFile file =
-        new MockMultipartFile("file", "test.txt", "application/octet-stream", "data".getBytes());
-
-    MockHttpServletRequestBuilder builder =
-        multipart("/mis/product")
-            .file(productInfo)
-            .file(file)
-            .with(
-                request -> {
-                  request.setMethod(HttpMethod.PUT.toString());
-                  return request;
-                })
-            .header("Accept-Version", acceptVersion.getCallbackAcceptVersion());
-
+  public void testStoreProduct() throws Exception {
+    // given
+    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+        .thenReturn(PutObjectResponse.builder().build());
+    // verify
     mockMvc
-        .perform(builder)
-        .andExpect(MockMvcResultMatchers.status().isNotImplemented())
+        .perform(getProductRequest())
+        .andExpect(MockMvcResultMatchers.status().isAccepted())
         .andDo(MockMvcResultHandlers.print());
   }
 
   @Test
-  public void testGetMetadata() throws Exception {
+  public void testRetrieveMetadata() throws Exception {
     mockMvc
         .perform(MockMvcRequestBuilders.get("/mis/product/1/cst"))
         .andDo(print())
@@ -293,107 +228,111 @@ public class MultiIntStoreIntegrationTest {
   }
 
   @Test
-  public void testPutMetadata() throws Exception {
-    MockMultipartFile productInfo =
-        new MockMultipartFile(
-            "productInfo",
-            "test.json",
-            "application/json",
-            "{\"title\": \"Where's Kyle?\"}".getBytes());
-    MockMultipartFile file =
-        new MockMultipartFile(
-            "file",
-            "test.txt",
-            "application/octet-stream",
-            "{\"title\": \"Where's Kyle?\"}".getBytes());
+  @Ignore
+  public void storeCST() throws Exception {
 
-    MockHttpServletRequestBuilder builder =
-        multipart("/mis/product/1/cst")
-            .file(productInfo)
-            .file(file)
-            .with(
-                request -> {
-                  request.setMethod(HttpMethod.PUT.toString());
-                  return request;
-                })
-            .header("Accept-Version", acceptVersion.getCallbackAcceptVersion());
+    final String contents = "Super cool CST";
+    final String ingestId = "1234";
+
+    whenHttp(server)
+        .match(Condition.endsWithUri("/location/cst001"))
+        .then(
+            Action.contentType(MediaType.TEXT_PLAIN.toString()),
+            Action.stringContent(contents),
+            Action.status(HttpStatus.OK_200));
 
     mockMvc
-        .perform(builder)
-        .andExpect(MockMvcResultMatchers.status().isNotImplemented())
-        .andDo(MockMvcResultHandlers.print());
+        .perform(
+            MockMvcRequestBuilders.post("/store/" + ingestId)
+                .contentType("application/json")
+                .content(
+                    createMetadataCallbackJson(
+                        "1234",
+                        "COMPLETE",
+                        "cst",
+                        MediaType.APPLICATION_JSON.toString(),
+                        256,
+                        "http://localhost:" + server.getPort() + "/location/cst001",
+                        "U",
+                        "ownerProducer")))
+        .andExpect(status().isOk());
+
+    assertThat(
+        indexedMetadataRepository.findById(ingestId),
+        isPresentAnd(Matchers.hasProperty("contents", is(contents))));
   }
 
   @Test
   @Ignore
-  public void testS3Unavailable() throws Exception {
+  public void testStoreMetadata() throws Exception {
+
+    mockMvc
+        .perform(getMetadataRequest())
+        .andExpect(MockMvcResultMatchers.status().isCreated())
+        .andDo(MockMvcResultHandlers.print());
+  }
+
+  /*
+   * ================================================================
+   * ========================== S3 Tests ============================
+   * ================================================================
+   */
+
+  @Test
+  public void testS3UnableToStore() throws Exception {
     // given
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(SdkServiceException.builder().build());
 
     // verify
-    mockMvc
-        .perform(
-            multipart("/ingest")
-                .file("file", TEST_FILE)
-                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-                .param("fileName", "file")
-                .param("title", "qualityTitle")
-                .param("mimeType", "plain/text")
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().is5xxServerError());
-
-    restServer.expect(never(), anything());
+    mockMvc.perform(getProductRequest()).andExpect(status().is5xxServerError());
   }
 
   @Test
-  @Ignore
-  public void testS3UnableToStore() throws Exception {
+  public void testS3Unavailable() throws Exception {
     // given
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(SdkClientException.builder().build());
 
     // verify
-    mockMvc
-        .perform(
-            multipart("/ingest")
-                .file("file", TEST_FILE)
-                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-                .param("fileName", "file")
-                .param("title", "qualityTitle")
-                .param("mimeType", "plain/text")
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().is5xxServerError());
-
-    restServer.expect(never(), anything());
+    mockMvc.perform(getProductRequest()).andExpect(status().is5xxServerError());
   }
 
   @Test
-  @Ignore
   public void testS3ThrowsRuntimeException() throws Exception {
     // given
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenThrow(new RuntimeException());
 
     // verify
-    mockMvc
-        .perform(
-            multipart("/ingest")
-                .file("file", TEST_FILE)
-                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-                .param("fileName", "file")
-                .param("title", "qualityTitle")
-                .param("mimeType", "plain/text")
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().is5xxServerError());
+    mockMvc.perform(getProductRequest()).andExpect(status().is5xxServerError());
+  }
 
-    restServer.expect(never(), anything());
+  private static MockHttpServletRequestBuilder getProductRequest() {
+    return multipart("/mis/product")
+        .file("file", TEST_FILE)
+        .param("fileSize", String.valueOf(TEST_FILE_SIZE))
+        .param("fileName", "file")
+        .param("mimeType", "plain/text")
+        .header("Accept-Version", "1.2.1")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.MULTIPART_FORM_DATA);
+  }
+
+  private static MockHttpServletRequestBuilder getMetadataRequest() {
+    return multipart("/mis/product/12/cst")
+        .file("file", TEST_FILE)
+        .param("fileSize", String.valueOf(TEST_FILE_SIZE))
+        .param("fileName", "file")
+        .param("mimeType", "plain/text")
+        .header("Accept-Version", "1.2.1")
+        .with(
+            request -> {
+              request.setMethod(HttpMethod.PUT.toString());
+              return request;
+            })
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.MULTIPART_FORM_DATA);
   }
 
   private static String createMetadataCallbackJson(

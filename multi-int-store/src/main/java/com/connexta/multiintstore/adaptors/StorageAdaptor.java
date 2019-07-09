@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.adaptors;
 
-import com.connexta.multiintstore.common.StorageException;
+import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
 import org.springframework.web.multipart.MultipartFile;
 

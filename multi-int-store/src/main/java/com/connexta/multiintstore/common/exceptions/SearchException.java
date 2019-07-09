@@ -4,11 +4,11 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.multiintstore.common;
+package com.connexta.multiintstore.common.exceptions;
 
-public class StorageException extends RuntimeException {
+public class SearchException extends Exception {
 
-  public StorageException(String message, Throwable cause) {
+  public SearchException(String message, Throwable cause) {
     super(message, cause);
   }
 }
