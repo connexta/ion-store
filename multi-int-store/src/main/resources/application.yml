@@ -2,6 +2,8 @@ callback-accept-version: 0.1.0-SNAPSHOT
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.springframework.web.client: DEBUG
+
 management:
   endpoints:
     web:

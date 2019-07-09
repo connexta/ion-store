@@ -10,7 +10,8 @@ import com.connexta.multiintstore.adaptors.RetrieveResponse;
 import com.connexta.multiintstore.adaptors.StorageAdaptor;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -33,14 +34,14 @@ public class ProductStorageManager {
     this.storageAdaptor = storageAdaptor;
   }
 
-  public URL storeProduct(
+  public URI storeProduct(
       String acceptVersion, Long fileSize, String mimeType, MultipartFile file, String fileName)
-      throws IOException, StorageException {
+      throws IOException, StorageException, URISyntaxException {
     // TODO: Validate Accept-Version
     final String key = UUID.randomUUID().toString().replace("-", "");
 
     storageAdaptor.store(mimeType, file, fileSize, fileName, key);
-    return new URL(retrieveEndpoint + key);
+    return new URI(retrieveEndpoint + key);
   }
 
   /**

@@ -7,7 +7,6 @@
 package com.connexta.ingest.client;
 
 import com.connexta.ingest.exceptions.StoreException;
-import java.io.IOException;
 import java.net.URI;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -15,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,19 +47,14 @@ public class StoreClient {
     final MultipartBodyBuilder builder = new MultipartBodyBuilder();
     builder.part("fileSize", fileSize);
     builder.part("mimeType", mimeType);
-    try {
-      builder.part("file", file.getBytes());
-    } catch (IOException e) {
-      // TODO replace this implementation
-      throw new StoreException("Unable to get file bytes", e);
-    }
+    builder.part("file", file.getResource());
     builder.part("fileName", fileName);
 
     final HttpHeaders headers = new HttpHeaders();
     headers.set("Accept-Version", "0.1.0");
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-    final HttpEntity<Object> request = new HttpEntity<>(builder.build(), headers);
+    final HttpEntity<MultiValueMap<String, HttpEntity<?>>> request =
+        new HttpEntity<>(builder.build(), headers);
     log.info("Sending POST request to {}: {}", storeEndpoint, request);
 
     final URI location;

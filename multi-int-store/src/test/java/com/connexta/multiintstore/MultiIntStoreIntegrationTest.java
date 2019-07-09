@@ -211,10 +211,7 @@ public class MultiIntStoreIntegrationTest {
         .thenReturn(PutObjectResponse.builder().build());
 
     // verify
-    mockMvc
-        .perform(getProductRequest())
-        .andExpect(MockMvcResultMatchers.status().isAccepted())
-        .andDo(MockMvcResultHandlers.print());
+    mockMvc.perform(getProductRequest()).andExpect(MockMvcResultMatchers.status().isCreated());
   }
 
   @Test
