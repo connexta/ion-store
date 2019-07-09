@@ -9,6 +9,8 @@ package com.connexta.multiintstore.controllers;
 import com.connexta.multiintstore.adaptors.RetrieveResponse;
 import com.connexta.multiintstore.common.ProductStorageManager;
 import com.connexta.multiintstore.services.api.RetrieveApi;
+import java.io.IOException;
+import java.io.InputStream;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
@@ -33,22 +35,42 @@ public class RetrieveController implements RetrieveApi {
 
   @Override
   public ResponseEntity<Resource> retrieveProduct(String productId) {
-    final RetrieveResponse retrieveResponse;
-
+    InputStream inputStream = null;
     try {
-      retrieveResponse = productStorageManager.retrieveProduct(productId);
+      final RetrieveResponse retrieveResponse = productStorageManager.retrieveProduct(productId);
+      log.info("Successfully retrieved id={}", productId);
+
+      final HttpHeaders httpHeaders = new HttpHeaders();
+      httpHeaders.setContentDisposition(
+          ContentDisposition.builder("attachment")
+              .filename(retrieveResponse.getFileName())
+              .build());
+      inputStream = retrieveResponse.getInputStream();
+      return ResponseEntity.ok()
+          .contentType(retrieveResponse.getMediaType())
+          .headers(httpHeaders)
+          .body(new InputStreamResource(inputStream));
     } catch (RuntimeException e) {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException ioe) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, ioe);
+        }
+      }
+
       log.warn("Unable to retrieve {}", productId, e);
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    log.info("Successfully retrieved id={}", productId);
+    } catch (Throwable t) {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
+        }
+      }
 
-    final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.setContentDisposition(
-        ContentDisposition.builder("attachment").filename(retrieveResponse.getFileName()).build());
-    return ResponseEntity.ok()
-        .contentType(retrieveResponse.getMediaType())
-        .headers(httpHeaders)
-        .body(new InputStreamResource(retrieveResponse.getInputStream()));
+      throw t;
+    }
   }
 }

@@ -43,6 +43,10 @@ public class ProductStorageManager {
     return new URL(retrieveEndpoint + key);
   }
 
+  /**
+   * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
+   * RetrieveResponse}.
+   */
   public RetrieveResponse retrieveProduct(String id) throws StorageException {
     return storageAdaptor.retrieve(id);
   }

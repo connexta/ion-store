@@ -77,33 +77,48 @@ public class S3StorageAdaptor implements StorageAdaptor {
         key);
   }
 
-  /** TODO Make sure that the InputStream in closed */
+  /**
+   * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
+   * RetrieveResponse}.
+   */
   @Override
   @NotNull
   public RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException {
     log.info("Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, key);
 
-    final ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream;
+    ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream = null;
     try {
-      getObjectResponseResponseInputStream =
-          s3Client.getObject(
-              GetObjectRequest.builder().bucket(s3BucketQuarantine).key(key).build());
-    } catch (SdkException e) {
-      throw new StorageException("Unable to retrieve product with key " + key, e);
-    }
-    final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
+      try {
+        getObjectResponseResponseInputStream =
+            s3Client.getObject(
+                GetObjectRequest.builder().bucket(s3BucketQuarantine).key(key).build());
+      } catch (SdkException e) {
+        throw new StorageException("Unable to retrieve product with key " + key, e);
+      }
+      final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
 
-    final String fileName = getObjectResponse.metadata().get(FILE_NAME_METADATA_KEY);
-    if (StringUtils.isEmpty(fileName)) {
-      throw new StorageException(
-          String.format(
-              "Expected S3 object to have a non-null metadata value for %s",
-              FILE_NAME_METADATA_KEY));
-    }
+      final String fileName = getObjectResponse.metadata().get(FILE_NAME_METADATA_KEY);
+      if (StringUtils.isEmpty(fileName)) {
+        throw new StorageException(
+            String.format(
+                "Expected S3 object to have a non-null metadata value for %s",
+                FILE_NAME_METADATA_KEY));
+      }
 
-    return new RetrieveResponse(
-        MediaType.valueOf(getObjectResponse.contentType()),
-        getObjectResponseResponseInputStream,
-        fileName);
+      return new RetrieveResponse(
+          MediaType.valueOf(getObjectResponse.contentType()),
+          getObjectResponseResponseInputStream,
+          fileName);
+    } catch (Throwable t) {
+      if (getObjectResponseResponseInputStream != null) {
+        try {
+          getObjectResponseResponseInputStream.close();
+        } catch (IOException e) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", key, e);
+        }
+      }
+
+      throw t;
+    }
   }
 }
