@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,11 +43,12 @@ public class RetrieveController implements RetrieveApi {
     }
     log.info("Successfully retrieved id={}", productId);
 
+    final HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.setContentDisposition(
+        ContentDisposition.builder("attachment").filename(retrieveResponse.getFileName()).build());
     return ResponseEntity.ok()
         .contentType(retrieveResponse.getMediaType())
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\"" + retrieveResponse.getFileName() + "\"")
+        .headers(httpHeaders)
         .body(new InputStreamResource(retrieveResponse.getInputStream()));
   }
 }
