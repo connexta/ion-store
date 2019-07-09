@@ -8,6 +8,8 @@ package com.connexta.multiintstore.adaptors;
 
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface StorageAdaptor {
@@ -19,20 +21,19 @@ public interface StorageAdaptor {
    * @throws StorageException if there is an error when attempting to store
    */
   void store(
-      final String mimeType,
-      final MultipartFile file,
+      @NotEmpty final String mimeType,
+      @NotNull final MultipartFile file,
       final Long fileSize,
-      final String fileName,
-      final String key)
+      @NotEmpty final String fileName,
+      @NotEmpty final String key)
       throws IOException, StorageException;
 
-  // Todo uncomment when the MIS implements retrieval
-  //  /**
-  //   * Retrieves the data in a blob store using the given key.
-  //   *
-  //   * @param key the key used to reference the stored object
-  //   * @return a {@link RetrieveResponse} containing the object for the given key
-  //   * @throws IOException if the file content cannot be read
-  //   */
-  //  RetrieveResponse retrieve(String key) throws IOException;
+  /**
+   * Retrieves the data in a blob store using the given key.
+   *
+   * @param key the key used to reference the stored object
+   * @throws StorageException
+   */
+  @NotNull
+  RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException;
 }

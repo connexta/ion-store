@@ -6,32 +6,71 @@
  */
 package com.connexta.multiintstore.controllers;
 
+import com.connexta.multiintstore.adaptors.RetrieveResponse;
+import com.connexta.multiintstore.common.ProductStorageManager;
+import com.connexta.multiintstore.services.api.RetrieveApi;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/mis")
-public class RetrieveController {
-  @GetMapping(value = "/product/{productId}")
-  public ResponseEntity retrieveProduct(@PathVariable("productId") String productId) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-        .body("Yay, you retrieved a product with ID: " + productId + "!!");
+public class RetrieveController implements RetrieveApi {
+
+  @NotNull private final ProductStorageManager productStorageManager;
+
+  public RetrieveController(@NotNull ProductStorageManager productStorageManager) {
+    this.productStorageManager = productStorageManager;
   }
 
-  @GetMapping(value = "/product/{productId}/{metadataType}")
-  public ResponseEntity retrieveMetadata(
-      @PathVariable("productId") String productId,
-      @PathVariable("metadataType") String metadataType) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-        .body(
-            "Yay, you retrieved "
-                + metadataType
-                + " for the the product with ID: "
-                + productId
-                + "!!");
+  @Override
+  public ResponseEntity<Resource> retrieveProduct(String productId) {
+    InputStream inputStream = null;
+    try {
+      final RetrieveResponse retrieveResponse = productStorageManager.retrieveProduct(productId);
+      log.info("Successfully retrieved id={}", productId);
+
+      final HttpHeaders httpHeaders = new HttpHeaders();
+      httpHeaders.setContentDisposition(
+          ContentDisposition.builder("attachment")
+              .filename(retrieveResponse.getFileName())
+              .build());
+      inputStream = retrieveResponse.getInputStream();
+      return ResponseEntity.ok()
+          .contentType(retrieveResponse.getMediaType())
+          .headers(httpHeaders)
+          .body(new InputStreamResource(inputStream));
+    } catch (RuntimeException e) {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException ioe) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, ioe);
+        }
+      }
+
+      log.warn("Unable to retrieve {}", productId, e);
+      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (Throwable t) {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
+        }
+      }
+
+      throw t;
+    }
   }
 }

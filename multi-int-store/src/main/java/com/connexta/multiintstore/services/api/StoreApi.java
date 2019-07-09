@@ -17,8 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
-//  TODO Replace this with the real StoreAPI
-
+/** TODO Replace this with the real StoreAPI */
 @Validated
 public interface StoreApi {
 
