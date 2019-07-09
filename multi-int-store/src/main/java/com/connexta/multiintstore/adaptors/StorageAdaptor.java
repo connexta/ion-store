@@ -8,6 +8,8 @@ package com.connexta.multiintstore.adaptors;
 
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface StorageAdaptor {
@@ -19,11 +21,11 @@ public interface StorageAdaptor {
    * @throws StorageException if there is an error when attempting to store
    */
   void store(
-      final String mimeType,
-      final MultipartFile file,
+      @NotEmpty final String mimeType,
+      @NotNull final MultipartFile file,
       final Long fileSize,
-      final String fileName,
-      final String key)
+      @NotEmpty final String fileName,
+      @NotEmpty final String key)
       throws IOException, StorageException;
 
   /**
@@ -32,5 +34,6 @@ public interface StorageAdaptor {
    * @param key the key used to reference the stored object
    * @throws StorageException
    */
-  RetrieveResponse retrieve(String key) throws StorageException;
+  @NotNull
+  RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException;
 }

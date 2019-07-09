@@ -11,6 +11,7 @@ import com.connexta.multiintstore.common.ProductStorageManager;
 import com.connexta.multiintstore.services.api.RetrieveApi;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -39,15 +40,13 @@ public class RetrieveController implements RetrieveApi {
       log.warn("Unable to retrieve {}", productId, e);
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
     log.info("Successfully retrieved id={}", productId);
 
-    final Resource resource = retrieveResponse.getResource();
     return ResponseEntity.ok()
         .contentType(retrieveResponse.getMediaType())
         .header(
             HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\"" + resource.getFilename() + "\"")
-        .body(resource);
+            "attachment; filename=\"" + retrieveResponse.getFileName() + "\"")
+        .body(new InputStreamResource(retrieveResponse.getInputStream()));
   }
 }
