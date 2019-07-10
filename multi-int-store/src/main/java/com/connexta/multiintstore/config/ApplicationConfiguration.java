@@ -6,8 +6,6 @@
  */
 package com.connexta.multiintstore.config;
 
-import javax.validation.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,16 +17,6 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 @Configuration
 @Profile("default")
 public class ApplicationConfiguration {
-
-  /** Used to check the Accept-Version in the callback request */
-  @NotEmpty
-  @Value("${callback-accept-version}")
-  private String callbackAcceptVersion;
-
-  @Bean
-  public CallbackAcceptVersion callbackAcceptVersion() {
-    return new CallbackAcceptVersion(callbackAcceptVersion);
-  }
 
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder builder) {

@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.xebialabs.restito.semantics.Action;
 import com.xebialabs.restito.semantics.Condition;
@@ -95,7 +94,6 @@ public class MultiIntStoreIntegrationTest {
   @Autowired private S3Client mockS3Client;
   @Autowired private WebApplicationContext wac;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
-  @Autowired private CallbackAcceptVersion acceptVersion;
   @Autowired private RestTemplate restTemplate;
 
   private MockMvc mockMvc;
