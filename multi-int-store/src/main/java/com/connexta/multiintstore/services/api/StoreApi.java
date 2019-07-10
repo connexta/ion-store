@@ -7,6 +7,9 @@
 package com.connexta.multiintstore.services.api;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +31,8 @@ public interface StoreApi {
       method = RequestMethod.POST)
   ResponseEntity<Void> storeProduct(
       @RequestHeader(value = "Accept-Version", required = true) String acceptVersion,
-      @RequestParam(value = "fileSize", required = true) Long fileSize,
+      @RequestParam(value = "fileSize", required = true) @NotNull @Min(1L) @Max(10737418240L)
+          Long fileSize,
       @RequestParam(value = "mimeType", required = true) String mimeType,
       @Valid @RequestPart("file") MultipartFile file,
       @RequestParam(value = "fileName", required = false) String fileName);
@@ -42,7 +46,8 @@ public interface StoreApi {
       @RequestHeader(value = "Accept-Version", required = true) String acceptVersion,
       @PathVariable(value = "productId", required = true) String productId,
       @PathVariable(value = "metadataType", required = true) String metadataType,
-      @RequestParam(value = "fileSize", required = true) Long fileSize,
+      @RequestParam(value = "fileSize", required = true) @NotNull @Min(1L) @Max(10737418240L)
+          Long fileSize,
       @RequestParam(value = "mimeType", required = true) String mimeType,
       @Valid @RequestPart("file") MultipartFile file,
       @RequestParam(value = "fileName", required = false) String fileName);

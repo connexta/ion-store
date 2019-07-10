@@ -41,10 +41,12 @@ public class IngestController implements IngestApi {
       MultipartFile file,
       String title,
       String fileName) {
+    // TODO validate fileSize
+
     LOGGER.info("Attempting to ingest {}", fileName);
 
-    final long actualFileSize = file.getSize();
-    if (fileSize != actualFileSize) {
+    final Long actualFileSize = file.getSize();
+    if (!fileSize.equals(actualFileSize)) {
       LOGGER.warn(
           "File size request param ({}) does not match the size of the file ({}).",
           fileSize,

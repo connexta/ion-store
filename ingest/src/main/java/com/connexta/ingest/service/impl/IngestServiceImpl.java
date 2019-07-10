@@ -11,6 +11,8 @@ import com.connexta.ingest.client.TransformClient;
 import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.service.api.IngestService;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -34,7 +36,7 @@ public class IngestServiceImpl implements IngestService {
 
   @Override
   public void ingest(
-      final Long fileSize,
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String mimeType,
       @NotNull final MultipartFile file,
       @NotEmpty final String fileName)
