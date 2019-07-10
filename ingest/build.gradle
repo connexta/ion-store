@@ -16,7 +16,8 @@ configurations {
 }
 
 dependencies {
-    implementation(Dependencies.springBootStarterWebFlux())
+    implementation(Dependencies.springBootStarterWeb())
+    implementation(Dependencies.reactiveStreams())
     implementation(Dependencies.commonsIO())
     implementation(Dependencies.ingestAPI())
     implementation(Dependencies.transformAPI())
