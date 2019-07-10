@@ -65,6 +65,7 @@ task integrationTest(type: Test) {
     outputs.upToDateWhen { false }
 }
 
+integrationTest.onlyIf { !project.hasProperty("skipITests") }
 
 check.dependsOn integrationTest
 bootRun.dependsOn build

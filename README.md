@@ -36,14 +36,14 @@ For more information about spotless checks see
 
 #### Tests
 * All tests are run automatically with `./gradlew build`.
-* To skip all tests, add `-x test` and `-x integrationTest`.
 * Even if the tests fail, the artifacts are built and can be run.
 * To run tests with quiet logs, add `-Pquiet`. This should not be used with parallel builds.
+##### Unit Tests
+* To skip unit tests, add `-x test`.
 * To run a single test suite:
     ```bash
     ./gradlew module:test --test fullClassName
     ```
-
 ##### Integration Tests
 * The integration tests require a Docker daemon.
 * To skip integration tests, add `-PskipITests`.

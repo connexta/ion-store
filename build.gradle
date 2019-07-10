@@ -95,10 +95,6 @@ subprojects {
                     (TestResult.ResultType.SUCCESS): { msg -> "\033[32m${msg}\033[0m" }]
 
 
-        if (project.skipIntegrationTests()) {
-            exclude "**/*IntegrationTest*"
-        }
-
         def parallel = { desc ->
             if (project.quietTest()) {
                 return "\t >"
