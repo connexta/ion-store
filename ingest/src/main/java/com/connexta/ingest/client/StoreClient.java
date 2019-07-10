@@ -14,7 +14,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,7 +34,7 @@ public class StoreClient {
 
   public StoreClient(
       @NotNull final RestTemplate restTemplate,
-      @Qualifier("storeEndpoint") @NotEmpty final String storeEndpoint) {
+      @Value("${endpointUrl.store}") @NotEmpty final String storeEndpoint) {
     this.restTemplate = restTemplate;
     this.storeEndpoint = storeEndpoint;
     log.info("Store URL: {}", storeEndpoint);
