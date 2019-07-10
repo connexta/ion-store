@@ -11,6 +11,7 @@ import com.connexta.multiintstore.common.ProductStorageManager;
 import com.connexta.multiintstore.services.api.RetrieveApi;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
@@ -34,7 +35,7 @@ public class RetrieveController implements RetrieveApi {
   }
 
   @Override
-  public ResponseEntity<Resource> retrieveProduct(String productId) {
+  public @NotNull ResponseEntity<Resource> retrieveProduct(@NotEmpty String productId) {
     InputStream inputStream = null;
     try {
       final RetrieveResponse retrieveResponse = productStorageManager.retrieveProduct(productId);

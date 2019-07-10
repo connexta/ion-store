@@ -10,10 +10,12 @@ import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.services.api.Dao;
 import java.io.IOException;
+import java.io.InputStream;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -28,16 +30,16 @@ public class MetadataStorageManager {
   }
 
   public void storeMetadata(
-      String acceptVersion,
-      String productId,
-      String metadataType,
-      String mimeType,
-      MultipartFile file,
-      String fileName)
+      @NotEmpty String acceptVersion,
+      @NotEmpty String productId,
+      @NotEmpty String metadataType,
+      @NotEmpty String mimeType,
+      @NotNull InputStream inputStream,
+      @NotEmpty String fileName)
       throws IOException, StorageException {
     if (metadataType.equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
       final IndexedProductMetadata indexedProductMetadata =
-          new IndexedProductMetadata(productId, new String(file.getBytes(), "UTF-8"));
+          new IndexedProductMetadata(productId, IOUtils.toString(inputStream, "UTF-8"));
       log.info("Attempting to store {} with name \"{}\" in Solr", metadataType, fileName);
       cstDao.save(indexedProductMetadata);
     } else {

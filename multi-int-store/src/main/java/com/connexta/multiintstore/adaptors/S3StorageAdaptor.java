@@ -8,6 +8,7 @@ package com.connexta.multiintstore.adaptors;
 
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
+import java.io.InputStream;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -16,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkException;
@@ -45,7 +45,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   @Override
   public void store(
       @NotEmpty final String mimeType,
-      @NotNull final MultipartFile file,
+      @NotNull final InputStream inputStream,
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String fileName,
       @NotEmpty final String key)
@@ -58,7 +58,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
             .contentLength(fileSize)
             .metadata(ImmutableMap.of(FILE_NAME_METADATA_KEY, fileName))
             .build();
-    final RequestBody requestBody = RequestBody.fromInputStream(file.getInputStream(), fileSize);
+    final RequestBody requestBody = RequestBody.fromInputStream(inputStream, fileSize);
 
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
     try {

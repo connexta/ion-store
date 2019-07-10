@@ -11,8 +11,13 @@ import com.connexta.multiintstore.common.ProductStorageManager;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.services.api.StoreApi;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,14 +43,39 @@ public class StoreController implements StoreApi {
 
   @Override
   public ResponseEntity<Void> storeProduct(
-      String acceptVersion, Long fileSize, String mimeType, MultipartFile file, String fileName) {
+      @NotEmpty String acceptVersion,
+      @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
+      @NotEmpty String mimeType,
+      @Valid @NotNull MultipartFile file,
+      @NotEmpty String fileName) {
+    final InputStream inputStream;
+    try {
+      inputStream = file.getInputStream();
+    } catch (IOException e) {
+      log.warn(
+          "Unable to read file for storeProduct request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
+          acceptVersion,
+          fileSize,
+          mimeType,
+          fileName,
+          e);
+      return ResponseEntity.badRequest().build();
+    }
+
     final URI location;
     try {
       location =
-          productStorageManager.storeProduct(acceptVersion, fileSize, mimeType, file, fileName);
+          productStorageManager.storeProduct(
+              acceptVersion, fileSize, mimeType, inputStream, fileName);
     } catch (IOException | StorageException | URISyntaxException e) {
-      log.error(String.format("Unable to store product: \"%s\"", fileName), e);
-      return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+      log.warn(
+          "Unable to store product for request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
+          acceptVersion,
+          fileSize,
+          mimeType,
+          fileName,
+          e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     return ResponseEntity.created(location).build();
@@ -53,21 +83,45 @@ public class StoreController implements StoreApi {
 
   @Override
   public ResponseEntity<Void> storeMetadata(
-      String acceptVersion,
-      String productId,
-      String metadataType,
-      Long fileSize,
-      String mimeType,
-      MultipartFile file,
-      String fileName) {
+      @NotEmpty String acceptVersion,
+      @NotEmpty String productId,
+      @NotEmpty String metadataType,
+      @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
+      @NotEmpty String mimeType,
+      @Valid @NotNull MultipartFile file,
+      @NotEmpty String fileName) {
+    final InputStream inputStream;
     try {
-      metadataStorageManager.storeMetadata(
-          acceptVersion, productId, metadataType, mimeType, file, fileName);
-    } catch (IOException | StorageException e) {
-      log.error(String.format("Unable to store metadata: \"%s\"", fileName), e);
-      return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+      inputStream = file.getInputStream();
+    } catch (IOException e) {
+      log.warn(
+          "Unable to read file for storeMetadata request with params acceptVersion={}, productId={}, metadataType={}, fileSize={}, mimeType={}, fileName={}",
+          acceptVersion,
+          productId,
+          metadataType,
+          fileSize,
+          mimeType,
+          fileName,
+          e);
+      return ResponseEntity.badRequest().build();
     }
 
-    return new ResponseEntity(HttpStatus.CREATED);
+    try {
+      metadataStorageManager.storeMetadata(
+          acceptVersion, productId, metadataType, mimeType, inputStream, fileName);
+    } catch (IOException | StorageException e) {
+      log.warn(
+          "Unable to store metadata request with params acceptVersion={}, productId={}, metadataType={}, fileSize={}, mimeType={}, fileName={}",
+          acceptVersion,
+          productId,
+          metadataType,
+          fileSize,
+          mimeType,
+          fileName,
+          e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 }
