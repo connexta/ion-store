@@ -9,3 +9,7 @@ management:
       exposure:
         include: "*"
         exclude: "/actuator"
+
+spring:
+  profiles:
+    active: s3Production,solrProduction

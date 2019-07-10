@@ -7,7 +7,6 @@
 package com.connexta.multiintstore;
 
 import static com.github.npathai.hamcrestopt.OptionalMatchers.isPresentAnd;
-import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,16 +16,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
-import com.xebialabs.restito.semantics.Action;
-import com.xebialabs.restito.semantics.Condition;
-import com.xebialabs.restito.server.StubServer;
-import org.glassfish.grizzly.http.util.HttpStatus;
 import org.hamcrest.Matchers;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +39,6 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
@@ -58,18 +50,42 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-// Todo fix failing tests when we replace Callback API with the MIS API
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(initializers = MultiIntStoreIntegrationTest.Initializer.class)
 @EnableConfigurationProperties
-@ActiveProfiles("test")
 @AutoConfigureMockMvc
+@ActiveProfiles({"test", "solrProduction"})
 public class MultiIntStoreIntegrationTest {
 
-  private static final byte[] TEST_FILE = "some-content".getBytes();
-  private static final int TEST_FILE_SIZE = TEST_FILE.length;
+  private static final String TEST_CONTENTS =
+      "All the color had been leached from Winterfell until only grey and white remained";
+  private static final byte[] TEST_FILE = TEST_CONTENTS.getBytes();
+  private static final String TEST_FILE_SIZE = String.valueOf(TEST_FILE.length);
+  private static MockHttpServletRequestBuilder POST_PRODUCT_REQUEST =
+      multipart("/mis/product")
+          .file("file", TEST_FILE)
+          .param("fileSize", TEST_FILE_SIZE)
+          .param("fileName", "file")
+          .param("mimeType", "plain/text")
+          .header("Accept-Version", "1.2.1")
+          .accept(MediaType.APPLICATION_JSON)
+          .contentType(MediaType.MULTIPART_FORM_DATA);
+  private static final String TEST_METADATA_PRODUCT_ID = "12";
+  private static MockHttpServletRequestBuilder PUT_METADATA_REQUEST =
+      multipart(String.format("/mis/product/%s/cst", TEST_METADATA_PRODUCT_ID))
+          .file("file", TEST_FILE)
+          .param("fileSize", TEST_FILE_SIZE)
+          .param("fileName", "file")
+          .param("mimeType", "plain/text")
+          .header("Accept-Version", "1.2.1")
+          .with(
+              request -> {
+                request.setMethod(HttpMethod.PUT.toString());
+                return request;
+              })
+          .accept(MediaType.APPLICATION_JSON)
+          .contentType(MediaType.MULTIPART_FORM_DATA);
 
   @ClassRule
   public static final GenericContainer solr =
@@ -96,30 +112,25 @@ public class MultiIntStoreIntegrationTest {
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
   @Autowired private RestTemplate restTemplate;
 
-  private StubServer server;
-  private MockRestServiceServer restServer;
+  private MockRestServiceServer server;
 
   @Before
   public void setup() {
-    restServer = MockRestServiceServer.createServer(restTemplate);
-
-    server = new StubServer();
-    server.start();
+    server = MockRestServiceServer.createServer(restTemplate);
 
     indexedMetadataRepository.deleteAll();
   }
 
   @After
   public void stop() {
-    server.stop();
+    server.verify();
+    server.reset();
   }
 
   @Test
   public void testContextLoads() {}
 
-  // TODO: Fix Solr itests
   @Test
-  @Ignore
   public void testEmptySearchService() throws Exception {
     mockMvc
         .perform(MockMvcRequestBuilders.get("/search?q=searchKeyword"))
@@ -128,23 +139,9 @@ public class MultiIntStoreIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testEmptySearchResults() throws Exception {
-    // given:
-    final String contents =
-        "All the color had been leached from Winterfell until only grey and white remained";
-    final String ingestId = "1234";
+    mockMvc.perform(PUT_METADATA_REQUEST);
 
-    whenHttp(server)
-        .match(Condition.endsWithUri("/location/cst001"))
-        .then(
-            Action.contentType(MediaType.TEXT_PLAIN.toString()),
-            Action.stringContent(contents),
-            Action.status(HttpStatus.OK_200));
-
-    mockMvc.perform(getMetadataRequest());
-
-    // verify:
     mockMvc
         .perform(MockMvcRequestBuilders.get("/search?q=thisKeywordDoesntMatchAnything"))
         .andExpect(status().isOk())
@@ -152,39 +149,16 @@ public class MultiIntStoreIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testSearchResults() throws Exception {
-    // given:
-    final String contents =
-        "All the color had been leached from Winterfell until only grey and white remained";
-    final String ingestId = "1234";
+    mockMvc.perform(PUT_METADATA_REQUEST);
 
-    whenHttp(server)
-        .match(Condition.endsWithUri("/location/cst001"))
-        .then(
-            Action.contentType(MediaType.TEXT_PLAIN.toString()),
-            Action.stringContent(contents),
-            Action.status(HttpStatus.OK_200));
-
-    mockMvc.perform(
-        MockMvcRequestBuilders.post("/store/" + ingestId)
-            .contentType("application/json")
-            .content(
-                createMetadataCallbackJson(
-                    "1234",
-                    "COMPLETE",
-                    "cst",
-                    MediaType.APPLICATION_JSON.toString(),
-                    256,
-                    "http://localhost:" + server.getPort() + "/location/cst001",
-                    "U",
-                    "ownerProducer")));
-
-    // verify:
     mockMvc
         .perform(MockMvcRequestBuilders.get("/search?q=Winterfell"))
         .andExpect(status().isOk())
-        .andExpect(content().string(String.format("[\"%s%s\"]", endpointUrlRetrieve, ingestId)));
+        .andExpect(
+            content()
+                .string(
+                    String.format("[\"%s%s\"]", endpointUrlRetrieve, TEST_METADATA_PRODUCT_ID)));
   }
 
   // TODO: Update the MIS itests when we remove the deprecated endpoints
@@ -195,64 +169,30 @@ public class MultiIntStoreIntegrationTest {
    * ================================================================
    */
   @Test
-  @Ignore
   public void testRetrieveProduct() throws Exception {
     // TODO
   }
 
   @Test
   public void testStoreProduct() throws Exception {
-    // given
     when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
         .thenReturn(PutObjectResponse.builder().build());
 
-    // verify
-    mockMvc.perform(getProductRequest()).andExpect(MockMvcResultMatchers.status().isCreated());
+    mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated());
   }
 
   @Test
-  @Ignore
   public void storeCST() throws Exception {
-
-    final String contents = "Super cool CST";
-    final String ingestId = "1234";
-
-    whenHttp(server)
-        .match(Condition.endsWithUri("/location/cst001"))
-        .then(
-            Action.contentType(MediaType.TEXT_PLAIN.toString()),
-            Action.stringContent(contents),
-            Action.status(HttpStatus.OK_200));
-
-    mockMvc
-        .perform(
-            MockMvcRequestBuilders.post("/store/" + ingestId)
-                .contentType("application/json")
-                .content(
-                    createMetadataCallbackJson(
-                        "1234",
-                        "COMPLETE",
-                        "cst",
-                        MediaType.APPLICATION_JSON.toString(),
-                        256,
-                        "http://localhost:" + server.getPort() + "/location/cst001",
-                        "U",
-                        "ownerProducer")))
-        .andExpect(status().isOk());
+    mockMvc.perform(PUT_METADATA_REQUEST);
 
     assertThat(
-        indexedMetadataRepository.findById(ingestId),
-        isPresentAnd(Matchers.hasProperty("contents", is(contents))));
+        indexedMetadataRepository.findById(TEST_METADATA_PRODUCT_ID),
+        isPresentAnd(Matchers.hasProperty("contents", is(TEST_CONTENTS))));
   }
 
   @Test
-  @Ignore
   public void testStoreMetadata() throws Exception {
-
-    mockMvc
-        .perform(getMetadataRequest())
-        .andExpect(MockMvcResultMatchers.status().isCreated())
-        .andDo(MockMvcResultHandlers.print());
+    mockMvc.perform(PUT_METADATA_REQUEST).andExpect(MockMvcResultMatchers.status().isOk());
   }
 
   /*
@@ -268,7 +208,7 @@ public class MultiIntStoreIntegrationTest {
         .thenThrow(SdkServiceException.builder().build());
 
     // verify
-    mockMvc.perform(getProductRequest()).andExpect(status().is5xxServerError());
+    mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 
   @Test
@@ -278,7 +218,7 @@ public class MultiIntStoreIntegrationTest {
         .thenThrow(SdkClientException.builder().build());
 
     // verify
-    mockMvc.perform(getProductRequest()).andExpect(status().is5xxServerError());
+    mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 
   @Test
@@ -288,58 +228,6 @@ public class MultiIntStoreIntegrationTest {
         .thenThrow(new RuntimeException());
 
     // verify
-    mockMvc.perform(getProductRequest()).andExpect(status().is5xxServerError());
-  }
-
-  private static MockHttpServletRequestBuilder getProductRequest() {
-    return multipart("/mis/product")
-        .file("file", TEST_FILE)
-        .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-        .param("fileName", "file")
-        .param("mimeType", "plain/text")
-        .header("Accept-Version", "1.2.1")
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.MULTIPART_FORM_DATA);
-  }
-
-  private static MockHttpServletRequestBuilder getMetadataRequest() {
-    return multipart("/mis/product/12/cst")
-        .file("file", TEST_FILE)
-        .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-        .param("fileName", "file")
-        .param("mimeType", "plain/text")
-        .header("Accept-Version", "1.2.1")
-        .with(
-            request -> {
-              request.setMethod(HttpMethod.PUT.toString());
-              return request;
-            })
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.MULTIPART_FORM_DATA);
-  }
-
-  private static String createMetadataCallbackJson(
-      String id,
-      String status,
-      String type,
-      String mimeType,
-      int bytes,
-      String location,
-      String classification,
-      String ownerProducer)
-      throws Exception {
-    return new JSONObject()
-        .put("id", id)
-        .put("status", status)
-        .put("type", type)
-        .put("mimeType", mimeType)
-        .put("bytes", bytes)
-        .put("location", location)
-        .put(
-            "security",
-            new JSONObject()
-                .put("classification", classification)
-                .put("ownerProducer", ownerProducer))
-        .toString();
+    mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 }

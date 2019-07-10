@@ -19,6 +19,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -47,6 +48,13 @@ public class SearchServiceImpl implements SearchService {
     try {
       matchingIndexedProductMetadatas = indexedMetadataRepository.findByContents(keyword);
     } catch (RuntimeException e) {
+      // TODO remove this check once solr is deployed independently
+      if (e instanceof DataAccessResourceFailureException
+          && indexedMetadataRepository.count() == 0) {
+        log.warn("Solr is empty. Returning empty search results.");
+        return Collections.emptyList();
+      }
+
       throw new SearchException("Unable to search for " + keyword, e);
     }
 

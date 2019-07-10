@@ -15,6 +15,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -37,7 +38,9 @@ public class S3StorageAdaptor implements StorageAdaptor {
   private final String s3BucketQuarantine;
   private final S3Client s3Client;
 
-  public S3StorageAdaptor(final S3Client s3Client, final String s3BucketQuarantine) {
+  public S3StorageAdaptor(
+      final S3Client s3Client,
+      @Value("${aws.s3.bucket.quarantine}") @NotEmpty final String s3BucketQuarantine) {
     this.s3Client = s3Client;
     this.s3BucketQuarantine = s3BucketQuarantine;
   }
@@ -49,7 +52,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String fileName,
       @NotEmpty final String key)
-      throws IOException, StorageException {
+      throws StorageException {
     final PutObjectRequest putObjectRequest =
         PutObjectRequest.builder()
             .bucket(s3BucketQuarantine)

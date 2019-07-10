@@ -28,7 +28,7 @@ public interface StorageAdaptor {
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String fileName,
       @NotEmpty final String key)
-      throws IOException, StorageException;
+      throws StorageException;
 
   /**
    * Retrieves the data in a blob store using the given key.

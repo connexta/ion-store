@@ -122,6 +122,6 @@ public class StoreController implements StoreApi {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-    return ResponseEntity.status(HttpStatus.CREATED).build();
+    return ResponseEntity.ok().build();
   }
 }
