@@ -9,6 +9,11 @@ This repository uses [Lombok](https://projectlombok.org/), which requires additi
 Follow the instructions [here](https://www.baeldung.com/lombok-ide) to set up your IDE.
 
 ## Building
+To just compile and build the projects use:
+```bash
+./gradlew assemble
+```
+To do a full build with tests and the formatter use:
 ```bash
 ./gradlew build
 ```
