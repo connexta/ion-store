@@ -10,6 +10,7 @@ import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,7 @@ public class IngestController implements IngestApi {
     }
 
     try {
-      ingestService.ingest(fileSize, mimeType, file, fileName);
+      ingestService.ingest(fileSize, mimeType, file.getInputStream(), fileName);
     } catch (StoreException | TransformException e) {
       LOGGER.warn(
           "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mimeType={}, title={}, fileName={}",
@@ -65,7 +66,17 @@ public class IngestController implements IngestApi {
           title,
           fileName,
           e);
-      return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    } catch (IOException e) {
+      LOGGER.warn(
+          "Unable to read file for ingest request with params acceptVersion={}, fileSize={}, mimeType={}, title={}, fileName={}",
+          acceptVersion,
+          fileSize,
+          mimeType,
+          title,
+          fileName,
+          e);
+      return ResponseEntity.badRequest().build();
     }
 
     return ResponseEntity.accepted().build();

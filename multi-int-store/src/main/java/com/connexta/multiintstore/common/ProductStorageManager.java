@@ -10,6 +10,7 @@ import com.connexta.multiintstore.adaptors.RetrieveResponse;
 import com.connexta.multiintstore.adaptors.StorageAdaptor;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -20,7 +21,6 @@ import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -37,16 +37,16 @@ public class ProductStorageManager {
   }
 
   public URI storeProduct(
-      String acceptVersion,
+      @NotEmpty String acceptVersion,
       @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      String mimeType,
-      MultipartFile file,
-      String fileName)
+      @NotEmpty String mimeType,
+      @NotNull InputStream inputStream,
+      @NotEmpty String fileName)
       throws IOException, StorageException, URISyntaxException {
     // TODO: Validate Accept-Version
     final String key = UUID.randomUUID().toString().replace("-", "");
 
-    storageAdaptor.store(mimeType, file, fileSize, fileName, key);
+    storageAdaptor.store(mimeType, inputStream, fileSize, fileName, key);
     return new URI(retrieveEndpoint + key);
   }
 
@@ -54,7 +54,7 @@ public class ProductStorageManager {
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
    * RetrieveResponse}.
    */
-  public RetrieveResponse retrieveProduct(String id) throws StorageException {
+  public RetrieveResponse retrieveProduct(@NotEmpty String id) throws StorageException {
     return storageAdaptor.retrieve(id);
   }
 }

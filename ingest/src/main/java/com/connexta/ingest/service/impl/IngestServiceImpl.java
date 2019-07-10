@@ -11,6 +11,7 @@ import com.connexta.ingest.client.TransformClient;
 import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.service.api.IngestService;
+import java.io.InputStream;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -18,7 +19,6 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class IngestServiceImpl implements IngestService {
@@ -38,10 +38,10 @@ public class IngestServiceImpl implements IngestService {
   public void ingest(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String mimeType,
-      @NotNull final MultipartFile file,
+      @NotNull final InputStream inputStream,
       @NotEmpty final String fileName)
       throws StoreException, TransformException {
-    final String location = storeClient.store(fileSize, mimeType, file, fileName).toString();
+    final String location = storeClient.store(fileSize, mimeType, inputStream, fileName).toString();
     LOGGER.info("{} has been successfully stored and can be downloaded at {}", fileName, location);
 
     transformClient.requestTransform(fileSize, mimeType, location);

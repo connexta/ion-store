@@ -7,6 +7,7 @@
 package com.connexta.ingest.client;
 
 import com.connexta.ingest.exceptions.StoreException;
+import java.io.InputStream;
 import java.net.URI;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -14,6 +15,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -43,13 +44,26 @@ public class StoreClient {
   public URI store(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String mimeType,
-      @NotNull final MultipartFile file,
+      @NotNull final InputStream inputStream,
       @NotEmpty final String fileName)
       throws StoreException {
     final MultipartBodyBuilder builder = new MultipartBodyBuilder();
     builder.part("fileSize", fileSize);
     builder.part("mimeType", mimeType);
-    builder.part("file", file.getResource());
+    builder.part(
+        "file",
+        new InputStreamResource(inputStream) {
+
+          @Override
+          public long contentLength() {
+            return fileSize;
+          }
+
+          @Override
+          public String getFilename() {
+            return fileName;
+          }
+        });
     builder.part("fileName", fileName);
 
     final HttpHeaders headers = new HttpHeaders();
