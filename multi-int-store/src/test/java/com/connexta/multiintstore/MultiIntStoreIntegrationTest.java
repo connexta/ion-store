@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
@@ -47,9 +48,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -66,6 +65,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 @ContextConfiguration(initializers = MultiIntStoreIntegrationTest.Initializer.class)
 @EnableConfigurationProperties
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
 public class MultiIntStoreIntegrationTest {
 
   private static final byte[] TEST_FILE = "some-content".getBytes();
@@ -91,18 +91,16 @@ public class MultiIntStoreIntegrationTest {
   @Value("${endpointUrl.retrieve}")
   private String endpointUrlRetrieve = "http://localhost:9040/retrieve/";
 
+  @Autowired private MockMvc mockMvc;
   @Autowired private S3Client mockS3Client;
-  @Autowired private WebApplicationContext wac;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
   @Autowired private RestTemplate restTemplate;
 
-  private MockMvc mockMvc;
   private StubServer server;
   private MockRestServiceServer restServer;
 
   @Before
   public void setup() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
     restServer = MockRestServiceServer.createServer(restTemplate);
 
     server = new StubServer();
