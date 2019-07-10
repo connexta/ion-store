@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +37,11 @@ public class ProductStorageManager {
   }
 
   public URI storeProduct(
-      String acceptVersion, Long fileSize, String mimeType, MultipartFile file, String fileName)
+      String acceptVersion,
+      @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
+      String mimeType,
+      MultipartFile file,
+      String fileName)
       throws IOException, StorageException, URISyntaxException {
     // TODO: Validate Accept-Version
     final String key = UUID.randomUUID().toString().replace("-", "");

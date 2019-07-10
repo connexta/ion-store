@@ -8,6 +8,8 @@ package com.connexta.ingest.client;
 
 import com.connexta.ingest.exceptions.StoreException;
 import java.net.URI;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +41,7 @@ public class StoreClient {
 
   /** @return the location of the product */
   public URI store(
-      final Long fileSize,
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String mimeType,
       @NotNull final MultipartFile file,
       @NotEmpty final String fileName)

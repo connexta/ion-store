@@ -9,6 +9,8 @@ package com.connexta.ingest.client;
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.transformation.rest.models.TransformRequest;
 import com.connexta.transformation.rest.models.TransformResponse;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +40,9 @@ public class TransformClient {
   }
 
   public void requestTransform(
-      final Long fileSize, @NotEmpty final String mimeType, @NotEmpty final String location)
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
+      @NotEmpty final String mimeType,
+      @NotEmpty final String location)
       throws TransformException {
     final HttpHeaders headers = new HttpHeaders();
     headers.set("Accept-Version", transformApiVersion);

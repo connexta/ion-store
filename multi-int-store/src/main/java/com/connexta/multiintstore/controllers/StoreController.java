@@ -13,7 +13,6 @@ import com.connexta.multiintstore.services.api.StoreApi;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -59,7 +58,7 @@ public class StoreController implements StoreApi {
       String metadataType,
       Long fileSize,
       String mimeType,
-      @Valid MultipartFile file,
+      MultipartFile file,
       String fileName) {
     try {
       metadataStorageManager.storeMetadata(

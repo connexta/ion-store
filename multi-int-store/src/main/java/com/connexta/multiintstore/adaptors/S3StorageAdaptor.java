@@ -8,6 +8,8 @@ package com.connexta.multiintstore.adaptors;
 
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +46,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   public void store(
       @NotEmpty final String mimeType,
       @NotNull final MultipartFile file,
-      final Long fileSize,
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String fileName,
       @NotEmpty final String key)
       throws IOException, StorageException {

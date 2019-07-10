@@ -8,6 +8,8 @@ package com.connexta.ingest.service.api;
 
 import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface IngestService {
 
   void ingest(
-      final Long fileSize,
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotEmpty final String mimeType,
       @NotNull final MultipartFile file,
       @NotEmpty final String fileName)
