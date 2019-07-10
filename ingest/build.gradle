@@ -37,10 +37,10 @@ dependencies {
 
     testImplementation(Dependencies.springBootStarterTest())
 
-    integrationTestImplementation Dependencies.ingestAPI()
-    integrationTestImplementation Dependencies.transformAPI()
-    integrationTestImplementation Dependencies.springBootStarterTest()
-    integrationTestImplementation Dependencies.springBootStarterWeb()
+    integrationTestImplementation(Dependencies.ingestAPI())
+    integrationTestImplementation(Dependencies.transformAPI())
+    integrationTestImplementation(Dependencies.springBootStarterTest())
+    integrationTestImplementation(Dependencies.springBootStarterWeb())
     integrationTestImplementation(Dependencies.reactiveStreams())
 }
 
@@ -78,4 +78,3 @@ integrationTest.mustRunAfter test
 
 build.finalizedBy("docker")
 assemble.finalizedBy("docker")
-
