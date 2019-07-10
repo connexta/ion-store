@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.xebialabs.restito.semantics.Action;
 import com.xebialabs.restito.semantics.Condition;
@@ -31,6 +30,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -83,19 +83,17 @@ public class MultiIntStoreIntegrationTest {
     @Override
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
       TestPropertyValues.of(
-              "solr.host=" + solr.getContainerIpAddress(),
-              "solr.port=" + solr.getMappedPort(8983),
-              "endpointUrl.retrieve=" + RETRIEVE_ENDPOINT)
+              "solr.host=" + solr.getContainerIpAddress(), "solr.port=" + solr.getMappedPort(8983))
           .applyTo(configurableApplicationContext.getEnvironment());
     }
   }
 
-  private static final String RETRIEVE_ENDPOINT = "http://localhost:9040/retrieve/";
+  @Value("${endpointUrl.retrieve}")
+  private String endpointUrlRetrieve = "http://localhost:9040/retrieve/";
 
   @Autowired private S3Client mockS3Client;
   @Autowired private WebApplicationContext wac;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
-  @Autowired private CallbackAcceptVersion acceptVersion;
   @Autowired private RestTemplate restTemplate;
 
   private MockMvc mockMvc;
@@ -188,7 +186,7 @@ public class MultiIntStoreIntegrationTest {
     mockMvc
         .perform(MockMvcRequestBuilders.get("/search?q=Winterfell"))
         .andExpect(status().isOk())
-        .andExpect(content().string(String.format("[\"%s%s\"]", RETRIEVE_ENDPOINT, ingestId)));
+        .andExpect(content().string(String.format("[\"%s%s\"]", endpointUrlRetrieve, ingestId)));
   }
 
   // TODO: Update the MIS itests when we remove the deprecated endpoints

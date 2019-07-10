@@ -7,6 +7,7 @@
 package com.connexta.ingest;
 
 import static org.springframework.test.web.client.ExpectedCount.never;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -25,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -45,8 +47,15 @@ public class IngestApplicationIntegrationTest {
   private static final byte[] TEST_FILE = "some-content".getBytes();
   private static final int TEST_FILE_SIZE = TEST_FILE.length;
   private static final String TEST_MIME_TYPE = "text/plain";
-  private static final String ENDPOINT_URL_TRANSFORM = "http://localhost:1231/transform/";
-  private static final String ENDPOINT_URL_STORE = "http://localhost:1232/store/";
+
+  @Value("${endpointUrl.store}")
+  private String endpointUrlStore;
+
+  @Value("${endpointUrl.transform}")
+  private String endpointUrlTransform;
+
+  @Value("${endpoints.transform.version}")
+  private String endpointsTransformVersion;
 
   @Autowired private RestTemplate restTemplate;
   @Autowired private WebApplicationContext wac;
@@ -72,13 +81,14 @@ public class IngestApplicationIntegrationTest {
   public void testSuccessfulIngestRequest() throws Exception {
     final String location = "http://localhost:1232/store/1234";
     server
-        .expect(requestTo(ENDPOINT_URL_STORE))
+        .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withCreatedEntity(new URI(location)));
 
     server
-        .expect(requestTo(ENDPOINT_URL_TRANSFORM))
+        .expect(requestTo(endpointUrlTransform))
         .andExpect(method(HttpMethod.POST))
+        .andExpect(header("Accept-Version", endpointsTransformVersion))
         .andExpect(jsonPath("$.bytes").value(TEST_FILE_SIZE))
         .andExpect(jsonPath("$.mimeType").value(TEST_MIME_TYPE))
         .andExpect(jsonPath("$.productLocation").value(location))
@@ -109,11 +119,11 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void testStoreRequestBadRequest() throws Exception {
     server
-        .expect(requestTo(ENDPOINT_URL_STORE))
+        .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withBadRequest());
 
-    server.expect(never(), requestTo(ENDPOINT_URL_TRANSFORM));
+    server.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -131,11 +141,11 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void testStoreRequestUnauthorizedRequest() throws Exception {
     server
-        .expect(requestTo(ENDPOINT_URL_STORE))
+        .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withUnauthorizedRequest());
 
-    server.expect(never(), requestTo(ENDPOINT_URL_TRANSFORM));
+    server.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -153,11 +163,11 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void testStoreRequestForbidden() throws Exception {
     server
-        .expect(requestTo(ENDPOINT_URL_STORE))
+        .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withStatus(HttpStatus.FORBIDDEN));
 
-    server.expect(never(), requestTo(ENDPOINT_URL_TRANSFORM));
+    server.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -175,11 +185,11 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void testStoreRequestNotImplemented() throws Exception {
     server
-        .expect(requestTo(ENDPOINT_URL_STORE))
+        .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withStatus(HttpStatus.NOT_IMPLEMENTED));
 
-    server.expect(never(), requestTo(ENDPOINT_URL_TRANSFORM));
+    server.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -197,11 +207,11 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void testStoreRequestServerError() throws Exception {
     server
-        .expect(requestTo(ENDPOINT_URL_STORE))
+        .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withServerError());
 
-    server.expect(never(), requestTo(ENDPOINT_URL_TRANSFORM));
+    server.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -224,12 +234,20 @@ public class IngestApplicationIntegrationTest {
   // transformation endpoint.
   @Test
   public void testUnsuccessfulTransformRequest() throws Exception {
+    final String location = "http://localhost:1232/store/1234";
     server
-        .expect(requestTo(ENDPOINT_URL_STORE))
+        .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
-        .andRespond(withCreatedEntity(new URI("http://localhost:1232/store/1234")));
+        .andRespond(withCreatedEntity(new URI(location)));
 
-    server.expect(requestTo(ENDPOINT_URL_TRANSFORM)).andRespond(withBadRequest());
+    server
+        .expect(requestTo(endpointUrlTransform))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(header("Accept-Version", endpointsTransformVersion))
+        .andExpect(jsonPath("$.bytes").value(TEST_FILE_SIZE))
+        .andExpect(jsonPath("$.mimeType").value(TEST_MIME_TYPE))
+        .andExpect(jsonPath("$.productLocation").value(location))
+        .andRespond(withServerError());
 
     mvc.perform(
             multipart("/ingest")

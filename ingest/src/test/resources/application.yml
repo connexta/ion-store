@@ -2,3 +2,6 @@
 endpointUrl:
   store: http://localhost:1232/store/
   transform: http://localhost:1231/transform/
+endpoints:
+  transform:
+    version: testTransformApiVersion

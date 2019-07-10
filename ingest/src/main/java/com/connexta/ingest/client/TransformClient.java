@@ -13,6 +13,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -24,21 +25,23 @@ public class TransformClient {
 
   @NotNull private final RestTemplate restTemplate;
   @NotEmpty private final String transformEndpoint;
+  @NotEmpty private final String transformApiVersion;
 
   public TransformClient(
       @NotNull RestTemplate restTemplate,
-      @Qualifier("transformEndpoint") @NotEmpty String transformEndpoint) {
+      @Qualifier("transformEndpoint") @NotEmpty String transformEndpoint,
+      @Value("${endpoints.transform.version}") @NotEmpty String transformApiVersion) {
     this.restTemplate = restTemplate;
     this.transformEndpoint = transformEndpoint;
-    log.info("Transformation Service URL: {}", transformEndpoint);
+    this.transformApiVersion = transformApiVersion;
+    log.info("Transformation Service URL={} version={}", transformEndpoint, transformApiVersion);
   }
 
   public void requestTransform(
       final Long fileSize, @NotEmpty final String mimeType, @NotEmpty final String location)
       throws TransformException {
     final HttpHeaders headers = new HttpHeaders();
-    // TODO: Do not hardcode the accept-version value
-    headers.set("Accept-Version", "0.0.1-SNAPSHOT");
+    headers.set("Accept-Version", transformApiVersion);
 
     final TransformRequest transformRequest = new TransformRequest();
     transformRequest.setBytes(fileSize);

@@ -1,4 +1,3 @@
-callback-accept-version: 0.1.0-SNAPSHOT
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
@@ -9,3 +8,6 @@ management:
       exposure:
         include: "*"
         exclude: "/actuator"
+endpoints:
+  transform:
+    version: ${transformApiVersion}

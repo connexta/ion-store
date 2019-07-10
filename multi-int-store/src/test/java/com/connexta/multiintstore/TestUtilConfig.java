@@ -8,7 +8,6 @@ package com.connexta.multiintstore;
 
 import static org.mockito.Mockito.mock;
 
-import com.connexta.multiintstore.config.CallbackAcceptVersion;
 import org.apache.solr.client.solrj.SolrClient;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -37,12 +36,6 @@ public class TestUtilConfig {
   @Bean
   public String s3BucketQuarantine() {
     return "test-bucket";
-  }
-
-  @Bean
-  @Primary
-  public CallbackAcceptVersion callbackAcceptVersion() {
-    return new CallbackAcceptVersion("4.2.x");
   }
 
   @Bean

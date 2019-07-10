@@ -24,6 +24,10 @@ dependencies {
     testImplementation(Dependencies.springBootStarterTest())
 }
 
+processResources {
+    expand([transformApiVersion: Versions.transformAPI])
+}
+
 dependencyCheck {
     suppressionFile = "${projectDir}/owasp-suppressions.xml"
 }
