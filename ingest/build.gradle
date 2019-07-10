@@ -17,10 +17,10 @@ configurations {
 
 dependencies {
     implementation(Dependencies.springBootStarterWeb())
+    implementation(Dependencies.reactiveStreams())
     implementation(Dependencies.commonsIO())
     implementation(Dependencies.ingestAPI())
     implementation(Dependencies.transformAPI())
-    implementation project(":retrieve-api")
     testImplementation(Dependencies.springBootStarterTest())
 }
 

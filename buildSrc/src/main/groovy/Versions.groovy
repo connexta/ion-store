@@ -18,6 +18,7 @@ class Versions {
     static String springBoot = "2.1.6.RELEASE"
     static String springData = "4.0.9.RELEASE"
     static String transformAPI = "0.0.1-SNAPSHOT"
+    static String reactiveStreams = "1.0.2"
 
     //  Test Versions
     static String junit = "4.12"

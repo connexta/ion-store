@@ -6,10 +6,10 @@
  */
 package com.connexta.ingest.endpoint;
 
+import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@RestController()
+@RestController
 public class IngestController implements IngestApi {
 
   private static Logger LOGGER = LoggerFactory.getLogger(IngestController.class);
@@ -45,25 +45,27 @@ public class IngestController implements IngestApi {
 
     final long actualFileSize = file.getSize();
     if (fileSize != actualFileSize) {
-      final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-      LOGGER.info(
-          "File size request param ({}) does not match the size of the file ({}). Returning {}.",
+      LOGGER.warn(
+          "File size request param ({}) does not match the size of the file ({}).",
           fileSize,
-          actualFileSize,
-          httpStatus);
-      return new ResponseEntity(httpStatus);
+          actualFileSize);
+      return ResponseEntity.badRequest().build();
     }
 
     try {
-      ingestService.ingest(mimeType, file, fileSize, fileName);
-      return new ResponseEntity(HttpStatus.ACCEPTED);
-    } catch (IOException | TransformException e) {
+      ingestService.ingest(fileSize, mimeType, file, fileName);
+    } catch (StoreException | TransformException e) {
       LOGGER.warn(
-          String.format(
-              "Unable to complete ingest request with params acceptVersion=%s, fileSize=%d, mimeType=%s, title=%s, fileName=%s",
-              acceptVersion, fileSize, mimeType, title, fileName),
+          "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mimeType={}, title={}, fileName={}",
+          acceptVersion,
+          fileSize,
+          mimeType,
+          title,
+          fileName,
           e);
       return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    return ResponseEntity.accepted().build();
   }
 }

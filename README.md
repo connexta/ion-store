@@ -193,7 +193,6 @@ Example configs/ingest_config.yml:
 endpointUrl:
   store: http://localhost:9041/mis/product/
   transform: http://localhost:9090/transform/
-  retrieve: http://localhost:9041/mis/product/
 ```
 
 Example configs/mis_config.yml:
