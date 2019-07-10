@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -35,13 +36,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
 public class IngestApplicationIntegrationTest {
 
   private static final byte[] TEST_FILE = "some-content".getBytes();
@@ -57,15 +57,13 @@ public class IngestApplicationIntegrationTest {
   @Value("${endpoints.transform.version}")
   private String endpointsTransformVersion;
 
+  @Autowired private MockMvc mvc;
   @Autowired private RestTemplate restTemplate;
-  @Autowired private WebApplicationContext wac;
 
   private MockRestServiceServer server;
-  private MockMvc mvc;
 
   @Before
   public void beforeEach() {
-    mvc = MockMvcBuilders.webAppContextSetup(wac).build();
     server = MockRestServiceServer.createServer(restTemplate);
   }
 

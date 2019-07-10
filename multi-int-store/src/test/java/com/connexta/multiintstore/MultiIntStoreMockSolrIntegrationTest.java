@@ -22,33 +22,25 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
 public class MultiIntStoreMockSolrIntegrationTest {
 
-  @Autowired private WebApplicationContext wac;
+  @Autowired private MockMvc mockMvc;
   @Autowired private SolrClient mockSolrClient;
-
-  private MockMvc mockMvc;
-
-  @Before
-  public void setup() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-  }
 
   @After
   public void after() {
