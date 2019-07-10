@@ -11,9 +11,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,11 +23,10 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
+@Slf4j
 @Configuration
 @Profile("default")
 public class S3StorageConfiguration {
-
-  Logger LOGGER = LoggerFactory.getLogger(S3StorageConfiguration.class);
 
   @Value("${aws.s3.endpointUrl}")
   private String s3Endpoint;
@@ -59,9 +57,9 @@ public class S3StorageConfiguration {
             .region(Region.of(s3Region))
             .credentialsProvider(StaticCredentialsProvider.create(credentials))
             .build();
-    LOGGER.info("S3 Client has been initialized.");
-    LOGGER.info("Region: {}", s3Region);
-    LOGGER.info("Endpoint: {}", s3Endpoint);
+    log.info("S3 Client has been initialized.");
+    log.info("Region: {}", s3Region);
+    log.info("Endpoint: {}", s3Endpoint);
     return s3Client;
   }
 

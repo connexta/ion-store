@@ -16,14 +16,12 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class IngestServiceImpl implements IngestService {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceImpl.class);
 
   @NotNull private final StoreClient storeClient;
   @NotNull private final TransformClient transformClient;
@@ -42,9 +40,9 @@ public class IngestServiceImpl implements IngestService {
       @NotEmpty final String fileName)
       throws StoreException, TransformException {
     final String location = storeClient.store(fileSize, mimeType, inputStream, fileName).toString();
-    LOGGER.info("{} has been successfully stored and can be downloaded at {}", fileName, location);
+    log.info("{} has been successfully stored and can be downloaded at {}", fileName, location);
 
     transformClient.requestTransform(fileSize, mimeType, location);
-    LOGGER.info("Successfully submitted a transform request for {}", fileName);
+    log.info("Successfully submitted a transform request for {}", fileName);
   }
 }
