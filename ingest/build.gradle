@@ -10,7 +10,7 @@ plugins {
 }
 
 sourceSets {
-    integrationTest {
+    itest {
         java {
             compileClasspath += main.output + test.output
             runtimeClasspath += main.output + test.output
@@ -24,8 +24,8 @@ configurations {
     implementation {
         exclude group: "org.jdom" // CVE-2019-12814
     }
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
+    itestCompile.extendsFrom(testCompile)
+    itestRuntime.extendsFrom(testRuntime)
 }
 
 dependencies {
@@ -37,11 +37,11 @@ dependencies {
 
     testImplementation(Dependencies.springBootStarterTest())
 
-    integrationTestImplementation(Dependencies.ingestAPI())
-    integrationTestImplementation(Dependencies.transformAPI())
-    integrationTestImplementation(Dependencies.springBootStarterTest())
-    integrationTestImplementation(Dependencies.springBootStarterWeb())
-    integrationTestImplementation(Dependencies.reactiveStreams())
+    itestImplementation(Dependencies.ingestAPI())
+    itestImplementation(Dependencies.transformAPI())
+    itestImplementation(Dependencies.springBootStarterTest())
+    itestImplementation(Dependencies.springBootStarterWeb())
+    itestImplementation(Dependencies.reactiveStreams())
 }
 
 processResources {
@@ -67,16 +67,15 @@ docker {
 }
 
 task integrationTest(type: Test) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
+    onlyIf { !project.hasProperty("skipITests") }
+    testClassesDirs = sourceSets.itest.output.classesDirs
+    classpath = sourceSets.itest.runtimeClasspath
     outputs.upToDateWhen { false }
+    shouldRunAfter test
 }
-
-integrationTest.onlyIf { !project.hasProperty("skipITests") }
 
 check.dependsOn integrationTest
 bootRun.dependsOn build
-integrationTest.mustRunAfter test
 
 build.finalizedBy("docker")
 assemble.finalizedBy("docker")

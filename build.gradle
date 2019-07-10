@@ -67,6 +67,7 @@ subprojects {
     apply plugin: "org.owasp.dependencycheck"
     apply plugin: "org.sonarqube"
     apply plugin: "com.palantir.docker"
+    apply plugin: "idea"
 
     dependencyCheck {
         failBuildOnCVSS = 4
@@ -85,6 +86,14 @@ subprojects {
             }
         }
     }
+
+    idea{
+        module {
+            testSourceDirs += file("src/itest/java")
+            testResourceDirs += file("src/itest/resource")
+        }
+    }
+
 
     tasks.withType(Test) {
         //  Forces Gradle to always run the tests, regardless if they are up to date or not.

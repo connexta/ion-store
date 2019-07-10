@@ -10,7 +10,7 @@ plugins {
 }
 
 sourceSets {
-    integrationTest {
+    itest {
         java {
             compileClasspath += main.output + test.output
             runtimeClasspath += main.output + test.output
@@ -24,8 +24,8 @@ configurations {
     implementation {
         exclude group: "org.jdom" // CVE-2019-12814
     }
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
+    itestCompile.extendsFrom(testCompile)
+    itestRuntime.extendsFrom(testRuntime)
 }
 
 dependencies {
@@ -36,13 +36,13 @@ dependencies {
         because "Zookeeper 3.4.14 is a transitive dependency of org.springframework.data:spring-data-solr:4.0.9.RELEASE and is affected by CVE-2019-0232."
     }
     implementation(Dependencies.springDataSolr())
-    integrationTestImplementation(Dependencies.springBootStarterTest())
-    integrationTestImplementation(Dependencies.testContainers())
-    integrationTestImplementation(Dependencies.restito())
-    integrationTestImplementation(Dependencies.hamcrestOptional())
-    integrationTestImplementation(Dependencies.springDataSolr())
-    integrationTestImplementation(Dependencies.awsS3())
-    integrationTestImplementation(Dependencies.springBootStarterWeb())
+    itestImplementation(Dependencies.springBootStarterTest())
+    itestImplementation(Dependencies.testContainers())
+    itestImplementation(Dependencies.restito())
+    itestImplementation(Dependencies.hamcrestOptional())
+    itestImplementation(Dependencies.springDataSolr())
+    itestImplementation(Dependencies.awsS3())
+    itestImplementation(Dependencies.springBootStarterWeb())
 }
 
 dependencyCheck {
@@ -60,16 +60,15 @@ docker {
 }
 
 task integrationTest(type: Test) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
+    onlyIf { !project.hasProperty("skipITests") }
+    testClassesDirs = sourceSets.itest.output.classesDirs
+    classpath = sourceSets.itest.runtimeClasspath
     outputs.upToDateWhen { false }
+    shouldRunAfter test
 }
-
-integrationTest.onlyIf { !project.hasProperty("skipITests") }
 
 check.dependsOn integrationTest
 bootRun.dependsOn build
-integrationTest.mustRunAfter test
 
 assemble.finalizedBy("docker")
 build.finalizedBy("docker")
