@@ -33,11 +33,17 @@ public class TransformClient {
     log.info("Transformation Service URL: {}", transformEndpoint);
   }
 
-  public void requestTransform(@NotNull final TransformRequest transformRequest)
+  public void requestTransform(
+      final Long fileSize, @NotEmpty final String mimeType, @NotEmpty final String location)
       throws TransformException {
     final HttpHeaders headers = new HttpHeaders();
     // TODO: Do not hardcode the accept-version value
     headers.set("Accept-Version", "0.0.1-SNAPSHOT");
+
+    final TransformRequest transformRequest = new TransformRequest();
+    transformRequest.setBytes(fileSize);
+    transformRequest.setMimeType(mimeType);
+    transformRequest.setProductLocation(location);
 
     final HttpEntity<TransformRequest> requestEntity = new HttpEntity<>(transformRequest, headers);
     log.info("Transformation requestEntity: {}", requestEntity.toString());

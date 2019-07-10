@@ -11,7 +11,6 @@ import com.connexta.ingest.client.TransformClient;
 import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.service.api.IngestService;
-import com.connexta.transformation.rest.models.TransformRequest;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -43,11 +42,7 @@ public class IngestServiceImpl implements IngestService {
     final String location = storeClient.store(fileSize, mimeType, file, fileName).toString();
     LOGGER.info("{} has been successfully stored and can be downloaded at {}", fileName, location);
 
-    final TransformRequest transformRequest = new TransformRequest();
-    transformRequest.setBytes(fileSize);
-    transformRequest.setMimeType(mimeType);
-    transformRequest.setProductLocation(location);
-    transformClient.requestTransform(transformRequest);
+    transformClient.requestTransform(fileSize, mimeType, location);
     LOGGER.info("Successfully submitted a transform request for {}", fileName);
   }
 }
