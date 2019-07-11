@@ -9,9 +9,7 @@ package com.connexta.multiintstore.services.impl;
 import com.connexta.multiintstore.models.Product;
 import com.connexta.multiintstore.services.api.Dao;
 import java.util.Optional;
-import org.springframework.stereotype.Service;
 
-@Service
 public class ProductDao implements Dao<Product, String> {
 
   @Override

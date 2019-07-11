@@ -8,6 +8,7 @@ package com.connexta.multiintstore.config;
 
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.SearchService;
+import com.connexta.multiintstore.services.impl.IndexedMetadataDao;
 import com.connexta.multiintstore.services.impl.SearchServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -42,5 +43,10 @@ public class ApplicationConfiguration {
       IndexedMetadataRepository indexedMetadataRepository,
       @Value("${endpointUrl.retrieve}") String retrieveEndpoint) {
     return new SearchServiceImpl(indexedMetadataRepository, retrieveEndpoint);
+  }
+
+  @Bean
+  public IndexedMetadataDao indexedMetadataDao(IndexedMetadataRepository repository) {
+    return new IndexedMetadataDao(repository);
   }
 }
