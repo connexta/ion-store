@@ -8,7 +8,6 @@ package com.connexta.ingest.client;
 
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.transformation.rest.models.TransformRequest;
-import com.connexta.transformation.rest.models.TransformResponse;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -49,13 +48,14 @@ public class TransformClient {
     final TransformRequest transformRequest = new TransformRequest();
     transformRequest.setBytes(fileSize);
     transformRequest.setMimeType(mimeType);
-    transformRequest.setProductLocation(location);
+    transformRequest.setLocation(location);
 
-    final HttpEntity<TransformRequest> requestEntity = new HttpEntity<>(transformRequest, headers);
-    log.info("Transformation requestEntity: {}", requestEntity.toString());
+    final HttpEntity<TransformRequest> transformRequestHttpEntity =
+        new HttpEntity<>(transformRequest, headers);
+    log.info("HttpEntity<TransformRequest>: {}", transformRequestHttpEntity.toString());
 
     try {
-      restTemplate.postForObject(transformEndpoint, requestEntity, TransformResponse.class);
+      restTemplate.postForEntity(transformEndpoint, transformRequestHttpEntity, Void.class);
     } catch (RuntimeException e) {
       throw new TransformException("Unable to complete transform request", e);
     }
