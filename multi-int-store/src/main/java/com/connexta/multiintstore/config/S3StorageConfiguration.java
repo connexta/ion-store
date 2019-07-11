@@ -6,6 +6,7 @@
  */
 package com.connexta.multiintstore.config;
 
+import com.connexta.multiintstore.adaptors.S3StorageAdaptor;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -25,10 +26,10 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @Slf4j
 @Configuration
-@Profile("s3Production")
 public class S3StorageConfiguration {
 
   @Bean
+  @Profile("s3Production")
   public S3Client s3ClientFactory(
       @Value("${aws.s3.endpointUrl}") @NotEmpty final String s3Endpoint,
       @Value("${aws.s3.region}") @NotEmpty final String s3Region,
@@ -49,5 +50,11 @@ public class S3StorageConfiguration {
     log.info("Region: {}", s3Region);
     log.info("Endpoint: {}", s3Endpoint);
     return s3Client;
+  }
+
+  @Bean
+  public S3StorageAdaptor s3StorageAdaptor(
+      S3Client s3Client, @Value("${aws.s3.bucket.quarantine}") String s3Bucket) {
+    return new S3StorageAdaptor(s3Client, s3Bucket);
   }
 }

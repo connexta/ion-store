@@ -15,9 +15,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkException;
@@ -30,7 +28,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.utils.ImmutableMap;
 
 @Slf4j
-@Service
 public class S3StorageAdaptor implements StorageAdaptor {
 
   private static final String FILE_NAME_METADATA_KEY = "filename";
@@ -38,9 +35,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   private final String s3BucketQuarantine;
   private final S3Client s3Client;
 
-  public S3StorageAdaptor(
-      final S3Client s3Client,
-      @Value("${aws.s3.bucket.quarantine}") @NotEmpty final String s3BucketQuarantine) {
+  public S3StorageAdaptor(final S3Client s3Client, @NotEmpty final String s3BucketQuarantine) {
     this.s3Client = s3Client;
     this.s3BucketQuarantine = s3BucketQuarantine;
   }

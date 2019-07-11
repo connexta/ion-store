@@ -6,6 +6,10 @@
  */
 package com.connexta.multiintstore.config;
 
+import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
+import com.connexta.multiintstore.services.api.SearchService;
+import com.connexta.multiintstore.services.impl.SearchServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,5 +35,12 @@ public class ApplicationConfiguration {
     filter.setAfterMessagePrefix("Inbound Request: ");
     filter.setMaxPayloadLength(5120);
     return filter;
+  }
+
+  @Bean
+  public SearchService searchService(
+      IndexedMetadataRepository indexedMetadataRepository,
+      @Value("${endpointUrl.retrieve}") String retrieveEndpoint) {
+    return new SearchServiceImpl(indexedMetadataRepository, retrieveEndpoint);
   }
 }

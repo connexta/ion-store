@@ -18,12 +18,9 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service
 public class SearchServiceImpl implements SearchService {
 
   @NotNull private final IndexedMetadataRepository indexedMetadataRepository;
@@ -32,7 +29,7 @@ public class SearchServiceImpl implements SearchService {
 
   public SearchServiceImpl(
       @NotNull final IndexedMetadataRepository indexedMetadataRepository,
-      @NotEmpty @Value("${endpointUrl.retrieve}") final String retrieveEndpoint) {
+      @NotEmpty final String retrieveEndpoint) {
     this.indexedMetadataRepository = indexedMetadataRepository;
     this.endpointUrlRetrieve = retrieveEndpoint;
   }
