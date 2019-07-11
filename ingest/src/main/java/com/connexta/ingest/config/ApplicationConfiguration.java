@@ -6,6 +6,10 @@
  */
 package com.connexta.ingest.config;
 
+import com.connexta.ingest.client.StoreClient;
+import com.connexta.ingest.client.TransformClient;
+import com.connexta.ingest.service.api.IngestService;
+import com.connexta.ingest.service.impl.IngestServiceImpl;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -33,5 +37,10 @@ public class ApplicationConfiguration {
     filter.setAfterMessagePrefix("Inbound Request: ");
     filter.setMaxPayloadLength(5120);
     return filter;
+  }
+
+  @Bean
+  public IngestService ingestService(StoreClient storeClient, TransformClient transformClient) {
+    return new IngestServiceImpl(storeClient, transformClient);
   }
 }
