@@ -69,6 +69,7 @@ public class IngestApplicationIntegrationTest {
 
   @After
   public void afterEach() {
+    server.verify();
     server.reset();
   }
 

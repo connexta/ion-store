@@ -35,8 +35,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ActiveProfiles("test")
 @AutoConfigureMockMvc
+@ActiveProfiles({"test", "solrDev"})
 public class MultiIntStoreMockSolrIntegrationTest {
 
   @Autowired private MockMvc mockMvc;

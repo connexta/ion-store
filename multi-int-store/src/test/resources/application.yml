@@ -1,2 +1,6 @@
 endpointUrl:
   retrieve: https://localhost:1234/
+aws:
+  s3:
+    bucket:
+      quarantine: quarantine

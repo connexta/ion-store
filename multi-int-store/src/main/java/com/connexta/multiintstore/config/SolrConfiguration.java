@@ -18,20 +18,15 @@ import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 
 @EnableSolrRepositories(basePackages = "com.connexta.multiintstore.repositories")
 @Configuration
-@Profile("default")
 public class SolrConfiguration {
 
-  @NotEmpty
-  @Value("${solr.host}")
-  private String solrHost;
-
-  @Value("${solr.port}")
-  private int solrPort;
-
   @Bean
-  public SolrClient solrClient() {
-    String url = String.format("http://%s:%d/solr", solrHost, solrPort);
-    return new HttpSolrClient.Builder(url).build();
+  @Profile("solrProduction")
+  public SolrClient solrClient(
+      @NotEmpty @Value("${solr.host}") final String solrHost,
+      @Value("${solr.port}") final int solrPort) {
+    return new HttpSolrClient.Builder(String.format("http://%s:%d/solr", solrHost, solrPort))
+        .build();
   }
 
   @Bean

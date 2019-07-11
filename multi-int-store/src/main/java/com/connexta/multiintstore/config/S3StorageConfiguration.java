@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotEmpty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,33 +25,21 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @Slf4j
 @Configuration
-@Profile("default")
+@Profile("s3Production")
 public class S3StorageConfiguration {
 
-  @Value("${aws.s3.endpointUrl}")
-  private String s3Endpoint;
-
-  @Value("${aws.s3.region}")
-  private String s3Region;
-
-  @Value("${aws.s3.secret.file}")
-  private String awsSecretKeyFile;
-
-  @Value("${aws.s3.access.file}")
-  private String awsAccessKeyFile;
-
-  private String s3SecretKey;
-
-  private String s3AccessKey;
-
-  @Value("${aws.s3.bucket.quarantine}")
-  private String s3BucketQuarantine;
-
   @Bean
-  public S3Client s3ClientFactory() {
-    AwsCredentials credentials = AwsBasicCredentials.create(s3AccessKey, s3SecretKey);
-
-    S3Client s3Client =
+  public S3Client s3ClientFactory(
+      @Value("${aws.s3.endpointUrl}") @NotEmpty final String s3Endpoint,
+      @Value("${aws.s3.region}") @NotEmpty final String s3Region,
+      @Value("${aws.s3.secret.file}") @NotEmpty final String awsSecretKeyFile,
+      @Value("${aws.s3.access.file}") @NotEmpty final String awsAccessKeyFile)
+      throws IOException {
+    final AwsCredentials credentials =
+        AwsBasicCredentials.create(
+            FileUtils.readFileToString(new File(awsAccessKeyFile), StandardCharsets.UTF_8),
+            FileUtils.readFileToString(new File(awsSecretKeyFile), StandardCharsets.UTF_8));
+    final S3Client s3Client =
         S3Client.builder()
             .endpointOverride(URI.create(s3Endpoint))
             .region(Region.of(s3Region))
@@ -61,16 +49,5 @@ public class S3StorageConfiguration {
     log.info("Region: {}", s3Region);
     log.info("Endpoint: {}", s3Endpoint);
     return s3Client;
-  }
-
-  @Bean
-  public String s3BucketQuarantine() {
-    return s3BucketQuarantine;
-  }
-
-  @PostConstruct
-  public void readKeysFromFiles() throws IOException {
-    s3AccessKey = FileUtils.readFileToString(new File(awsAccessKeyFile), StandardCharsets.UTF_8);
-    s3SecretKey = FileUtils.readFileToString(new File(awsSecretKeyFile), StandardCharsets.UTF_8);
   }
 }
