@@ -14,7 +14,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -31,7 +30,7 @@ public class TransformClient {
 
   public TransformClient(
       @NotNull RestTemplate restTemplate,
-      @Qualifier("transformEndpoint") @NotEmpty String transformEndpoint,
+      @Value("${endpointUrl.transform}") @NotEmpty String transformEndpoint,
       @Value("${endpoints.transform.version}") @NotEmpty String transformApiVersion) {
     this.restTemplate = restTemplate;
     this.transformEndpoint = transformEndpoint;
