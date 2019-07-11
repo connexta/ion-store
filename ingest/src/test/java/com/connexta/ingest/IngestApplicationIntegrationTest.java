@@ -89,7 +89,7 @@ public class IngestApplicationIntegrationTest {
         .andExpect(header("Accept-Version", endpointsTransformVersion))
         .andExpect(jsonPath("$.bytes").value(TEST_FILE_SIZE))
         .andExpect(jsonPath("$.mimeType").value(TEST_MIME_TYPE))
-        .andExpect(jsonPath("$.productLocation").value(location))
+        .andExpect(jsonPath("$.location").value(location))
         .andRespond(
             withStatus(HttpStatus.ACCEPTED)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -244,7 +244,7 @@ public class IngestApplicationIntegrationTest {
         .andExpect(header("Accept-Version", endpointsTransformVersion))
         .andExpect(jsonPath("$.bytes").value(TEST_FILE_SIZE))
         .andExpect(jsonPath("$.mimeType").value(TEST_MIME_TYPE))
-        .andExpect(jsonPath("$.productLocation").value(location))
+        .andExpect(jsonPath("$.location").value(location))
         .andRespond(withServerError());
 
     mvc.perform(
