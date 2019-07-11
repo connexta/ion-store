@@ -11,17 +11,15 @@ import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 public class IngestController implements IngestApi {
-
-  private static Logger LOGGER = LoggerFactory.getLogger(IngestController.class);
 
   private final IngestService ingestService;
 
@@ -44,11 +42,11 @@ public class IngestController implements IngestApi {
       String fileName) {
     // TODO validate fileSize
 
-    LOGGER.info("Attempting to ingest {}", fileName);
+    log.info("Attempting to ingest {}", fileName);
 
     final Long actualFileSize = file.getSize();
     if (!fileSize.equals(actualFileSize)) {
-      LOGGER.warn(
+      log.warn(
           "File size request param ({}) does not match the size of the file ({}).",
           fileSize,
           actualFileSize);
@@ -58,7 +56,7 @@ public class IngestController implements IngestApi {
     try {
       ingestService.ingest(fileSize, mimeType, file.getInputStream(), fileName);
     } catch (StoreException | TransformException e) {
-      LOGGER.warn(
+      log.warn(
           "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mimeType={}, title={}, fileName={}",
           acceptVersion,
           fileSize,
@@ -68,7 +66,7 @@ public class IngestController implements IngestApi {
           e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     } catch (IOException e) {
-      LOGGER.warn(
+      log.warn(
           "Unable to read file for ingest request with params acceptVersion={}, fileSize={}, mimeType={}, title={}, fileName={}",
           acceptVersion,
           fileSize,

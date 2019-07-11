@@ -14,8 +14,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +33,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RequestMapping(value = "/search")
 @AllArgsConstructor
 @Validated
+@Slf4j
 public class QueryController {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(QueryController.class);
 
   private SearchService searchService;
 
@@ -47,7 +45,7 @@ public class QueryController {
     try {
       return new ResponseEntity<>(searchService.find(keyword), HttpStatus.OK);
     } catch (SearchException e) {
-      LOGGER.warn("Unable to search for {}", keyword, e);
+      log.warn("Unable to search for {}", keyword, e);
     }
 
     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -61,7 +59,7 @@ public class QueryController {
         @NotNull final ConstraintViolationException e, @NotNull final WebRequest request) {
       final String message = e.getMessage();
       final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-      LOGGER.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
+      log.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
       return handleExceptionInternal(e, message, new HttpHeaders(), httpStatus, request);
     }
   }
