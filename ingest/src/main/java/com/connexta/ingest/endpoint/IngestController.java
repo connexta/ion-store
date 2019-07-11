@@ -12,7 +12,6 @@ import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.log;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
