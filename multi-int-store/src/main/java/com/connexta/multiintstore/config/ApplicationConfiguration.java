@@ -6,7 +6,12 @@
  */
 package com.connexta.multiintstore.config;
 
+import com.connexta.multiintstore.adaptors.StorageAdaptor;
+import com.connexta.multiintstore.common.MetadataStorageManager;
+import com.connexta.multiintstore.common.ProductStorageManager;
+import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
+import com.connexta.multiintstore.services.api.Dao;
 import com.connexta.multiintstore.services.api.SearchService;
 import com.connexta.multiintstore.services.impl.IndexedMetadataDao;
 import com.connexta.multiintstore.services.impl.SearchServiceImpl;
@@ -48,5 +53,16 @@ public class ApplicationConfiguration {
   @Bean
   public IndexedMetadataDao indexedMetadataDao(IndexedMetadataRepository repository) {
     return new IndexedMetadataDao(repository);
+  }
+
+  @Bean
+  public ProductStorageManager productStorageManager(
+      @Value("${endpointUrl.retrieve}") String retrieveEndpoint, StorageAdaptor storageAdapter) {
+    return new ProductStorageManager(retrieveEndpoint, storageAdapter);
+  }
+
+  @Bean
+  public MetadataStorageManager metadataStorageManager(Dao<IndexedProductMetadata, String> cstDao) {
+    return new MetadataStorageManager(cstDao);
   }
 }

@@ -15,10 +15,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service
 public class MetadataStorageManager {
 
   private static final String INDEXED_PRODUCT_METADATA_CALLBACK_TYPE = "cst";
