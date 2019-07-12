@@ -10,6 +10,7 @@ import com.connexta.ingest.client.StoreClient;
 import com.connexta.ingest.client.TransformClient;
 import com.connexta.ingest.service.api.IngestService;
 import com.connexta.ingest.service.impl.IngestServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -42,5 +43,19 @@ public class ApplicationConfiguration {
   @Bean
   public IngestService ingestService(StoreClient storeClient, TransformClient transformClient) {
     return new IngestServiceImpl(storeClient, transformClient);
+  }
+
+  @Bean
+  public StoreClient storeClient(
+      RestTemplate restTemplate, @Value("${endpointUrl.store}") String storeEndpoint) {
+    return new StoreClient(restTemplate, storeEndpoint);
+  }
+
+  @Bean
+  public TransformClient transformClient(
+      RestTemplate restTemplate,
+      @Value("${endpointUrl.transform}") String transformEndpoint,
+      @Value("${endpoints.transform.version}") String transformApiVersion) {
+    return new TransformClient(restTemplate, transformEndpoint, transformApiVersion);
   }
 }
