@@ -21,6 +21,7 @@ dependencies {
     implementation(Dependencies.commonsIO())
     implementation(Dependencies.ingestAPI())
     implementation(Dependencies.transformAPI())
+    implementation(Dependencies.springActuator())
     testImplementation(Dependencies.springBootStarterTest())
 }
 

@@ -1,14 +1,12 @@
 logging:
   level:
-    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
-    org.springframework.web.client: DEBUG
+    ROOT: DEBUG
 
 management:
   endpoints:
     web:
       exposure:
         include: "*"
-        exclude: "/actuator"
 
 spring:
   profiles:
