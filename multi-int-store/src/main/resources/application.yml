@@ -1,6 +1,7 @@
 logging:
   level:
-    ROOT: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.springframework.web.client: DEBUG
 
 management:
   endpoints:
