@@ -15,6 +15,8 @@ import com.connexta.multiintstore.services.api.Dao;
 import com.connexta.multiintstore.services.api.SearchService;
 import com.connexta.multiintstore.services.impl.IndexedMetadataDao;
 import com.connexta.multiintstore.services.impl.SearchServiceImpl;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +29,7 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 public class ApplicationConfiguration {
 
   @Bean
-  public RestTemplate restTemplate(RestTemplateBuilder builder) {
+  public RestTemplate restTemplate(@NotEmpty RestTemplateBuilder builder) {
     return builder.errorHandler(new DefaultResponseErrorHandler()).build();
   }
 
@@ -45,24 +47,26 @@ public class ApplicationConfiguration {
 
   @Bean
   public SearchService searchService(
-      IndexedMetadataRepository indexedMetadataRepository,
-      @Value("${endpointUrl.retrieve}") String retrieveEndpoint) {
+      @NotNull IndexedMetadataRepository indexedMetadataRepository,
+      @NotEmpty @Value("${endpointUrl.retrieve}") String retrieveEndpoint) {
     return new SearchServiceImpl(indexedMetadataRepository, retrieveEndpoint);
   }
 
   @Bean
-  public IndexedMetadataDao indexedMetadataDao(IndexedMetadataRepository repository) {
+  public IndexedMetadataDao indexedMetadataDao(@NotNull IndexedMetadataRepository repository) {
     return new IndexedMetadataDao(repository);
   }
 
   @Bean
   public ProductStorageManager productStorageManager(
-      @Value("${endpointUrl.retrieve}") String retrieveEndpoint, StorageAdaptor storageAdapter) {
+      @NotEmpty @Value("${endpointUrl.retrieve}") String retrieveEndpoint,
+      @NotNull StorageAdaptor storageAdapter) {
     return new ProductStorageManager(retrieveEndpoint, storageAdapter);
   }
 
   @Bean
-  public MetadataStorageManager metadataStorageManager(Dao<IndexedProductMetadata, String> cstDao) {
+  public MetadataStorageManager metadataStorageManager(
+      @NotNull Dao<IndexedProductMetadata, String> cstDao) {
     return new MetadataStorageManager(cstDao);
   }
 }

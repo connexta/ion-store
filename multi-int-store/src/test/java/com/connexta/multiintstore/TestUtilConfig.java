@@ -23,13 +23,6 @@ public class TestUtilConfig {
     return mock(S3Client.class);
   }
 
-  //  @Bean
-  //  @Profile("test")
-  //  public S3StorageAdaptor s3StorageAdaptor() {
-  //    return new S3StorageAdaptor(mock(S3Client.class), "http://tests3");
-  //    // return new S3StorageAdaptor(s3Client(), "http://tests3");
-  //  }
-
   @Bean
   @Profile("solrDev")
   public SolrClient solrClient() {

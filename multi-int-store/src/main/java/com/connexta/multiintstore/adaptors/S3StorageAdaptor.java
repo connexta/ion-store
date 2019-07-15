@@ -35,7 +35,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   private final String s3BucketQuarantine;
   private final S3Client s3Client;
 
-  public S3StorageAdaptor(final S3Client s3Client, @NotEmpty final String s3BucketQuarantine) {
+  public S3StorageAdaptor(@NotNull final S3Client s3Client, @NotEmpty final String s3BucketQuarantine) {
     this.s3Client = s3Client;
     this.s3BucketQuarantine = s3BucketQuarantine;
   }

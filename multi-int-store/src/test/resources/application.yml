@@ -4,4 +4,3 @@ aws:
   s3:
     bucket:
       quarantine: quarantine
-    endpointUrl: http://localhost:1234/s3

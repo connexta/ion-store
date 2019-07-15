@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,7 +55,7 @@ public class S3StorageConfiguration {
 
   @Bean
   public S3StorageAdaptor s3StorageAdaptor(
-      S3Client s3Client, @Value("${aws.s3.bucket.quarantine}") String s3Bucket) {
+      @NotNull S3Client s3Client, @NotEmpty @Value("${aws.s3.bucket.quarantine}") String s3Bucket) {
     return new S3StorageAdaptor(s3Client, s3Bucket);
   }
 }
