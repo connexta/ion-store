@@ -22,8 +22,8 @@ secrets:
     file: deployments/local-minio/secrets/minio_access.notsec
 
 configs:
-  # Directories relative to the master compose file
+  # Directories are relative to the master compose file
   ingest_config:
     file: deployments/local-minio/configs/ingest_config.yml
   mis_config:
-    file: deployments/local-minio/configs/mis_config.ymlk
+    file: deployments/local-minio/configs/mis_config.yml
