@@ -243,3 +243,8 @@ annotations to create documentation for the service endpoints. To view Swagger U
 deployment, enter this URL into a web browser:
 
 `http://127.0.0.1:9041/swagger-ui.html`
+
+The Ingest and MIS services are deployed with Spring Boot Actuator. To view the Actuator
+endpoints in a local deployment, enter this URL into a web browser:
+
+`http://127.0.0.1:9041/actuator/`
