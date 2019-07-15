@@ -48,14 +48,14 @@ function assert_stack_is_not_deployed() {
 # Waits for everything to start up
 function wait_for_containers () {
     printf "\nWaiting for docker services to start (safe to exit)."
-    wait_for_empty_results "docker service ls | grep $name_.*0/[[:digit:]]+"
+    wait_for_empty_results "docker service ls | grep $name_.*0/[1-9]"
     printf "\nDone!\n"
 }
 
 # Deploy docker-compose.yml file via docker stacks
 function deploy_images () {
     printf "\nDeploying Docker Images...\n"
-    docker stack deploy -c ../../docker-compose.yml $name
+    docker stack deploy -c ../../docker-compose.yml -c docker-override.yml $name
 }
 
 # Create attachable overlay docker network
