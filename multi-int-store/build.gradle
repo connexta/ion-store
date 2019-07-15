@@ -17,13 +17,15 @@ configurations {
 
 dependencies {
     implementation(Dependencies.awsS3())
+    implementation(Dependencies.springActuator())
     implementation(Dependencies.springBootStarterWeb())
+    implementation(Dependencies.springDataSolr())
+    implementation(Dependencies.swagger())
+    implementation(Dependencies.swaggerUi())
     implementation(Dependencies.zookeeper()) {
         force = true
         because "Zookeeper 3.4.14 is a transitive dependency of org.springframework.data:spring-data-solr:4.0.9.RELEASE and is affected by CVE-2019-0232."
     }
-    implementation(Dependencies.springDataSolr())
-    implementation(Dependencies.springActuator())
     testImplementation(Dependencies.springBootStarterTest())
     testImplementation(Dependencies.testContainers())
     testImplementation(Dependencies.restito())
