@@ -7,6 +7,7 @@
 package com.connexta.multiintstore.config;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,7 @@ public class SolrConfiguration {
   }
 
   @Bean
-  public SolrTemplate solrTemplate(SolrClient client) {
+  public SolrTemplate solrTemplate(@NotNull SolrClient client) {
     return new SolrTemplate(client);
   }
 }

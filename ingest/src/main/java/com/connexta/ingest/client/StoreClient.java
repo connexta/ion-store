@@ -14,18 +14,15 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
-@Service
 public class StoreClient {
 
   @NotNull private final RestTemplate restTemplate;
@@ -33,8 +30,7 @@ public class StoreClient {
   @NotEmpty private final String storeEndpoint;
 
   public StoreClient(
-      @NotNull final RestTemplate restTemplate,
-      @Value("${endpointUrl.store}") @NotEmpty final String storeEndpoint) {
+      @NotNull final RestTemplate restTemplate, @NotEmpty final String storeEndpoint) {
     this.restTemplate = restTemplate;
     this.storeEndpoint = storeEndpoint;
     log.info("Store URL: {}", storeEndpoint);

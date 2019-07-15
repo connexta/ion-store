@@ -19,19 +19,15 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service
 public class ProductStorageManager {
 
   @NotEmpty private final String retrieveEndpoint;
   @NotNull private final StorageAdaptor storageAdaptor;
 
   public ProductStorageManager(
-      @NotEmpty @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
-      @NotNull final StorageAdaptor storageAdaptor) {
+      @NotEmpty final String retrieveEndpoint, @NotNull final StorageAdaptor storageAdaptor) {
     this.retrieveEndpoint = retrieveEndpoint;
     this.storageAdaptor = storageAdaptor;
   }
