@@ -17,7 +17,6 @@ class Dependencies {
   static def springBootStarterWeb = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-web:${it}" }
   static def springDataSolr = { it=Versions.springData -> "org.springframework.data:spring-data-solr:${it}" }
   static def transformAPI = { it=Versions.transformAPI -> "com.connexta.transformation:transformation-api-rest-spring-stubs:${it}" }
-  static def springActuator = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-actuator:${it}" }
 
 
 
