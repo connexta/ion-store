@@ -15,7 +15,7 @@ services:
     command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
 
 secrets:
-  # Directories relative to the master compose file
+  # Directories are relative to the master compose file
   aws_s3_secret:
     file: deployments/local-minio/secrets/minio_secret.notsec
   aws_s3_access:
