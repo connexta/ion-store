@@ -15,6 +15,12 @@ configurations {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force "com.google.guava:guava:24.1.1+" // CVE-2018-10237
+    }
+}
+
 dependencies {
     implementation(Dependencies.awsS3())
     implementation(Dependencies.springActuator())
@@ -26,10 +32,10 @@ dependencies {
         force = true
         because "Zookeeper 3.4.14 is a transitive dependency of org.springframework.data:spring-data-solr:4.0.9.RELEASE and is affected by CVE-2019-0232."
     }
+    testImplementation(Dependencies.hamcrestOptional())
+    testImplementation(Dependencies.restito())
     testImplementation(Dependencies.springBootStarterTest())
     testImplementation(Dependencies.testContainers())
-    testImplementation(Dependencies.restito())
-    testImplementation(Dependencies.hamcrestOptional())
 }
 
 dependencyCheck {
