@@ -17,8 +17,8 @@ configurations {
 
 configurations.all {
     resolutionStrategy {
-        force "com.google.guava:guava:]24.1.1,)",  // CVE-2018-10237
-                "org.apache.zookeeper:zookeeper:]3.4.14,)" // CVE-2019-0232
+        force Dependencies.guava,
+                Dependencies.zookeeper
     }
 }
 
@@ -29,7 +29,6 @@ dependencies {
     implementation(Dependencies.springDataSolr())
     implementation(Dependencies.swagger())
     implementation(Dependencies.swaggerUi())
-    implementation(Dependencies.zookeeper())
     testImplementation(Dependencies.hamcrestOptional())
     testImplementation(Dependencies.restito())
     testImplementation(Dependencies.springBootStarterTest())

@@ -33,5 +33,8 @@ class Dependencies {
   static def springBootGradlePlugin = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-gradle-plugin:${it}" }
 
   // OWASP Override Transitive Dependencies
-  static def zookeeper = { it=Versions.zookeeper -> "org.apache.zookeeper:zookeeper:${it}" }
+  // CVE-2018-10237
+  static def zookeeper = "org.apache.zookeeper:zookeeper:]3.4.14,)"
+  // CVE-2019-0232
+  static def guava = "com.google.guava:guava:]24.1.1,)"
 }

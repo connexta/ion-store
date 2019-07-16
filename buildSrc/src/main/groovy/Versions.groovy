@@ -30,7 +30,4 @@ class Versions {
 
     //  Plugin Versions
     static String palantir = "0.22.1"
-
-    // OWASP Override Versions
-    static String zookeeper = "3.5.5"
 }
