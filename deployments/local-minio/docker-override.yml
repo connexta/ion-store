@@ -25,5 +25,7 @@ configs:
   # Directories are relative to the master compose file
   ingest_config:
     file: deployments/local-minio/configs/ingest_config.yml
+  transform_config:
+    file: deployments/local-minio/configs/transform_config.yml
   mis_config:
     file: deployments/local-minio/configs/mis_config.yml

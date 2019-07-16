@@ -1,0 +1,2 @@
+endpointUrl:
+  transform: http://transformation:9090/transform/
