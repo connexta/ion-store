@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ManagerConfiguration {
+public class StorageManagerConfiguration {
   @Bean
   public ProductStorageManager productStorageManager(
       @NotEmpty @Value("${endpointUrl.retrieve}") String retrieveEndpoint,
