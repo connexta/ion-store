@@ -236,3 +236,15 @@ After configuring the build system, run the gradle task `deploy`:
 ```bash
 ./gradlew deploy
 ```
+
+## Inspecting
+The MIS service is deployed with (Springfox) **Swagger UI**. This library uses Spring Boot
+annotations to create documentation for the service endpoints. To view Swagger UI in a local
+deployment, enter this URL into a web browser:
+
+`http://127.0.0.1:9041/swagger-ui.html`
+
+The Ingest and MIS services are deployed with Spring Boot Actuator. To view the Actuator
+endpoints in a local deployment, enter this URL into a web browser:
+
+`http://127.0.0.1:9041/actuator/`

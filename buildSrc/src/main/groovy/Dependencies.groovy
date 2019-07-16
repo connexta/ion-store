@@ -16,8 +16,9 @@ class Dependencies {
   static def springActuator = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-actuator:${it}" }
   static def springBootStarterWeb = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-web:${it}" }
   static def springDataSolr = { it=Versions.springData -> "org.springframework.data:spring-data-solr:${it}" }
+  static def swagger = { it=Versions.swagger -> "io.springfox:springfox-swagger2:${it}" }
+  static def swaggerUi = { it=Versions.swagger -> "io.springfox:springfox-swagger-ui:${it}" }
   static def transformAPI = { it=Versions.transformAPI -> "com.connexta.transformation:transformation-api-rest-spring-stubs:${it}" }
-
 
   //  Test Dependencies
   static def hamcrestOptional = { it=Versions.npathai -> "com.github.npathai:hamcrest-optional:${it}" }
@@ -32,5 +33,8 @@ class Dependencies {
   static def springBootGradlePlugin = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-gradle-plugin:${it}" }
 
   // OWASP Override Transitive Dependencies
-  static def zookeeper = { it=Versions.zookeeper -> "org.apache.zookeeper:zookeeper:${it}" }
+  // CVE-2018-10237
+  static def zookeeper = "org.apache.zookeeper:zookeeper:]3.4.14,)"
+  // CVE-2019-0232
+  static def guava = "com.google.guava:guava:]24.1.1,)"
 }
