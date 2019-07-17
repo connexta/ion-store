@@ -22,8 +22,12 @@ import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.MultipartUpload;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.utils.ImmutableMap;
 
@@ -49,6 +53,10 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotEmpty final String fileName,
       @NotEmpty final String key)
       throws StorageException {
+
+
+    final CompleteMultipartUploadRequest.builder().bucket(s3BucketQuarantine).key(key).multipartUpload(CompletedMultipartUpload.builder().parts(CompletedPart.builder().eTag("").build()).build()));
+
     final PutObjectRequest putObjectRequest =
         PutObjectRequest.builder()
             .bucket(s3BucketQuarantine)
@@ -62,6 +70,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
     try {
       s3Client.putObject(putObjectRequest, requestBody);
+      s3Client.completeMultipartUpload(CompleteMultipartUploadRequest.builder().build(),);
     } catch (SdkServiceException e) {
       throw new StorageException(
           "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
