@@ -1,3 +1,8 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 11GB
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG

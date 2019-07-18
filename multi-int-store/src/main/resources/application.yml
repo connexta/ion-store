@@ -12,3 +12,7 @@ management:
 spring:
   profiles:
     active: s3Production,solrProduction
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 11GB
