@@ -36,6 +36,6 @@ public interface StorageAdaptor {
    * @param key the key used to reference the stored object
    * @throws StorageException
    */
-  //  @NotNull
-  //  RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException;
+  @NotNull
+  RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException;
 }
