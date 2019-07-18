@@ -8,7 +8,7 @@
 class Dependencies {
 
   //  Dependencies
-  static def awsS3 = { it=Versions.aws -> "software.amazon.awssdk:s3:${it}" }
+  static def awsS3 = { it=Versions.aws -> "com.amazonaws:aws-java-sdk-s3:${it}" }
   static def commonsIO = { it=Versions.commonsIO -> "commons-io:commons-io:${it}" }
   static def ingestAPI = { it=Versions.ingestAPI -> "com.connexta.ion.ingest:ingest-api-rest-spring-stubs:${it}" }
   static def lombok = { it=Versions.lombok -> "org.projectlombok:lombok:${it}" }

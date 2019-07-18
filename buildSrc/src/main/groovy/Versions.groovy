@@ -11,7 +11,7 @@ class Versions {
     static String project = "0.1.0-SNAPSHOT"
 
     //  Versions
-    static String aws = "2.5.69"
+    static String aws = "1.11.592"
     static String commonsIO = "2.6"
     static String ingestAPI = "0.2.0"
     static String lombok = "1.18.8"

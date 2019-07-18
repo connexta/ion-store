@@ -6,30 +6,18 @@
  */
 package com.connexta.multiintstore.adaptors;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.multiintstore.common.exceptions.StorageException;
-import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.MediaType;
-import software.amazon.awssdk.core.ResponseInputStream;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.core.exception.SdkException;
-import software.amazon.awssdk.core.exception.SdkServiceException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
-import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
-import software.amazon.awssdk.services.s3.model.CompletedPart;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.MultipartUpload;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.utils.ImmutableMap;
 
 @Slf4j
 public class S3StorageAdaptor implements StorageAdaptor {
@@ -37,11 +25,11 @@ public class S3StorageAdaptor implements StorageAdaptor {
   private static final String FILE_NAME_METADATA_KEY = "filename";
 
   private final String s3BucketQuarantine;
-  private final S3Client s3Client;
+  private final TransferManager s3TransferManager;
 
   public S3StorageAdaptor(
-      @NotNull final S3Client s3Client, @NotEmpty final String s3BucketQuarantine) {
-    this.s3Client = s3Client;
+      @NotNull final TransferManager s3TransferManager, @NotEmpty final String s3BucketQuarantine) {
+    this.s3TransferManager = s3TransferManager;
     this.s3BucketQuarantine = s3BucketQuarantine;
   }
 
@@ -54,31 +42,27 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotEmpty final String key)
       throws StorageException {
 
-
-    final CompleteMultipartUploadRequest.builder().bucket(s3BucketQuarantine).key(key).multipartUpload(CompletedMultipartUpload.builder().parts(CompletedPart.builder().eTag("").build()).build()));
-
-    final PutObjectRequest putObjectRequest =
-        PutObjectRequest.builder()
-            .bucket(s3BucketQuarantine)
-            .key(key)
-            .contentType(mimeType)
-            .contentLength(fileSize)
-            .metadata(ImmutableMap.of(FILE_NAME_METADATA_KEY, fileName))
-            .build();
-    final RequestBody requestBody = RequestBody.fromInputStream(inputStream, fileSize);
+    ObjectMetadata objectMetadata = new ObjectMetadata();
+    objectMetadata.setContentType(mimeType);
+    objectMetadata.setContentLength(fileSize);
+    objectMetadata.addUserMetadata(FILE_NAME_METADATA_KEY, fileName);
 
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
     try {
-      s3Client.putObject(putObjectRequest, requestBody);
-      s3Client.completeMultipartUpload(CompleteMultipartUploadRequest.builder().build(),);
-    } catch (SdkServiceException e) {
+      Upload upload =
+          s3TransferManager.upload(s3BucketQuarantine, key, inputStream, objectMetadata);
+      log.info("Waiting for the storing process to finish...");
+      upload.waitForUploadResult();
+    } catch (AmazonServiceException e) {
       throw new StorageException(
           "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
-    } catch (SdkClientException e) {
+    } catch (AmazonClientException e) {
       throw new StorageException(
           "S3 was unavailable and could not store " + key + " in bucket " + s3BucketQuarantine, e);
-    } catch (RuntimeException e) {
+    } catch (RuntimeException | InterruptedException e) {
       throw new StorageException("Error storing " + key + " in bucket " + s3BucketQuarantine, e);
+    } finally {
+      s3TransferManager.shutdownNow();
     }
     log.info(
         "Successfully stored \"{}\" in bucket \"{}\" with key \"{}\"",
@@ -91,44 +75,45 @@ public class S3StorageAdaptor implements StorageAdaptor {
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
    * RetrieveResponse}.
    */
-  @Override
-  @NotNull
-  public RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException {
-    log.info("Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, key);
-
-    ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream = null;
-    try {
-      try {
-        getObjectResponseResponseInputStream =
-            s3Client.getObject(
-                GetObjectRequest.builder().bucket(s3BucketQuarantine).key(key).build());
-      } catch (SdkException e) {
-        throw new StorageException("Unable to retrieve product with key " + key, e);
-      }
-      final GetObjectResponse getObjectResponse = getObjectResponseResponseInputStream.response();
-
-      final String fileName = getObjectResponse.metadata().get(FILE_NAME_METADATA_KEY);
-      if (StringUtils.isEmpty(fileName)) {
-        throw new StorageException(
-            String.format(
-                "Expected S3 object to have a non-null metadata value for %s",
-                FILE_NAME_METADATA_KEY));
-      }
-
-      return new RetrieveResponse(
-          MediaType.valueOf(getObjectResponse.contentType()),
-          getObjectResponseResponseInputStream,
-          fileName);
-    } catch (Throwable t) {
-      if (getObjectResponseResponseInputStream != null) {
-        try {
-          getObjectResponseResponseInputStream.close();
-        } catch (IOException e) {
-          log.warn("Unable to close InputStream when retrieving key \"{}\".", key, e);
-        }
-      }
-
-      throw t;
-    }
-  }
+  //  @Override
+  //  @NotNull
+  //  public RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException {
+  //    log.info("Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, key);
+  //
+  //    ResponseInputStream<GetObjectResponse> getObjectResponseResponseInputStream = null;
+  //    try {
+  //      try {
+  //        getObjectResponseResponseInputStream =
+  //                s3Client.getObject(
+  //                        GetObjectRequest.builder().bucket(s3BucketQuarantine).key(key).build());
+  //      } catch (SdkException e) {
+  //        throw new StorageException("Unable to retrieve product with key " + key, e);
+  //      }
+  //      final GetObjectResponse getObjectResponse =
+  // getObjectResponseResponseInputStream.response();
+  //
+  //      final String fileName = getObjectResponse.metadata().get(FILE_NAME_METADATA_KEY);
+  //      if (StringUtils.isEmpty(fileName)) {
+  //        throw new StorageException(
+  //                String.format(
+  //                        "Expected S3 object to have a non-null metadata value for %s",
+  //                        FILE_NAME_METADATA_KEY));
+  //      }
+  //
+  //      return new RetrieveResponse(
+  //              MediaType.valueOf(getObjectResponse.contentType()),
+  //              getObjectResponseResponseInputStream,
+  //              fileName);
+  //    } catch (Throwable t) {
+  //      if (getObjectResponseResponseInputStream != null) {
+  //        try {
+  //          getObjectResponseResponseInputStream.close();
+  //        } catch (IOException e) {
+  //          log.warn("Unable to close InputStream when retrieving key \"{}\".", key, e);
+  //        }
+  //      }
+  //
+  //      throw t;
+  //    }
+  //  }
 }

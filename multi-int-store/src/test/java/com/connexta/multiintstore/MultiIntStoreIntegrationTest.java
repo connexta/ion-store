@@ -6,15 +6,11 @@
  */
 package com.connexta.multiintstore;
 
-import static com.github.npathai.hamcrestopt.OptionalMatchers.isPresentAnd;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -43,12 +39,18 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.core.exception.SdkServiceException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+
+import java.io.InputStream;
+
+import static com.github.npathai.hamcrestopt.OptionalMatchers.isPresentAnd;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -108,7 +110,8 @@ public class MultiIntStoreIntegrationTest {
   private String endpointUrlRetrieve = "http://localhost:9040/retrieve/";
 
   @Autowired private MockMvc mockMvc;
-  @Autowired private S3Client mockS3Client;
+  @Autowired private TransferManager mockTransferManager;
+  @Autowired private Upload mockUploadObject;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
   @Autowired private RestTemplate restTemplate;
 
@@ -175,8 +178,13 @@ public class MultiIntStoreIntegrationTest {
 
   @Test
   public void testStoreProduct() throws Exception {
-    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenReturn(PutObjectResponse.builder().build());
+
+    when(mockTransferManager.upload(
+            any(String.class),
+            any(String.class),
+            any(InputStream.class),
+            any(ObjectMetadata.class)))
+        .thenReturn(mock(Upload.class));
 
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated());
   }
@@ -203,31 +211,45 @@ public class MultiIntStoreIntegrationTest {
 
   @Test
   public void testS3UnableToStore() throws Exception {
-    // given
-    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenThrow(SdkServiceException.builder().build());
+    when(mockTransferManager.upload(
+            any(String.class),
+            any(String.class),
+            any(InputStream.class),
+            any(ObjectMetadata.class)))
+        .thenThrow(new AmazonServiceException("Amazon Service Exception"));
 
-    // verify
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 
   @Test
   public void testS3Unavailable() throws Exception {
-    // given
-    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenThrow(SdkClientException.builder().build());
+    when(mockTransferManager.upload(
+            any(String.class),
+            any(String.class),
+            any(InputStream.class),
+            any(ObjectMetadata.class)))
+        .thenThrow(new AmazonClientException("Amazon Service Exception"));
 
-    // verify
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 
   @Test
   public void testS3ThrowsRuntimeException() throws Exception {
-    // given
-    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenThrow(new RuntimeException());
+    when(mockTransferManager.upload(
+            any(String.class),
+            any(String.class),
+            any(InputStream.class),
+            any(ObjectMetadata.class)))
+        .thenThrow(new AmazonClientException("Runtime Exception"));
 
-    // verify
+    mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
+  }
+
+  @Test
+  public void testS3InterruptedException() throws Exception {
+    when(mockUploadObject.waitForUploadResult())
+        .thenThrow(new InterruptedException("Interrupted Exception"));
+
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 }
