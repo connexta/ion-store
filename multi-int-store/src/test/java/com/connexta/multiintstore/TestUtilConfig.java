@@ -21,12 +21,6 @@ public class TestUtilConfig {
 
   @Bean
   @Profile("test")
-  public TransferManager transferManager() {
-    return mock(TransferManager.class);
-  }
-
-  @Bean
-  @Profile("test")
   public AmazonS3 s3Client() {
     return mock(AmazonS3.class);
   }

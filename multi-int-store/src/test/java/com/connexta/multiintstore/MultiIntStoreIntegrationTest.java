@@ -109,16 +109,17 @@ public class MultiIntStoreIntegrationTest {
   private String endpointUrlRetrieve = "http://localhost:9040/retrieve/";
 
   @Autowired private MockMvc mockMvc;
-  @Autowired private TransferManager mockTransferManager;
   @Autowired private Upload mockUploadObject;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
   @Autowired private RestTemplate restTemplate;
 
   private MockRestServiceServer server;
+  private TransferManager mockTransferManager;
 
   @Before
   public void setup() {
     server = MockRestServiceServer.createServer(restTemplate);
+    mockTransferManager = mock(TransferManager.class);
 
     indexedMetadataRepository.deleteAll();
   }

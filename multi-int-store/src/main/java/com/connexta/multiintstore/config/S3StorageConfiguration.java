@@ -58,14 +58,7 @@ public class S3StorageConfiguration {
   @Bean
   public S3StorageAdaptor s3StorageAdaptor(
       @NotNull AmazonS3 s3Client,
-      @NotNull TransferManager s3transferManager,
       @NotEmpty @Value("${aws.s3.bucket.quarantine}") String s3Bucket) {
-    return new S3StorageAdaptor(s3Client, s3transferManager, s3Bucket);
-  }
-
-  @Bean
-  @Profile("s3Production")
-  public TransferManager s3TransferManager(AmazonS3 s3Client) {
-    return TransferManagerBuilder.standard().withS3Client(s3Client).build();
+    return new S3StorageAdaptor(s3Client, s3Bucket);
   }
 }

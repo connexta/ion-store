@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
@@ -31,15 +32,12 @@ public class S3StorageAdaptor implements StorageAdaptor {
   private static final String FILE_NAME_METADATA_KEY = "filename";
 
   private final String s3BucketQuarantine;
-  private final TransferManager s3TransferManager;
   private final AmazonS3 s3Client;
 
   public S3StorageAdaptor(
       @NotNull final AmazonS3 s3Client,
-      @NotNull final TransferManager s3TransferManager,
       @NotEmpty final String s3BucketQuarantine) {
     this.s3Client = s3Client;
-    this.s3TransferManager = s3TransferManager;
     this.s3BucketQuarantine = s3BucketQuarantine;
   }
 
@@ -52,7 +50,9 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotEmpty final String key)
       throws StorageException {
 
+    TransferManager s3TransferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
     ObjectMetadata objectMetadata = new ObjectMetadata();
+
     objectMetadata.setContentType(mimeType);
     objectMetadata.setContentLength(fileSize);
     objectMetadata.addUserMetadata(FILE_NAME_METADATA_KEY, fileName);
