@@ -37,4 +37,7 @@ class Dependencies {
   static def zookeeper = "org.apache.zookeeper:zookeeper:]3.4.14,)"
   // CVE-2019-0232
   static def guava = "com.google.guava:guava:]24.1.1,)"
+  // CVE-2019-12384 and CVE-2019-1281
+  static def jacksonDatabind = "com.fasterxml.jackson.core:jackson-databind:[2.9.9.1,)"
+
 }

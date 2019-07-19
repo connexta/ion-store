@@ -48,6 +48,14 @@ allprojects {
         java SpotlessConfig.getJava(licenseFile)
         groovyGradle SpotlessConfig.getGroovy(licenseFile)
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force Dependencies.guava,
+                    Dependencies.zookeeper,
+                    Dependencies.jacksonDatabind
+        }
+    }
 }
 
 ext.quietTest = {
