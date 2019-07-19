@@ -18,10 +18,17 @@ buildscript {
 }
 
 plugins {
-    id "java"
-    id "org.owasp.dependencycheck" version "5.1.1"
     id "com.diffplug.gradle.spotless" version "3.23.1"
+    id "java"
+    id "maven"
+    id "org.owasp.dependencycheck" version "5.1.1"
     id "org.sonarqube" version "2.7.1"
+}
+
+repositories {
+    maven {
+        url "http://nexus.phx.connexta.com:8081/nexus/content/groups/public"
+    }
 }
 
 allprojects {
@@ -29,7 +36,7 @@ allprojects {
     sourceCompatibility = Versions.java
     targetCompatibility = Versions.java
 
-    if(sourceCompatibility != Jvm.current().javaVersion) {
+    if (sourceCompatibility != Jvm.current().javaVersion) {
         throw new Exception("You need Java ${sourceCompatibility} to build and run ${project.name}.\n" +
                 "The current version installed is ${Jvm.current().javaVersion.majorVersion}.\n" +
                 "For further reading see: \n\t> " +
@@ -91,8 +98,8 @@ subprojects {
         outputs.upToDateWhen { false }
 
         def styler = [(TestResult.ResultType.FAILURE): { msg -> "\033[31m${msg}\033[0m" },
-                    (TestResult.ResultType.SKIPPED): { msg -> "\033[33m${msg}\033[0m" },
-                    (TestResult.ResultType.SUCCESS): { msg -> "\033[32m${msg}\033[0m" }]
+                      (TestResult.ResultType.SKIPPED): { msg -> "\033[33m${msg}\033[0m" },
+                      (TestResult.ResultType.SUCCESS): { msg -> "\033[32m${msg}\033[0m" }]
 
 
         if (project.skipIntegrationTests()) {
@@ -135,16 +142,15 @@ subprojects {
                 def stack = []
                 if (project.quietTest()) {
                     def toTake = 1
-                    for(def ele : result.exception.getStackTrace()) {
-                        if(ele.getClassName() == desc.className) {
+                    for (def ele : result.exception.getStackTrace()) {
+                        if (ele.getClassName() == desc.className) {
                             break
                         }
                         toTake++
                     }
                     stack = result.exception.getStackTrace().take(toTake) +
                             "... ${result.exception.getStackTrace().length - toTake} more"
-                }
-                else {
+                } else {
                     stack = result.exception.getStackTrace()
                 }
                 logger.lifecycle("\n${styler[result.resultType](result.exception)}\n\t" +
@@ -167,7 +173,9 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        maven { url = uri("http://nexus.phx.connexta.com:8081/nexus/content/repositories/ion-releases/") }
+        maven {
+            url = uri("http://nexus.phx.connexta.com:8081/nexus/content/repositories/ion-releases/")
+        }
         maven { url = uri("http://nexus.phx.connexta.com:8081/nexus/content/groups/public/") }
     }
 
@@ -184,7 +192,7 @@ subprojects {
 
 }
 
-task deploy(type:Exec) {
+task deploy(type: Exec) {
     dependsOn subprojects.build
     commandLine "./deploy.bash"
 }

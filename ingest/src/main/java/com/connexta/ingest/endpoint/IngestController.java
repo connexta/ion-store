@@ -34,12 +34,7 @@ public class IngestController implements IngestApi {
 
   @Override
   public ResponseEntity<Void> ingest(
-      String acceptVersion,
-      Long fileSize,
-      String mimeType,
-      MultipartFile file,
-      String title,
-      String fileName) {
+      String acceptVersion, String fileName, Long fileSize, String mimeType, MultipartFile file) {
     // TODO validate fileSize
 
     log.info("Attempting to ingest {}", fileName);
@@ -57,21 +52,19 @@ public class IngestController implements IngestApi {
       ingestService.ingest(fileSize, mimeType, file.getInputStream(), fileName);
     } catch (StoreException | TransformException e) {
       log.warn(
-          "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mimeType={}, title={}, fileName={}",
+          "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
           acceptVersion,
           fileSize,
           mimeType,
-          title,
           fileName,
           e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     } catch (IOException e) {
       log.warn(
-          "Unable to read file for ingest request with params acceptVersion={}, fileSize={}, mimeType={}, title={}, fileName={}",
+          "Unable to read file for ingest request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
           acceptVersion,
           fileSize,
           mimeType,
-          title,
           fileName,
           e);
       return ResponseEntity.badRequest().build();
