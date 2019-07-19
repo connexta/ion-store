@@ -25,12 +25,6 @@ plugins {
     id "org.sonarqube" version "2.7.1"
 }
 
-repositories {
-    maven {
-        url "http://nexus.phx.connexta.com:8081/nexus/content/groups/public"
-    }
-}
-
 allprojects {
 
     sourceCompatibility = Versions.java
