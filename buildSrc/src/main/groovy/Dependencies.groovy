@@ -10,7 +10,7 @@ class Dependencies {
   //  Dependencies
   static def awsS3 = { it=Versions.aws -> "software.amazon.awssdk:s3:${it}" }
   static def commonsIO = { it=Versions.commonsIO -> "commons-io:commons-io:${it}" }
-  static def ingestAPI = { it=Versions.ingestAPI -> "com.connexta.ingest:ingest-api-rest-spring-stubs:${it}" }
+  static def ingestAPI = { it=Versions.ingestAPI -> "com.connexta.ion.ingest:ingest-api-rest-spring-stubs:${it}" }
   static def lombok = { it=Versions.lombok -> "org.projectlombok:lombok:${it}" }
   static def reactiveStreams = { it=Versions.reactiveStreams -> "org.reactivestreams:reactive-streams:${it}" }
   static def springActuator = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-actuator:${it}" }
@@ -37,4 +37,7 @@ class Dependencies {
   static def zookeeper = "org.apache.zookeeper:zookeeper:]3.4.14,)"
   // CVE-2019-0232
   static def guava = "com.google.guava:guava:]24.1.1,)"
+  // CVE-2019-12384 and CVE-2019-1281
+  static def jacksonDatabind = "com.fasterxml.jackson.core:jackson-databind:[2.9.9.1,)"
+
 }
