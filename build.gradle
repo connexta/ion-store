@@ -64,11 +64,6 @@ ext.skipIntegrationTests = {
     project.hasProperty("skipITests")
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 subprojects {
     apply plugin: "java"
     apply plugin: "org.owasp.dependencycheck"
@@ -173,10 +168,7 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        maven {
-            url = uri("http://nexus.phx.connexta.com:8081/nexus/content/repositories/ion-releases/")
-        }
-        maven { url = uri("http://nexus.phx.connexta.com:8081/nexus/content/groups/public/") }
+        maven { url "http://nexus.phx.connexta.com:8081/nexus/content/repositories/ion-releases/" }
     }
 
     dependencies {
