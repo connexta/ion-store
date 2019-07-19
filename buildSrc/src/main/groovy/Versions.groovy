@@ -13,7 +13,7 @@ class Versions {
     //  Versions
     static String aws = "2.5.69"
     static String commonsIO = "2.6"
-    static String ingestAPI = "0.1.1"
+    static String ingestAPI = "0.2.0"
     static String lombok = "1.18.8"
     static String reactiveStreams = "1.0.2"
     static String springBoot = "2.1.6.RELEASE"
