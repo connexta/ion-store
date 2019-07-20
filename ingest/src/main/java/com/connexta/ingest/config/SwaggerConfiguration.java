@@ -4,9 +4,9 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.multiintstore.config;
+package com.connexta.ingest.config;
 
-import static springfox.documentation.spi.DocumentationType.*;
+import static springfox.documentation.spi.DocumentationType.SWAGGER_2;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
