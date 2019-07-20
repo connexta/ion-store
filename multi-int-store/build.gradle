@@ -20,6 +20,7 @@ dependencies {
     implementation(Dependencies.awsS3())
     implementation(Dependencies.springActuator())
     implementation(Dependencies.springBootStarterWeb())
+    implementation(Dependencies.reactiveStreams())
     implementation(Dependencies.springDataSolr())
     implementation(Dependencies.swagger())
     implementation(Dependencies.swaggerUi())

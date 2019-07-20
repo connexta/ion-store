@@ -22,16 +22,21 @@ import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 public class SolrConfiguration {
 
   @Bean
-  @Profile("solrProduction")
-  public SolrClient solrClient(
-      @NotBlank @Value("${solr.host}") final String solrHost,
-      @Value("${solr.port}") final int solrPort) {
-    return new HttpSolrClient.Builder(String.format("http://%s:%d/solr", solrHost, solrPort))
+  public SolrClient solrClient(@NotNull final SolrClientConfiguration configuration) {
+    return new HttpSolrClient.Builder(
+            String.format("http://%s:%d/solr", configuration.getHost(), configuration.getPort()))
         .build();
   }
 
   @Bean
-  public SolrTemplate solrTemplate(@NotNull SolrClient client) {
+  public SolrTemplate solrTemplate(@NotNull final SolrClient client) {
     return new SolrTemplate(client);
+  }
+
+  @Bean
+  @Profile("production")
+  public SolrClientConfiguration solrClientConfiguration(
+      @NotBlank @Value("${solr.host}") final String host, @Value("${solr.port}") final int port) {
+    return new SolrClientConfiguration(host, port);
   }
 }

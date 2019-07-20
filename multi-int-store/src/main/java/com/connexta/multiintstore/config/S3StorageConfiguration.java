@@ -8,7 +8,7 @@ package com.connexta.multiintstore.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -33,42 +33,44 @@ import org.springframework.context.annotation.Scope;
 public class S3StorageConfiguration {
 
   @Bean
-  @Profile("s3Production")
-  public AmazonS3 amazonS3(
+  public AmazonS3 amazonS3(@NotNull final AmazonS3Configuration configuration) {
+    return AmazonS3ClientBuilder.standard()
+        .withEndpointConfiguration(
+            new EndpointConfiguration(configuration.getEndpoint(), configuration.getRegion()))
+        .withCredentials(
+            new AWSStaticCredentialsProvider(
+                new BasicAWSCredentials(
+                    configuration.getAccessKey(), configuration.getSecretKey())))
+        .enablePathStyleAccess()
+        .build();
+  }
+
+  // TODO does this need to be a separate bean?
+  @Bean
+  @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+  public TransferManager transferManager(@NotNull AmazonS3 amazonS3) {
+    return TransferManagerBuilder.standard().withS3Client(amazonS3).build();
+  }
+
+  @Bean
+  public S3StorageAdaptor s3StorageAdaptor(
+      @NotNull final AmazonS3 amazonS3,
+      @NotNull TransferManager transferManager,
+      @Value("${aws.s3.bucket.quarantine}") @NotBlank final String bucket) {
+    return new S3StorageAdaptor(amazonS3, transferManager, bucket);
+  }
+
+  @Profile("production")
+  private AmazonS3Configuration amazonS3Configuration(
       @Value("${aws.s3.endpointUrl}") @NotBlank final String endpoint,
       @Value("${aws.s3.region}") @NotBlank final String region,
       @Value("${aws.s3.secret.file}") @NotBlank final String secretKeyFile,
       @Value("${aws.s3.access.file}") @NotBlank final String accessKeyFile)
       throws IOException {
-    final AwsClientBuilder.EndpointConfiguration endpointConfiguration =
-        new AwsClientBuilder.EndpointConfiguration(endpoint, region);
-    final BasicAWSCredentials credentials =
-        new BasicAWSCredentials(
-            FileUtils.readFileToString(new File(accessKeyFile), StandardCharsets.UTF_8),
-            FileUtils.readFileToString(new File(secretKeyFile), StandardCharsets.UTF_8));
-    final AmazonS3 s3Client =
-        AmazonS3ClientBuilder.standard()
-            .withCredentials(new AWSStaticCredentialsProvider(credentials))
-            .withEndpointConfiguration(endpointConfiguration)
-            .build();
-    log.info("S3 Client has been initialized.");
-    log.info("Region: {}", region);
-    log.info("Endpoint: {}", endpoint);
-    return s3Client;
-  }
-
-  @Bean
-  public S3StorageAdaptor s3StorageAdaptor(
-      @NotNull AmazonS3 amazonS3,
-      @NotNull TransferManager transferManager,
-      @NotBlank @Value("${aws.s3.bucket.quarantine}") String bucket) {
-    return new S3StorageAdaptor(amazonS3, transferManager, bucket);
-  }
-
-  @Bean
-  @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-  @Profile(value = "s3Production")
-  public TransferManager transferManager(@NotNull AmazonS3 amazonS3) {
-    return TransferManagerBuilder.standard().withS3Client(amazonS3).build();
+    return new AmazonS3Configuration(
+        endpoint,
+        region,
+        FileUtils.readFileToString(new File(accessKeyFile), StandardCharsets.UTF_8),
+        FileUtils.readFileToString(new File(secretKeyFile), StandardCharsets.UTF_8));
   }
 }
