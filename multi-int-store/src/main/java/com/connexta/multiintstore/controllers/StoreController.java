@@ -17,9 +17,10 @@ import java.net.URISyntaxException;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,11 +44,20 @@ public class StoreController implements StoreApi {
 
   @Override
   public ResponseEntity<Void> storeProduct(
-      @NotEmpty String acceptVersion,
+      @NotBlank String acceptVersion,
       @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      @NotEmpty String mimeType,
+      @NotBlank String mimeType,
       @Valid @NotNull MultipartFile file,
-      @NotEmpty String fileName) {
+      @NotBlank String fileName) {
+    final Long actualFileSize = file.getSize();
+    if (!fileSize.equals(actualFileSize)) {
+      log.warn(
+          "File size request param ({}) does not match the size of the file ({}).",
+          fileSize,
+          actualFileSize);
+      return ResponseEntity.badRequest().build();
+    }
+
     final InputStream inputStream;
     try {
       inputStream = file.getInputStream();
@@ -67,7 +77,7 @@ public class StoreController implements StoreApi {
       location =
           productStorageManager.storeProduct(
               acceptVersion, fileSize, mimeType, inputStream, fileName);
-    } catch (IOException | StorageException | URISyntaxException e) {
+    } catch (StorageException | URISyntaxException e) {
       log.warn(
           "Unable to store product for request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
           acceptVersion,
@@ -83,13 +93,30 @@ public class StoreController implements StoreApi {
 
   @Override
   public ResponseEntity<Void> storeMetadata(
-      @NotEmpty String acceptVersion,
-      @NotEmpty String productId,
-      @NotEmpty String metadataType,
+      @NotBlank String acceptVersion,
+      @NotBlank String productId,
+      @NotBlank String metadataType,
       @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      @NotEmpty String mimeType,
+      @NotBlank String mimeType,
       @Valid @NotNull MultipartFile file,
-      @NotEmpty String fileName) {
+      @NotBlank String fileName) {
+    if (!StringUtils.equals("cst", metadataType)) {
+      log.warn("Storing metadata of type {} is not yet supported", metadataType);
+      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
+
+    final Long actualFileSize = file.getSize();
+    if (!fileSize.equals(actualFileSize)) {
+      log.warn(
+          "File size request param ({}) does not match the size of the file ({}).",
+          fileSize,
+          actualFileSize);
+      return ResponseEntity.badRequest().build();
+    }
+
+    // TODO verify id matches something in S3 before storing to solr
+    // TODO handle when CST has already been stored
+
     final InputStream inputStream;
     try {
       inputStream = file.getInputStream();

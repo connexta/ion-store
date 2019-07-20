@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.services.api;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -21,5 +21,5 @@ public interface RetrieveApi {
   @GetMapping(value = "/product/{productId}")
   @NotNull
   ResponseEntity<Resource> retrieveProduct(
-      @PathVariable(value = "productId") @NotEmpty String productId);
+      @PathVariable(value = "productId") @NotBlank String productId);
 }

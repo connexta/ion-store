@@ -6,6 +6,7 @@
  */
 package com.connexta.multiintstore;
 
+import static com.connexta.multiintstore.models.IndexedProductMetadata.SOLR_COLLECTION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -52,7 +53,8 @@ public class MultiIntStoreMockSolrIntegrationTest {
 
   @Test
   public void testSearchSolrCommunicationError() throws Exception {
-    when(mockSolrClient.query(eq("searchTerms"), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
+    when(mockSolrClient.query(
+            eq(SOLR_COLLECTION), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
         .thenThrow(IOException.class);
 
     mockMvc
@@ -62,7 +64,8 @@ public class MultiIntStoreMockSolrIntegrationTest {
 
   @Test
   public void testSearchSolrServerError() throws Exception {
-    when(mockSolrClient.query(eq("searchTerms"), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
+    when(mockSolrClient.query(
+            eq(SOLR_COLLECTION), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
         .thenThrow(SolrServerException.class);
 
     mockMvc
@@ -72,7 +75,8 @@ public class MultiIntStoreMockSolrIntegrationTest {
 
   @Test
   public void testSearchSolrRuntimeException() throws Exception {
-    when(mockSolrClient.query(eq("searchTerms"), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
+    when(mockSolrClient.query(
+            eq(SOLR_COLLECTION), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
         .thenThrow(RuntimeException.class);
 
     mockMvc
@@ -93,7 +97,8 @@ public class MultiIntStoreMockSolrIntegrationTest {
     final SolrDocumentList mockSolrDocumentList = new SolrDocumentList();
     when(mockQueryResponse.getResults()).thenReturn(mockSolrDocumentList);
 
-    when(mockSolrClient.query(eq("searchTerms"), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
+    when(mockSolrClient.query(
+            eq(SOLR_COLLECTION), any(SolrParams.class), eq(SolrRequest.METHOD.GET)))
         .thenReturn(mockQueryResponse);
 
     mockMvc

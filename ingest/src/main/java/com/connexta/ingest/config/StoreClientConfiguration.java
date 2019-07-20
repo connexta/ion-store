@@ -7,7 +7,7 @@
 package com.connexta.ingest.config;
 
 import com.connexta.ingest.client.StoreClient;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +19,7 @@ public class StoreClientConfiguration {
   @Bean
   public StoreClient storeClient(
       @NotNull RestTemplate restTemplate,
-      @NotEmpty @Value("${endpointUrl.store}") String storeEndpoint) {
+      @NotBlank @Value("${endpointUrl.store}") String storeEndpoint) {
     return new StoreClient(restTemplate, storeEndpoint);
   }
 }

@@ -15,7 +15,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -25,11 +25,11 @@ public class SearchServiceImpl implements SearchService {
 
   @NotNull private final IndexedMetadataRepository indexedMetadataRepository;
 
-  @NotEmpty private final String endpointUrlRetrieve;
+  @NotBlank private final String endpointUrlRetrieve;
 
   public SearchServiceImpl(
       @NotNull final IndexedMetadataRepository indexedMetadataRepository,
-      @NotEmpty final String retrieveEndpoint) {
+      @NotBlank final String retrieveEndpoint) {
     this.indexedMetadataRepository = indexedMetadataRepository;
     this.endpointUrlRetrieve = retrieveEndpoint;
   }

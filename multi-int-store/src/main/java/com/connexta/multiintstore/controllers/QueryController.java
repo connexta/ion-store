@@ -11,7 +11,7 @@ import com.connexta.multiintstore.services.api.SearchService;
 import java.net.URL;
 import java.util.List;
 import javax.validation.ConstraintViolationException;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class QueryController {
   @GetMapping
   @ResponseBody
   public ResponseEntity<List<URL>> searchKeyword(
-      @RequestParam(value = "q") @NotEmpty final String keyword) {
+      @RequestParam(value = "q") @NotBlank final String keyword) {
     try {
       return new ResponseEntity<>(searchService.find(keyword), HttpStatus.OK);
     } catch (SearchException e) {

@@ -11,7 +11,8 @@ import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.services.api.Dao;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.validation.constraints.NotEmpty;
+import java.nio.charset.StandardCharsets;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -28,16 +29,17 @@ public class MetadataStorageManager {
   }
 
   public void storeMetadata(
-      @NotEmpty String acceptVersion,
-      @NotEmpty String productId,
-      @NotEmpty String metadataType,
-      @NotEmpty String mimeType,
+      @NotBlank String acceptVersion,
+      @NotBlank String productId,
+      @NotBlank String metadataType,
+      @NotBlank String mimeType,
       @NotNull InputStream inputStream,
-      @NotEmpty String fileName)
+      @NotBlank String fileName)
       throws IOException, StorageException {
     if (metadataType.equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
       final IndexedProductMetadata indexedProductMetadata =
-          new IndexedProductMetadata(productId, IOUtils.toString(inputStream, "UTF-8"));
+          new IndexedProductMetadata(
+              productId, IOUtils.toString(inputStream, StandardCharsets.UTF_8));
       log.info("Attempting to store {} with name \"{}\" in Solr", metadataType, fileName);
       cstDao.save(indexedProductMetadata);
     } else {

@@ -8,7 +8,6 @@ package com.connexta.multiintstore.config;
 
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.impl.IndexedMetadataDao;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +20,7 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 public class ApplicationConfiguration {
 
   @Bean
-  public RestTemplate restTemplate(@NotEmpty RestTemplateBuilder builder) {
+  public RestTemplate restTemplate(@NotNull RestTemplateBuilder builder) {
     return builder.errorHandler(new DefaultResponseErrorHandler()).build();
   }
 

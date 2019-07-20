@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 public interface StorageAdaptor {
@@ -23,11 +23,11 @@ public interface StorageAdaptor {
    * @throws StorageException if there is an error when attempting to store
    */
   void store(
-      @NotEmpty final String mimeType,
+      @NotBlank final String mimeType,
       @NotNull final InputStream inputStream,
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotEmpty final String fileName,
-      @NotEmpty final String key)
+      @NotBlank final String fileName,
+      @NotBlank final String key)
       throws StorageException;
 
   /**
@@ -37,5 +37,5 @@ public interface StorageAdaptor {
    * @throws StorageException
    */
   @NotNull
-  RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException;
+  RetrieveResponse retrieve(@NotBlank final String key) throws StorageException;
 }

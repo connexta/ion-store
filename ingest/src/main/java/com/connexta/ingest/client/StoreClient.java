@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.net.URI;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
@@ -27,10 +27,10 @@ public class StoreClient {
 
   @NotNull private final RestTemplate restTemplate;
 
-  @NotEmpty private final String storeEndpoint;
+  @NotBlank private final String storeEndpoint;
 
   public StoreClient(
-      @NotNull final RestTemplate restTemplate, @NotEmpty final String storeEndpoint) {
+      @NotNull final RestTemplate restTemplate, @NotBlank final String storeEndpoint) {
     this.restTemplate = restTemplate;
     this.storeEndpoint = storeEndpoint;
     log.info("Store URL: {}", storeEndpoint);
@@ -39,9 +39,9 @@ public class StoreClient {
   /** @return the location of the product */
   public URI store(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotEmpty final String mimeType,
+      @NotBlank final String mimeType,
       @NotNull final InputStream inputStream,
-      @NotEmpty final String fileName)
+      @NotBlank final String fileName)
       throws StoreException {
     final MultipartBodyBuilder builder = new MultipartBodyBuilder();
     builder.part("fileSize", fileSize);
