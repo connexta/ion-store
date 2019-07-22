@@ -16,6 +16,8 @@ dependencies {
     implementation(Dependencies.ingestAPI())
     implementation(Dependencies.transformAPI())
     implementation(Dependencies.springActuator())
+    implementation(Dependencies.swagger())
+    implementation(Dependencies.swaggerUi())
     testImplementation(Dependencies.springBootStarterTest())
 }
 
