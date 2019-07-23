@@ -13,7 +13,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import java.io.IOException;
@@ -33,11 +32,14 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
   private final String s3BucketQuarantine;
   private final AmazonS3 s3Client;
+  private final TransferManager transferManager;
 
   public S3StorageAdaptor(
       @NotNull final AmazonS3 s3Client,
+      @NotNull final TransferManager transferManager,
       @NotEmpty final String s3BucketQuarantine) {
     this.s3Client = s3Client;
+    this.transferManager = transferManager;
     this.s3BucketQuarantine = s3BucketQuarantine;
   }
 
@@ -50,7 +52,6 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotEmpty final String key)
       throws StorageException {
 
-    TransferManager s3TransferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
     ObjectMetadata objectMetadata = new ObjectMetadata();
 
     objectMetadata.setContentType(mimeType);
@@ -59,20 +60,22 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
     try {
-      Upload upload =
-          s3TransferManager.upload(s3BucketQuarantine, key, inputStream, objectMetadata);
-      log.info("Waiting for the storing process to finish...");
-      upload.waitForUploadResult();
+      Upload upload = transferManager.upload(s3BucketQuarantine, key, inputStream, objectMetadata);
+      log.info(String.format("Transfer state: %s", upload.getState()));
+      upload.waitForCompletion();
+      log.info(String.format("Transfer state: %s", upload.getState()));
     } catch (AmazonServiceException e) {
       throw new StorageException(
           "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
     } catch (AmazonClientException e) {
       throw new StorageException(
           "S3 was unavailable and could not store " + key + " in bucket " + s3BucketQuarantine, e);
-    } catch (RuntimeException | InterruptedException e) {
+    } catch (InterruptedException e) {
+      throw new StorageException(
+          "An error occurred while waiting to store " + key + " in bucket " + s3BucketQuarantine,
+          e);
+    } catch (RuntimeException e) {
       throw new StorageException("Error storing " + key + " in bucket " + s3BucketQuarantine, e);
-    } finally {
-      s3TransferManager.shutdownNow();
     }
     log.info(
         "Successfully stored \"{}\" in bucket \"{}\" with key \"{}\"",

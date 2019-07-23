@@ -10,6 +10,9 @@ import static com.github.npathai.hamcrestopt.OptionalMatchers.isPresentAnd;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -29,6 +32,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -109,17 +113,17 @@ public class MultiIntStoreIntegrationTest {
   private String endpointUrlRetrieve = "http://localhost:9040/retrieve/";
 
   @Autowired private MockMvc mockMvc;
-  @Autowired private Upload mockUploadObject;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
   @Autowired private RestTemplate restTemplate;
+  @Autowired private TransferManager mockTransferManager;
+
+  @Mock private Upload mockUploadObject;
 
   private MockRestServiceServer server;
-  private TransferManager mockTransferManager;
 
   @Before
   public void setup() {
     server = MockRestServiceServer.createServer(restTemplate);
-    mockTransferManager = mock(TransferManager.class);
 
     indexedMetadataRepository.deleteAll();
   }
@@ -164,8 +168,6 @@ public class MultiIntStoreIntegrationTest {
                     String.format("[\"%s%s\"]", endpointUrlRetrieve, TEST_METADATA_PRODUCT_ID)));
   }
 
-  // TODO: Update the MIS itests when we remove the deprecated endpoints
-
   /*
    * ================================================================
    * ==================== Store Controller Tests ====================
@@ -179,12 +181,9 @@ public class MultiIntStoreIntegrationTest {
   @Test
   public void testStoreProduct() throws Exception {
 
-    when(mockTransferManager.upload(
-            any(String.class),
-            any(String.class),
-            any(InputStream.class),
-            any(ObjectMetadata.class)))
-        .thenReturn(mock(Upload.class));
+    doReturn(mock(Upload.class))
+        .when(mockTransferManager)
+        .upload(anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class));
 
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated());
   }
@@ -212,11 +211,8 @@ public class MultiIntStoreIntegrationTest {
   @Test
   public void testS3UnableToStore() throws Exception {
     when(mockTransferManager.upload(
-            any(String.class),
-            any(String.class),
-            any(InputStream.class),
-            any(ObjectMetadata.class)))
-        .thenThrow(new AmazonServiceException("Amazon Service Exception"));
+            anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class)))
+        .thenThrow(AmazonServiceException.class);
 
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
@@ -224,11 +220,8 @@ public class MultiIntStoreIntegrationTest {
   @Test
   public void testS3Unavailable() throws Exception {
     when(mockTransferManager.upload(
-            any(String.class),
-            any(String.class),
-            any(InputStream.class),
-            any(ObjectMetadata.class)))
-        .thenThrow(new AmazonClientException("Amazon Service Exception"));
+            anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class)))
+        .thenThrow(AmazonClientException.class);
 
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
@@ -236,19 +229,18 @@ public class MultiIntStoreIntegrationTest {
   @Test
   public void testS3ThrowsRuntimeException() throws Exception {
     when(mockTransferManager.upload(
-            any(String.class),
-            any(String.class),
-            any(InputStream.class),
-            any(ObjectMetadata.class)))
-        .thenThrow(new AmazonClientException("Runtime Exception"));
+            anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class)))
+        .thenThrow(RuntimeException.class);
 
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 
   @Test
   public void testS3InterruptedException() throws Exception {
-    when(mockUploadObject.waitForUploadResult())
-        .thenThrow(new InterruptedException("Interrupted Exception"));
+    when(mockTransferManager.upload(
+            anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class)))
+        .thenReturn(mockUploadObject);
+    doThrow(InterruptedException.class).when(mockUploadObject).waitForCompletion();
 
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }

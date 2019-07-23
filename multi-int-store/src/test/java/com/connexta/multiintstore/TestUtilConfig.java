@@ -27,6 +27,12 @@ public class TestUtilConfig {
 
   @Bean
   @Profile("test")
+  public TransferManager transferManager() {
+    return mock(TransferManager.class);
+  }
+
+  @Bean
+  @Profile("test")
   public Upload uploadObject() {
     return mock(Upload.class);
   }

@@ -22,9 +22,11 @@ import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Scope;
 
 @Slf4j
 @Configuration
@@ -58,7 +60,15 @@ public class S3StorageConfiguration {
   @Bean
   public S3StorageAdaptor s3StorageAdaptor(
       @NotNull AmazonS3 s3Client,
+      @NotNull TransferManager transferManager,
       @NotEmpty @Value("${aws.s3.bucket.quarantine}") String s3Bucket) {
-    return new S3StorageAdaptor(s3Client, s3Bucket);
+    return new S3StorageAdaptor(s3Client, transferManager, s3Bucket);
+  }
+
+  @Bean
+  @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+  @Profile(value = "s3Production")
+  public TransferManager transferManager(@NotNull AmazonS3 s3Client) {
+    return TransferManagerBuilder.standard().withS3Client(s3Client).build();
   }
 }

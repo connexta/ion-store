@@ -51,7 +51,6 @@ public class ProductStorageManager {
    * RetrieveResponse}.
    */
   public RetrieveResponse retrieveProduct(@NotEmpty String id) throws StorageException {
-    // return storageAdaptor.retrieve(id);
-    return null;
+    return storageAdaptor.retrieve(id);
   }
 }
