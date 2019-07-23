@@ -104,6 +104,18 @@ public class S3StorageAdaptor implements StorageAdaptor {
         objectInputStream = s3Object.getObjectContent();
         objectMetadata = s3Object.getObjectMetadata();
 
+        final String fileName =
+            s3Object.getObjectMetadata().getUserMetaDataOf(FILE_NAME_METADATA_KEY);
+        if (StringUtils.isEmpty(fileName)) {
+          throw new StorageException(
+              String.format(
+                  "Expected S3 object to have a non-null metadata value for %s",
+                  FILE_NAME_METADATA_KEY));
+        }
+
+        return new RetrieveResponse(
+            MediaType.valueOf(objectMetadata.getContentType()), objectInputStream, fileName);
+
       } catch (AmazonServiceException e) {
         throw new StorageException("Unable to retrieve the product from S3 with key " + key, e);
       } catch (SdkClientException e) {
@@ -116,18 +128,6 @@ public class S3StorageAdaptor implements StorageAdaptor {
           log.warn("Unable to close S3Object when retrieving key \"{}\".", key, e);
         }
       }
-
-      final String fileName =
-          s3Object.getObjectMetadata().getUserMetaDataOf(FILE_NAME_METADATA_KEY);
-      if (StringUtils.isEmpty(fileName)) {
-        throw new StorageException(
-            String.format(
-                "Expected S3 object to have a non-null metadata value for %s",
-                FILE_NAME_METADATA_KEY));
-      }
-
-      return new RetrieveResponse(
-          MediaType.valueOf(objectMetadata.getContentType()), objectInputStream, fileName);
     } catch (Throwable t) {
       if (objectInputStream != null) {
         try {

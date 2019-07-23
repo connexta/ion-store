@@ -92,6 +92,15 @@ public class MultiIntStoreIntegrationTest {
           .accept(MediaType.APPLICATION_JSON)
           .contentType(MediaType.MULTIPART_FORM_DATA);
 
+  private static final MockHttpServletRequestBuilder GET_PRODUCT_REQUEST =
+      multipart(String.format("/mis/product/%s", TEST_METADATA_PRODUCT_ID))
+          .header("Accept-Version", "1.2.1")
+          .with(
+              request -> {
+                request.setMethod(HttpMethod.GET.toString());
+                return request;
+              });
+
   @ClassRule
   public static final GenericContainer solr =
       new GenericContainer("solr:8")
