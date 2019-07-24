@@ -6,24 +6,27 @@
  */
 package com.connexta.multiintstore.config;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.connexta.multiintstore.adaptors.S3StorageAdaptor;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
+import org.springframework.context.annotation.Scope;
 
 @Slf4j
 @Configuration
@@ -31,21 +34,22 @@ public class S3StorageConfiguration {
 
   @Bean
   @Profile("s3Production")
-  public S3Client s3ClientFactory(
+  public AmazonS3 s3ClientFactory(
       @Value("${aws.s3.endpointUrl}") @NotEmpty final String s3Endpoint,
       @Value("${aws.s3.region}") @NotEmpty final String s3Region,
       @Value("${aws.s3.secret.file}") @NotEmpty final String awsSecretKeyFile,
       @Value("${aws.s3.access.file}") @NotEmpty final String awsAccessKeyFile)
       throws IOException {
-    final AwsCredentials credentials =
-        AwsBasicCredentials.create(
+    final AwsClientBuilder.EndpointConfiguration endpointConfiguration =
+        new AwsClientBuilder.EndpointConfiguration(s3Endpoint, s3Region);
+    final BasicAWSCredentials credentials =
+        new BasicAWSCredentials(
             FileUtils.readFileToString(new File(awsAccessKeyFile), StandardCharsets.UTF_8),
             FileUtils.readFileToString(new File(awsSecretKeyFile), StandardCharsets.UTF_8));
-    final S3Client s3Client =
-        S3Client.builder()
-            .endpointOverride(URI.create(s3Endpoint))
-            .region(Region.of(s3Region))
-            .credentialsProvider(StaticCredentialsProvider.create(credentials))
+    final AmazonS3 s3Client =
+        AmazonS3ClientBuilder.standard()
+            .withCredentials(new AWSStaticCredentialsProvider(credentials))
+            .withEndpointConfiguration(endpointConfiguration)
             .build();
     log.info("S3 Client has been initialized.");
     log.info("Region: {}", s3Region);
@@ -55,7 +59,16 @@ public class S3StorageConfiguration {
 
   @Bean
   public S3StorageAdaptor s3StorageAdaptor(
-      @NotNull S3Client s3Client, @NotEmpty @Value("${aws.s3.bucket.quarantine}") String s3Bucket) {
-    return new S3StorageAdaptor(s3Client, s3Bucket);
+      @NotNull AmazonS3 s3Client,
+      @NotNull TransferManager transferManager,
+      @NotEmpty @Value("${aws.s3.bucket.quarantine}") String s3Bucket) {
+    return new S3StorageAdaptor(s3Client, transferManager, s3Bucket);
+  }
+
+  @Bean
+  @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+  @Profile(value = "s3Production")
+  public TransferManager transferManager(@NotNull AmazonS3 s3Client) {
+    return TransferManagerBuilder.standard().withS3Client(s3Client).build();
   }
 }

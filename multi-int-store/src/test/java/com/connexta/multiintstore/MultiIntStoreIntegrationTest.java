@@ -10,18 +10,29 @@ import static com.github.npathai.hamcrestopt.OptionalMatchers.isPresentAnd;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
+import java.io.InputStream;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -43,12 +54,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.core.exception.SdkServiceException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -87,6 +92,15 @@ public class MultiIntStoreIntegrationTest {
           .accept(MediaType.APPLICATION_JSON)
           .contentType(MediaType.MULTIPART_FORM_DATA);
 
+  private static final MockHttpServletRequestBuilder GET_PRODUCT_REQUEST =
+      multipart(String.format("/mis/product/%s", TEST_METADATA_PRODUCT_ID))
+          .header("Accept-Version", "1.2.1")
+          .with(
+              request -> {
+                request.setMethod(HttpMethod.GET.toString());
+                return request;
+              });
+
   @ClassRule
   public static final GenericContainer solr =
       new GenericContainer("solr:8")
@@ -108,9 +122,11 @@ public class MultiIntStoreIntegrationTest {
   private String endpointUrlRetrieve = "http://localhost:9040/retrieve/";
 
   @Autowired private MockMvc mockMvc;
-  @Autowired private S3Client mockS3Client;
   @Autowired private IndexedMetadataRepository indexedMetadataRepository;
   @Autowired private RestTemplate restTemplate;
+  @Autowired private TransferManager mockTransferManager;
+
+  @Mock private Upload mockUploadObject;
 
   private MockRestServiceServer server;
 
@@ -161,8 +177,6 @@ public class MultiIntStoreIntegrationTest {
                     String.format("[\"%s%s\"]", endpointUrlRetrieve, TEST_METADATA_PRODUCT_ID)));
   }
 
-  // TODO: Update the MIS itests when we remove the deprecated endpoints
-
   /*
    * ================================================================
    * ==================== Store Controller Tests ====================
@@ -175,8 +189,10 @@ public class MultiIntStoreIntegrationTest {
 
   @Test
   public void testStoreProduct() throws Exception {
-    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenReturn(PutObjectResponse.builder().build());
+
+    doReturn(mock(Upload.class))
+        .when(mockTransferManager)
+        .upload(anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class));
 
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated());
   }
@@ -203,31 +219,38 @@ public class MultiIntStoreIntegrationTest {
 
   @Test
   public void testS3UnableToStore() throws Exception {
-    // given
-    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenThrow(SdkServiceException.builder().build());
+    when(mockTransferManager.upload(
+            anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class)))
+        .thenThrow(AmazonServiceException.class);
 
-    // verify
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 
   @Test
   public void testS3Unavailable() throws Exception {
-    // given
-    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenThrow(SdkClientException.builder().build());
+    when(mockTransferManager.upload(
+            anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class)))
+        .thenThrow(AmazonClientException.class);
 
-    // verify
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 
   @Test
   public void testS3ThrowsRuntimeException() throws Exception {
-    // given
-    when(mockS3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenThrow(new RuntimeException());
+    when(mockTransferManager.upload(
+            anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class)))
+        .thenThrow(RuntimeException.class);
 
-    // verify
+    mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
+  }
+
+  @Test
+  public void testS3InterruptedException() throws Exception {
+    when(mockTransferManager.upload(
+            anyString(), anyString(), any(InputStream.class), any(ObjectMetadata.class)))
+        .thenReturn(mockUploadObject);
+    doThrow(InterruptedException.class).when(mockUploadObject).waitForCompletion();
+
     mockMvc.perform(POST_PRODUCT_REQUEST).andExpect(status().is5xxServerError());
   }
 }
