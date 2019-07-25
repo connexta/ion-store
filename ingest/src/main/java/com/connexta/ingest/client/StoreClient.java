@@ -25,9 +25,8 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class StoreClient {
 
-  @NotNull private final RestTemplate restTemplate;
-
   @NotBlank private final String storeEndpoint;
+  @NotNull private final RestTemplate restTemplate;
 
   public StoreClient(
       @NotNull final RestTemplate restTemplate, @NotBlank final String storeEndpoint) {
