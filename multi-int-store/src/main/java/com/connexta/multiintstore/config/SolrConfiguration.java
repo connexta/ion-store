@@ -6,7 +6,7 @@
  */
 package com.connexta.multiintstore.config;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -24,7 +24,7 @@ public class SolrConfiguration {
   @Bean
   @Profile("solrProduction")
   public SolrClient solrClient(
-      @NotEmpty @Value("${solr.host}") final String solrHost,
+      @NotBlank @Value("${solr.host}") final String solrHost,
       @Value("${solr.port}") final int solrPort) {
     return new HttpSolrClient.Builder(String.format("http://%s:%d/solr", solrHost, solrPort))
         .build();

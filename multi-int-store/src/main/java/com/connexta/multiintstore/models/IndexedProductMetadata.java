@@ -14,12 +14,14 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
 
-@SolrDocument(collection = "searchTerms")
+@SolrDocument(collection = IndexedProductMetadata.SOLR_COLLECTION)
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class IndexedProductMetadata implements Storable<String> {
+
+  public static final String SOLR_COLLECTION = "searchTerms";
 
   @Id
   @Indexed(name = "id", type = "string")

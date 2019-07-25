@@ -1,5 +1,5 @@
 endpointUrl:
-  retrieve: https://localhost:1234/
+  retrieve: http://localhost:1234/mis/product/
 aws:
   s3:
     bucket:

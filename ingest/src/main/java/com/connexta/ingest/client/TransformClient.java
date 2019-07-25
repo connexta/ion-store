@@ -10,7 +10,7 @@ import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.transformation.rest.models.TransformRequest;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -21,13 +21,13 @@ import org.springframework.web.client.RestTemplate;
 public class TransformClient {
 
   @NotNull private final RestTemplate restTemplate;
-  @NotEmpty private final String transformEndpoint;
-  @NotEmpty private final String transformApiVersion;
+  @NotBlank private final String transformEndpoint;
+  @NotBlank private final String transformApiVersion;
 
   public TransformClient(
       @NotNull RestTemplate restTemplate,
-      @NotEmpty String transformEndpoint,
-      @NotEmpty String transformApiVersion) {
+      @NotBlank String transformEndpoint,
+      @NotBlank String transformApiVersion) {
     this.restTemplate = restTemplate;
     this.transformEndpoint = transformEndpoint;
     this.transformApiVersion = transformApiVersion;
@@ -36,8 +36,8 @@ public class TransformClient {
 
   public void requestTransform(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotEmpty final String mimeType,
-      @NotEmpty final String location)
+      @NotBlank final String mimeType,
+      @NotBlank final String location)
       throws TransformException {
     final HttpHeaders headers = new HttpHeaders();
     headers.set("Accept-Version", transformApiVersion);

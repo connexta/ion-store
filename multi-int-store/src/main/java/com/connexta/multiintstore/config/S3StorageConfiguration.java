@@ -17,7 +17,7 @@ import com.connexta.multiintstore.adaptors.S3StorageAdaptor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -34,41 +34,41 @@ public class S3StorageConfiguration {
 
   @Bean
   @Profile("s3Production")
-  public AmazonS3 s3ClientFactory(
-      @Value("${aws.s3.endpointUrl}") @NotEmpty final String s3Endpoint,
-      @Value("${aws.s3.region}") @NotEmpty final String s3Region,
-      @Value("${aws.s3.secret.file}") @NotEmpty final String awsSecretKeyFile,
-      @Value("${aws.s3.access.file}") @NotEmpty final String awsAccessKeyFile)
+  public AmazonS3 amazonS3(
+      @Value("${aws.s3.endpointUrl}") @NotBlank final String endpoint,
+      @Value("${aws.s3.region}") @NotBlank final String region,
+      @Value("${aws.s3.secret.file}") @NotBlank final String secretKeyFile,
+      @Value("${aws.s3.access.file}") @NotBlank final String accessKeyFile)
       throws IOException {
     final AwsClientBuilder.EndpointConfiguration endpointConfiguration =
-        new AwsClientBuilder.EndpointConfiguration(s3Endpoint, s3Region);
+        new AwsClientBuilder.EndpointConfiguration(endpoint, region);
     final BasicAWSCredentials credentials =
         new BasicAWSCredentials(
-            FileUtils.readFileToString(new File(awsAccessKeyFile), StandardCharsets.UTF_8),
-            FileUtils.readFileToString(new File(awsSecretKeyFile), StandardCharsets.UTF_8));
+            FileUtils.readFileToString(new File(accessKeyFile), StandardCharsets.UTF_8),
+            FileUtils.readFileToString(new File(secretKeyFile), StandardCharsets.UTF_8));
     final AmazonS3 s3Client =
         AmazonS3ClientBuilder.standard()
             .withCredentials(new AWSStaticCredentialsProvider(credentials))
             .withEndpointConfiguration(endpointConfiguration)
             .build();
     log.info("S3 Client has been initialized.");
-    log.info("Region: {}", s3Region);
-    log.info("Endpoint: {}", s3Endpoint);
+    log.info("Region: {}", region);
+    log.info("Endpoint: {}", endpoint);
     return s3Client;
   }
 
   @Bean
   public S3StorageAdaptor s3StorageAdaptor(
-      @NotNull AmazonS3 s3Client,
+      @NotNull AmazonS3 amazonS3,
       @NotNull TransferManager transferManager,
-      @NotEmpty @Value("${aws.s3.bucket.quarantine}") String s3Bucket) {
-    return new S3StorageAdaptor(s3Client, transferManager, s3Bucket);
+      @NotBlank @Value("${aws.s3.bucket.quarantine}") String bucket) {
+    return new S3StorageAdaptor(amazonS3, transferManager, bucket);
   }
 
   @Bean
   @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
   @Profile(value = "s3Production")
-  public TransferManager transferManager(@NotNull AmazonS3 s3Client) {
-    return TransferManagerBuilder.standard().withS3Client(s3Client).build();
+  public TransferManager transferManager(@NotNull AmazonS3 amazonS3) {
+    return TransferManagerBuilder.standard().withS3Client(amazonS3).build();
   }
 }

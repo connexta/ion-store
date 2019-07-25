@@ -9,36 +9,35 @@ package com.connexta.multiintstore.common;
 import com.connexta.multiintstore.adaptors.RetrieveResponse;
 import com.connexta.multiintstore.adaptors.StorageAdaptor;
 import com.connexta.multiintstore.common.exceptions.StorageException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ProductStorageManager {
 
-  @NotEmpty private final String retrieveEndpoint;
+  @NotBlank private final String retrieveEndpoint;
   @NotNull private final StorageAdaptor storageAdaptor;
 
   public ProductStorageManager(
-      @NotEmpty final String retrieveEndpoint, @NotNull final StorageAdaptor storageAdaptor) {
+      @NotBlank final String retrieveEndpoint, @NotNull final StorageAdaptor storageAdaptor) {
     this.retrieveEndpoint = retrieveEndpoint;
     this.storageAdaptor = storageAdaptor;
   }
 
   public URI storeProduct(
-      @NotEmpty String acceptVersion,
+      @NotBlank String acceptVersion,
       @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      @NotEmpty String mimeType,
+      @NotBlank String mimeType,
       @NotNull InputStream inputStream,
-      @NotEmpty String fileName)
-      throws IOException, StorageException, URISyntaxException {
+      @NotBlank String fileName)
+      throws StorageException, URISyntaxException {
     // TODO: Validate Accept-Version
     final String key = UUID.randomUUID().toString().replace("-", "");
 
@@ -50,7 +49,7 @@ public class ProductStorageManager {
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
    * RetrieveResponse}.
    */
-  public RetrieveResponse retrieveProduct(@NotEmpty String id) throws StorageException {
+  public RetrieveResponse retrieveProduct(@NotBlank String id) throws StorageException {
     return storageAdaptor.retrieve(id);
   }
 }

@@ -6,8 +6,6 @@
  */
 package com.connexta.multiintstore.adaptors;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -20,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -31,58 +29,48 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
   private static final String FILE_NAME_METADATA_KEY = "filename";
 
-  private final String s3BucketQuarantine;
-  private final AmazonS3 s3Client;
+  private final String bucket;
+  private final AmazonS3 amazonS3;
   private final TransferManager transferManager;
 
   public S3StorageAdaptor(
-      @NotNull final AmazonS3 s3Client,
+      @NotNull final AmazonS3 amazonS3,
       @NotNull final TransferManager transferManager,
-      @NotEmpty final String s3BucketQuarantine) {
-    this.s3Client = s3Client;
+      @NotBlank final String bucket) {
+    this.amazonS3 = amazonS3;
     this.transferManager = transferManager;
-    this.s3BucketQuarantine = s3BucketQuarantine;
+    this.bucket = bucket;
   }
 
   @Override
   public void store(
-      @NotEmpty final String mimeType,
+      @NotBlank final String mimeType,
       @NotNull final InputStream inputStream,
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotEmpty final String fileName,
-      @NotEmpty final String key)
+      @NotBlank final String fileName,
+      @NotBlank final String key)
       throws StorageException {
+    // TODO check if id already exists
 
-    ObjectMetadata objectMetadata = new ObjectMetadata();
-
+    final ObjectMetadata objectMetadata = new ObjectMetadata();
     objectMetadata.setContentType(mimeType);
     objectMetadata.setContentLength(fileSize);
     objectMetadata.addUserMetadata(FILE_NAME_METADATA_KEY, fileName);
 
-    log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, s3BucketQuarantine, key);
+    log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, bucket, key);
     try {
-      Upload upload = transferManager.upload(s3BucketQuarantine, key, inputStream, objectMetadata);
+      final Upload upload = transferManager.upload(bucket, key, inputStream, objectMetadata);
       log.info(String.format("Transfer state: %s", upload.getState()));
       upload.waitForCompletion();
       log.info(String.format("Transfer state: %s", upload.getState()));
-    } catch (AmazonServiceException e) {
+    } catch (RuntimeException | InterruptedException e) {
       throw new StorageException(
-          "S3 was unable to store " + key + " in bucket " + s3BucketQuarantine, e);
-    } catch (AmazonClientException e) {
-      throw new StorageException(
-          "S3 was unavailable and could not store " + key + " in bucket " + s3BucketQuarantine, e);
-    } catch (InterruptedException e) {
-      throw new StorageException(
-          "An error occurred while waiting to store " + key + " in bucket " + s3BucketQuarantine,
+          String.format(
+              "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, key, bucket),
           e);
-    } catch (RuntimeException e) {
-      throw new StorageException("Error storing " + key + " in bucket " + s3BucketQuarantine, e);
     }
-    log.info(
-        "Successfully stored \"{}\" in bucket \"{}\" with key \"{}\"",
-        fileName,
-        s3BucketQuarantine,
-        key);
+
+    log.info("Successfully stored \"{}\" in bucket \"{}\" with key \"{}\"", fileName, bucket, key);
   }
 
   /**
@@ -91,14 +79,14 @@ public class S3StorageAdaptor implements StorageAdaptor {
    */
   @Override
   @NotNull
-  public RetrieveResponse retrieve(@NotEmpty final String key) throws StorageException {
-    log.info("Retrieving product in bucket \"{}\" with key \"{}\"", s3BucketQuarantine, key);
+  public RetrieveResponse retrieve(@NotBlank final String key) throws StorageException {
+    log.info("Retrieving product in bucket \"{}\" with key \"{}\"", bucket, key);
 
     S3Object s3Object;
     InputStream productInputStream = null;
     try {
       try {
-        s3Object = s3Client.getObject(new GetObjectRequest(s3BucketQuarantine, key));
+        s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
       } catch (SdkClientException e) {
         throw new StorageException("Unable to retrieve product with key " + key, e);
       }

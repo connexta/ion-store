@@ -6,6 +6,7 @@
  */
 package com.connexta.multiintstore;
 
+import static com.connexta.multiintstore.models.IndexedProductMetadata.SOLR_COLLECTION;
 import static com.github.npathai.hamcrestopt.OptionalMatchers.isPresentAnd;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -104,7 +105,7 @@ public class MultiIntStoreIntegrationTest {
   @ClassRule
   public static final GenericContainer solr =
       new GenericContainer("solr:8")
-          .withCommand("solr-create -c searchTerms")
+          .withCommand("solr-create -c " + SOLR_COLLECTION)
           .withExposedPorts(8983)
           .waitingFor(Wait.forHttp("/solr/admin/cores?action=STATUS"));
 
