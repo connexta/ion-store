@@ -6,6 +6,7 @@
  */
 package com.connexta.multiintstore.services.api;
 
+import java.net.URI;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -30,7 +31,7 @@ public interface StoreApi {
       produces = {"application/json"},
       consumes = {"multipart/form-data"},
       method = RequestMethod.POST)
-  ResponseEntity<Void> storeProduct(
+  ResponseEntity<URI> storeProduct(
       @RequestHeader(value = "Accept-Version") @NotBlank String acceptVersion,
       @RequestParam(value = "fileSize") @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
       @RequestParam(value = "mimeType") @NotBlank String mimeType,

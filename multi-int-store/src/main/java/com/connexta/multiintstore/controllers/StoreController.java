@@ -43,7 +43,7 @@ public class StoreController implements StoreApi {
   }
 
   @Override
-  public ResponseEntity<Void> storeProduct(
+  public ResponseEntity<URI> storeProduct(
       @NotBlank String acceptVersion,
       @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
       @NotBlank String mimeType,
@@ -88,7 +88,7 @@ public class StoreController implements StoreApi {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-    return ResponseEntity.created(location).build();
+    return ResponseEntity.created(location).body(location);
   }
 
   @Override

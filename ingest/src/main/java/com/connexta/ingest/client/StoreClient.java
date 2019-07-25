@@ -17,7 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -25,9 +28,8 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class StoreClient {
 
-  @NotNull private final RestTemplate restTemplate;
-
   @NotBlank private final String storeEndpoint;
+  @NotNull private RestTemplate restTemplate;
 
   public StoreClient(
       @NotNull final RestTemplate restTemplate, @NotBlank final String storeEndpoint) {
@@ -69,12 +71,17 @@ public class StoreClient {
         new HttpEntity<>(builder.build(), headers);
     log.info("Sending POST request to {}: {}", storeEndpoint, request);
 
-    final URI location;
+    restTemplate = new RestTemplate();
+    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+    requestFactory.setBufferRequestBody(false);
+    restTemplate.setRequestFactory(requestFactory);
+
+    ResponseEntity<URI> responseEntity;
     try {
-      location = restTemplate.postForLocation(storeEndpoint, request);
+      responseEntity = restTemplate.exchange(storeEndpoint, HttpMethod.POST, request, URI.class);
     } catch (final RestClientException e) {
       throw new StoreException("Unable to POST to store endpoint", e);
     }
-    return location;
+    return responseEntity.getBody();
   }
 }
