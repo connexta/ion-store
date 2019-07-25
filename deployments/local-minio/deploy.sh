@@ -26,15 +26,19 @@ function wait_for_empty_results() {
 }
 
 
-# Removes the docker stack and network.
-# Docker networks usually take a few seconds to go down, so it waits to prevent redeployment issues
-function cleanup () {
-    printf "Removing $name docker stack and network...\n"
+function rm-stack () {
+    printf "Removing $name docker stack...\n"
     docker stack rm $name
+    printf "Done!\n"
+}
+
+# Docker networks usually take a few seconds to go down, so it waits to prevent redeployment issues
+function rm-network () {
+    printf "Removing $name docker network...\n"
     docker network rm $name
     printf "\nWaiting for docker network '$name' to go down."
     wait_for_empty_results "docker network ls | grep -w $name"
-    printf "\nDone!\n"
+    printf "Done!\n"
 }
 
 function assert_stack_is_not_deployed() {
@@ -49,7 +53,7 @@ function assert_stack_is_not_deployed() {
 function wait_for_containers () {
     printf "\nWaiting for docker services to start (safe to exit)."
     wait_for_empty_results "docker service ls | grep $name_.*0/[1-9]"
-    printf "\nDone!\n"
+    printf "Done!\n"
 }
 
 # Deploy docker-compose.yml file via docker stacks
@@ -60,7 +64,7 @@ function deploy_images () {
 
 # Create attachable overlay docker network
 function create_new_network () {
-    printf "Creating docker '$name' network...\n"
+    printf "\nCreating docker '$name' network...\n"
     docker network create --driver=overlay --attachable $name
 }
 
@@ -103,17 +107,17 @@ else
         wait_for_containers
         ;;
     clean | c)
-        cleanup
+        rm-stack
+        rm-network
         ;;
     update | u)
         deploy_images
         ;;
     redeploy | r)
         print_warning
-        cleanup
+        rm-stack
         create_new_network
         deploy_images
-        wait_for_containers
         ;;
     *)
         printf "$helptext"
