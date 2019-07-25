@@ -10,8 +10,8 @@ import com.connexta.multiintstore.common.exceptions.SearchException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
 import com.connexta.multiintstore.services.api.SearchService;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +40,7 @@ public class SearchServiceImpl implements SearchService {
   }
 
   @Override
-  public List<URL> find(String keyword) throws SearchException {
+  public List<URI> find(String keyword) throws SearchException {
     final List<IndexedProductMetadata> matchingIndexedProductMetadatas;
     try {
       matchingIndexedProductMetadatas = indexedMetadataRepository.findByContents(keyword);
@@ -55,23 +55,23 @@ public class SearchServiceImpl implements SearchService {
       throw new SearchException("Unable to search for " + keyword, e);
     }
 
-    final List<URL> urls = new ArrayList<>();
+    final List<URI> uris = new ArrayList<>();
     for (final IndexedProductMetadata indexedProductMetadata : matchingIndexedProductMetadatas) {
       final String id = indexedProductMetadata.getId();
-      final URL url;
+      final URI uri;
       try {
-        url = new URL(endpointUrlRetrieve + id);
-      } catch (MalformedURLException e) {
+        uri = new URI(endpointUrlRetrieve + id);
+      } catch (URISyntaxException e) {
         throw new SearchException(
-            "Unable to construct retrieve URL from endpointUrlRetrieve="
+            "Unable to construct retrieve URI from endpointUrlRetrieve="
                 + endpointUrlRetrieve
                 + " and id="
                 + id,
             e);
       }
-      urls.add(url);
+      uris.add(uri);
     }
 
-    return Collections.unmodifiableList(urls);
+    return Collections.unmodifiableList(uris);
   }
 }

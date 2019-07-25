@@ -8,12 +8,12 @@ package com.connexta.multiintstore.services.api;
 
 import com.connexta.multiintstore.common.exceptions.SearchException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 public interface SearchService {
 
   void store(IndexedProductMetadata doc);
 
-  List<URL> find(String keyword) throws SearchException;
+  List<URI> find(String keyword) throws SearchException;
 }

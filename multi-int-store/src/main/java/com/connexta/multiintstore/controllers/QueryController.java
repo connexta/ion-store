@@ -8,7 +8,7 @@ package com.connexta.multiintstore.controllers;
 
 import com.connexta.multiintstore.common.exceptions.SearchException;
 import com.connexta.multiintstore.services.api.SearchService;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotBlank;
@@ -40,7 +40,7 @@ public class QueryController {
 
   @GetMapping
   @ResponseBody
-  public ResponseEntity<List<URL>> searchKeyword(
+  public ResponseEntity<List<URI>> searchKeyword(
       @RequestParam(value = "q") @NotBlank final String keyword) {
     try {
       return new ResponseEntity<>(searchService.find(keyword), HttpStatus.OK);
