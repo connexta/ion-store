@@ -6,6 +6,7 @@
  */
 package com.connexta.ingest.client;
 
+import com.connexta.ingest.common.StreamingRestTemplate;
 import com.connexta.ingest.exceptions.StoreException;
 import java.io.InputStream;
 import java.net.URI;
@@ -70,18 +71,23 @@ public class StoreClient {
     final HttpEntity<MultiValueMap<String, HttpEntity<?>>> request =
         new HttpEntity<>(builder.build(), headers);
     log.info("Sending POST request to {}: {}", storeEndpoint, request);
+    /*
+      // Injected RestTemplate has a metrics interceptor which reads the body into memory. Create a new one.
+      restTemplate = new RestTemplate();
+      SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+      requestFactory.setBufferRequestBody(false);
+      restTemplate.setRequestFactory(requestFactory);
 
-    restTemplate = new RestTemplate();
-    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-    requestFactory.setBufferRequestBody(false);
-    restTemplate.setRequestFactory(requestFactory);
-
-    ResponseEntity<URI> responseEntity;
-    try {
-      responseEntity = restTemplate.exchange(storeEndpoint, HttpMethod.POST, request, URI.class);
-    } catch (final RestClientException e) {
-      throw new StoreException("Unable to POST to store endpoint", e);
+      ResponseEntity<URI> responseEntity;
+      try {
+        responseEntity = restTemplate.exchange(storeEndpoint, HttpMethod.POST, request, URI.class);
+      } catch (final RestClientException e) {
+        throw new StoreException("Unable to POST to store endpoint", e);
+      }
+      return responseEntity.getBody();
     }
-    return responseEntity.getBody();
+
+    */
+    return new StreamingRestTemplate<URI>().exchange(storeEndpoint, HttpMethod.POST, request);
   }
 }
