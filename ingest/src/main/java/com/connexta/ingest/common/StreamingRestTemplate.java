@@ -1,11 +1,14 @@
+/*
+ * Copyright (c) 2019 Connexta, LLC
+ *
+ * Released under the GNU Lesser General Public License version 3; see
+ * https://www.gnu.org/licenses/lgpl-3.0.html
+ */
 package com.connexta.ingest.common;
 
-import com.connexta.ingest.exceptions.StoreException;
-import java.net.URI;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClientException;
@@ -14,22 +17,29 @@ import org.springframework.web.client.RestTemplate;
 public class StreamingRestTemplate<T> {
 
   private RestTemplate restTemplate = new RestTemplate();
+  private String endpoint;
+  private HttpMethod httpMethod;
 
-  public StreamingRestTemplate() {
+  public StreamingRestTemplate(String endpoint, HttpMethod httpMethod) {
     // Injected RestTemplate has a metrics interceptor which reads the body into memory. Create a
-    // new one.
+    // new RestTemplate and disable in-memory buggering.
     SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
     requestFactory.setBufferRequestBody(false);
     restTemplate.setRequestFactory(requestFactory);
+    this.endpoint = endpoint;
+    this.httpMethod = httpMethod;
   }
 
-  public T exchange(String endpoint, HttpMethod method, HttpEntity<?> request)
-      throws RestClientException {
+  public T exchange(HttpEntity<?> request) throws RestClientException {
 
     ResponseEntity<T> responseEntity;
     responseEntity =
         restTemplate.exchange(
-            endpoint, method, request, new ParameterizedTypeReference<T>() {}, (Object) null);
+            this.endpoint,
+            this.httpMethod,
+            request,
+            new ParameterizedTypeReference<T>() {},
+            (Object) null);
     return responseEntity.getBody();
   }
 }

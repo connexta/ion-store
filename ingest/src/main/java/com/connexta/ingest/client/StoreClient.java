@@ -19,22 +19,17 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 public class StoreClient {
 
   @NotBlank private final String storeEndpoint;
-  @NotNull private RestTemplate restTemplate;
 
   public StoreClient(
       @NotNull final RestTemplate restTemplate, @NotBlank final String storeEndpoint) {
-    this.restTemplate = restTemplate;
     this.storeEndpoint = storeEndpoint;
     log.info("Store URL: {}", storeEndpoint);
   }
@@ -71,23 +66,7 @@ public class StoreClient {
     final HttpEntity<MultiValueMap<String, HttpEntity<?>>> request =
         new HttpEntity<>(builder.build(), headers);
     log.info("Sending POST request to {}: {}", storeEndpoint, request);
-    /*
-      // Injected RestTemplate has a metrics interceptor which reads the body into memory. Create a new one.
-      restTemplate = new RestTemplate();
-      SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-      requestFactory.setBufferRequestBody(false);
-      restTemplate.setRequestFactory(requestFactory);
 
-      ResponseEntity<URI> responseEntity;
-      try {
-        responseEntity = restTemplate.exchange(storeEndpoint, HttpMethod.POST, request, URI.class);
-      } catch (final RestClientException e) {
-        throw new StoreException("Unable to POST to store endpoint", e);
-      }
-      return responseEntity.getBody();
-    }
-
-    */
-    return new StreamingRestTemplate<URI>().exchange(storeEndpoint, HttpMethod.POST, request);
+    return new StreamingRestTemplate<URI>(storeEndpoint, HttpMethod.POST).exchange(request);
   }
 }
