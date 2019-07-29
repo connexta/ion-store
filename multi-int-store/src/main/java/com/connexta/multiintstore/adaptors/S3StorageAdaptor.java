@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class S3StorageAdaptor implements StorageAdaptor {
 
-  private static final String FILE_NAME_METADATA_KEY = "filename";
+  private static final String FILE_NAME_METADATA_KEY = "Filename";
 
   private final String bucket;
   private final AmazonS3 amazonS3;
