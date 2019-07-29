@@ -14,7 +14,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-public class StreamingRestTemplate<T> {
+public class StreamingRestTemplate {
 
   private RestTemplate restTemplate = new RestTemplate();
   private String endpoint;
@@ -30,16 +30,11 @@ public class StreamingRestTemplate<T> {
     this.httpMethod = httpMethod;
   }
 
-  public T exchange(HttpEntity<?> request) throws RestClientException {
+  public <T> T exchange(HttpEntity<?> request, ParameterizedTypeReference<T> returnType)
+      throws RestClientException {
 
     ResponseEntity<T> responseEntity;
-    responseEntity =
-        restTemplate.exchange(
-            this.endpoint,
-            this.httpMethod,
-            request,
-            new ParameterizedTypeReference<T>() {},
-            (Object) null);
+    responseEntity = restTemplate.exchange(this.endpoint, this.httpMethod, request, returnType);
     return responseEntity.getBody();
   }
 }

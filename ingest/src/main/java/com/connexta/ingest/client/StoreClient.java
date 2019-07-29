@@ -15,6 +15,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -67,6 +68,7 @@ public class StoreClient {
         new HttpEntity<>(builder.build(), headers);
     log.info("Sending POST request to {}: {}", storeEndpoint, request);
 
-    return new StreamingRestTemplate<URI>(storeEndpoint, HttpMethod.POST).exchange(request);
+    return new StreamingRestTemplate(storeEndpoint, HttpMethod.POST)
+        .exchange(request, new ParameterizedTypeReference<URI>() {});
   }
 }

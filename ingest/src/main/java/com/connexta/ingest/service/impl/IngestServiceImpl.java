@@ -12,6 +12,7 @@ import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.service.api.IngestService;
 import java.io.InputStream;
+import java.net.URI;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -37,10 +38,10 @@ public class IngestServiceImpl implements IngestService {
       @NotNull final InputStream inputStream,
       @NotBlank final String fileName)
       throws StoreException, TransformException {
-    final String location = storeClient.store(fileSize, mimeType, inputStream, fileName).toString();
+    final URI location = storeClient.store(fileSize, mimeType, inputStream, fileName);
     log.info("{} has been successfully stored and can be downloaded at {}", fileName, location);
 
-    transformClient.requestTransform(fileSize, mimeType, location);
+    transformClient.requestTransform(fileSize, mimeType, location.toString());
     log.info("Successfully submitted a transform request for {}", fileName);
   }
 }

@@ -1,2 +1,2 @@
 endpointUrl:
-  store: http://cdr-store:9041/store/
+  store: http://cdr-store:9041/mis/product/
