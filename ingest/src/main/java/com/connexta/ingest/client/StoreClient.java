@@ -6,7 +6,6 @@
  */
 package com.connexta.ingest.client;
 
-import com.connexta.ingest.common.StreamingRestTemplate;
 import com.connexta.ingest.exceptions.StoreException;
 import java.io.InputStream;
 import java.net.URI;
@@ -15,11 +14,9 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -28,9 +25,11 @@ import org.springframework.web.client.RestTemplate;
 public class StoreClient {
 
   @NotBlank private final String storeEndpoint;
+  private final RestTemplate restTemplate;
 
   public StoreClient(
       @NotNull final RestTemplate restTemplate, @NotBlank final String storeEndpoint) {
+    this.restTemplate = restTemplate;
     this.storeEndpoint = storeEndpoint;
     log.info("Store URL: {}", storeEndpoint);
   }
@@ -67,8 +66,7 @@ public class StoreClient {
     final HttpEntity<MultiValueMap<String, HttpEntity<?>>> request =
         new HttpEntity<>(builder.build(), headers);
     log.info("Sending POST request to {}: {}", storeEndpoint, request);
+    return restTemplate.postForLocation(storeEndpoint, request);
 
-    return new StreamingRestTemplate(storeEndpoint, HttpMethod.POST)
-        .exchange(request, new ParameterizedTypeReference<URI>() {});
   }
 }
