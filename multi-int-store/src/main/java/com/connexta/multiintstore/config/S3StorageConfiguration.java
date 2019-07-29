@@ -60,8 +60,9 @@ public class S3StorageConfiguration {
     return new S3StorageAdaptor(amazonS3, transferManager, bucket);
   }
 
+  @Bean
   @Profile("production")
-  private AmazonS3Configuration amazonS3Configuration(
+  public AmazonS3Configuration amazonS3Configuration(
       @Value("${aws.s3.endpointUrl}") @NotBlank final String endpoint,
       @Value("${aws.s3.region}") @NotBlank final String region,
       @Value("${aws.s3.secret.file}") @NotBlank final String secretKeyFile,
