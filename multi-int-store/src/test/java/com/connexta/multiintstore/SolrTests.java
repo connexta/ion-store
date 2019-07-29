@@ -42,9 +42,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -140,10 +141,10 @@ public class SolrTests {
     final long productFileSize = (long) productInputStream.available();
     final String productFileName = "test_file_name.txt";
     final String productMimeType = "text/plain";
-    final MultipartBodyBuilder storeProductRequestBodyBuilder = new MultipartBodyBuilder();
-    storeProductRequestBodyBuilder.part("fileSize", String.valueOf(productFileSize));
-    storeProductRequestBodyBuilder.part("mimeType", productMimeType);
-    storeProductRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> storeProductRequestBody = new LinkedMultiValueMap<>();
+    storeProductRequestBody.add("fileSize", String.valueOf(productFileSize));
+    storeProductRequestBody.add("mimeType", productMimeType);
+    storeProductRequestBody.add(
         "file",
         new InputStreamResource(productInputStream) {
 
@@ -157,15 +158,14 @@ public class SolrTests {
             return productFileName;
           }
         });
-    storeProductRequestBodyBuilder.part("fileName", productFileName);
+    storeProductRequestBody.add("fileName", productFileName);
     final HttpHeaders storeProductRequestHttpHeaders = new HttpHeaders();
     storeProductRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     final URI productLocation =
         restTemplate.postForLocation(
             "/mis/product/",
-            new HttpEntity<>(
-                storeProductRequestBodyBuilder.build(), storeProductRequestHttpHeaders));
+            new HttpEntity<>(storeProductRequestBody, storeProductRequestHttpHeaders));
 
     // TODO improve comments for these sections
     final String metadataContents = "{contents:\"" + productContents + "\"";
@@ -175,10 +175,10 @@ public class SolrTests {
     final long metadataFileSize = (long) metadataInputStream.available();
     final String metadataFileName = "test_file_name.txt";
     final String metadataMimeType = "text/plain";
-    final MultipartBodyBuilder storeMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    storeMetadataRequestBodyBuilder.part("fileSize", String.valueOf(metadataFileSize));
-    storeMetadataRequestBodyBuilder.part("mimeType", metadataMimeType);
-    storeMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> storeMetadataRequestBody = new LinkedMultiValueMap<>();
+    storeMetadataRequestBody.add("fileSize", String.valueOf(metadataFileSize));
+    storeMetadataRequestBody.add("mimeType", metadataMimeType);
+    storeMetadataRequestBody.add(
         "file",
         new InputStreamResource(metadataInputStream) {
 
@@ -192,14 +192,14 @@ public class SolrTests {
             return metadataFileName;
           }
         });
-    storeMetadataRequestBodyBuilder.part("fileName", metadataFileName);
+    storeMetadataRequestBody.add("fileName", metadataFileName);
     final HttpHeaders storeMetadataRequestHttpHeaders = new HttpHeaders();
     storeMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // when
     restTemplate.put(
         productLocation + "/cst",
-        new HttpEntity<>(storeMetadataRequestBodyBuilder.build(), storeMetadataRequestHttpHeaders));
+        new HttpEntity<>(storeMetadataRequestBody, storeMetadataRequestHttpHeaders));
 
     // then
     final URIBuilder queryUriBuilder = new URIBuilder();
@@ -217,10 +217,10 @@ public class SolrTests {
         IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
     final long firstFileSize = (long) firstInputStream.available();
     final String firstFileName = "test_file_name.txt";
-    final MultipartBodyBuilder firstMultipartBodyBuilder = new MultipartBodyBuilder();
-    firstMultipartBodyBuilder.part("fileSize", String.valueOf(firstFileSize));
-    firstMultipartBodyBuilder.part("mimeType", "text/plain");
-    firstMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreProductRequestBody = new LinkedMultiValueMap<>();
+    firstStoreProductRequestBody.add("fileSize", String.valueOf(firstFileSize));
+    firstStoreProductRequestBody.add("mimeType", "text/plain");
+    firstStoreProductRequestBody.add(
         "file",
         new InputStreamResource(firstInputStream) {
 
@@ -234,12 +234,12 @@ public class SolrTests {
             return firstFileName;
           }
         });
-    firstMultipartBodyBuilder.part("fileName", firstFileName);
+    firstStoreProductRequestBody.add("fileName", firstFileName);
     final HttpHeaders firstHttpHeaders = new HttpHeaders();
     firstHttpHeaders.set("Accept-Version", "0.1.0");
     final URI firstLocation =
         restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(firstMultipartBodyBuilder.build(), firstHttpHeaders));
+            "/mis/product/", new HttpEntity<>(firstStoreProductRequestBody, firstHttpHeaders));
 
     final String firstMetadataContents = "{contents:\"first product metadata\"";
     final String firstMetadataEncoding = "UTF-8";
@@ -248,10 +248,10 @@ public class SolrTests {
     final long firstMetadataFileSize = (long) firstMetadataInputStream.available();
     final String firstMetadataFileName = "test_file_name.txt";
     final String firstMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder firstStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    firstStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(firstMetadataFileSize));
-    firstStoreMetadataRequestBodyBuilder.part("mimeType", firstMetadataMimeType);
-    firstStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreMetadataRequestBody = new LinkedMultiValueMap<>();
+    firstStoreMetadataRequestBody.add("fileSize", String.valueOf(firstMetadataFileSize));
+    firstStoreMetadataRequestBody.add("mimeType", firstMetadataMimeType);
+    firstStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(firstMetadataInputStream) {
 
@@ -265,15 +265,14 @@ public class SolrTests {
             return firstMetadataFileName;
           }
         });
-    firstStoreMetadataRequestBodyBuilder.part("fileName", firstMetadataFileName);
+    firstStoreMetadataRequestBody.add("fileName", firstMetadataFileName);
     final HttpHeaders firstStoreMetadataRequestHttpHeaders = new HttpHeaders();
     firstStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for an initial product
     restTemplate.put(
         firstLocation + "/cst",
-        new HttpEntity<>(
-            firstStoreMetadataRequestBodyBuilder.build(), firstStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(firstStoreMetadataRequestBody, firstStoreMetadataRequestHttpHeaders));
 
     // and store another product
     final String queryKeyword = "Winterfell";
@@ -286,10 +285,10 @@ public class SolrTests {
     final long productFileSize = (long) productInputStream.available();
     final String productFileName = "test_file_name.txt";
     final String productMimeType = "text/plain";
-    final MultipartBodyBuilder storeProductRequestBodyBuilder = new MultipartBodyBuilder();
-    storeProductRequestBodyBuilder.part("fileSize", String.valueOf(productFileSize));
-    storeProductRequestBodyBuilder.part("mimeType", productMimeType);
-    storeProductRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> storeProductRequestBody = new LinkedMultiValueMap<>();
+    storeProductRequestBody.add("fileSize", String.valueOf(productFileSize));
+    storeProductRequestBody.add("mimeType", productMimeType);
+    storeProductRequestBody.add(
         "file",
         new InputStreamResource(productInputStream) {
 
@@ -303,15 +302,14 @@ public class SolrTests {
             return productFileName;
           }
         });
-    storeProductRequestBodyBuilder.part("fileName", productFileName);
+    storeProductRequestBody.add("fileName", productFileName);
     final HttpHeaders storeProductRequestHttpHeaders = new HttpHeaders();
     storeProductRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     final URI productLocation =
         restTemplate.postForLocation(
             "/mis/product/",
-            new HttpEntity<>(
-                storeProductRequestBodyBuilder.build(), storeProductRequestHttpHeaders));
+            new HttpEntity<>(storeProductRequestBody, storeProductRequestHttpHeaders));
 
     final String metadataContents = "{contents:\"" + productContents + "\"";
     final String metadataEncoding = "UTF-8";
@@ -320,10 +318,10 @@ public class SolrTests {
     final long metadataFileSize = (long) metadataInputStream.available();
     final String metadataFileName = "test_file_name.txt";
     final String metadataMimeType = "text/plain";
-    final MultipartBodyBuilder storeMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    storeMetadataRequestBodyBuilder.part("fileSize", String.valueOf(metadataFileSize));
-    storeMetadataRequestBodyBuilder.part("mimeType", metadataMimeType);
-    storeMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> storeMetadataRequestBody = new LinkedMultiValueMap<>();
+    storeMetadataRequestBody.add("fileSize", String.valueOf(metadataFileSize));
+    storeMetadataRequestBody.add("mimeType", metadataMimeType);
+    storeMetadataRequestBody.add(
         "file",
         new InputStreamResource(metadataInputStream) {
 
@@ -337,14 +335,14 @@ public class SolrTests {
             return metadataFileName;
           }
         });
-    storeMetadataRequestBodyBuilder.part("fileName", metadataFileName);
+    storeMetadataRequestBody.add("fileName", metadataFileName);
     final HttpHeaders storeMetadataRequestHttpHeaders = new HttpHeaders();
     storeMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // when
     restTemplate.put(
         productLocation + "/cst",
-        new HttpEntity<>(storeMetadataRequestBodyBuilder.build(), storeMetadataRequestHttpHeaders));
+        new HttpEntity<>(storeMetadataRequestBody, storeMetadataRequestHttpHeaders));
 
     // then
     final URIBuilder queryUriBuilder = new URIBuilder();
@@ -374,10 +372,10 @@ public class SolrTests {
     final long productFileSize = (long) productInputStream.available();
     final String productFileName = "test_file_name.txt";
     final String productMimeType = "text/plain";
-    final MultipartBodyBuilder storeProductRequestBodyBuilder = new MultipartBodyBuilder();
-    storeProductRequestBodyBuilder.part("fileSize", String.valueOf(productFileSize));
-    storeProductRequestBodyBuilder.part("mimeType", productMimeType);
-    storeProductRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> storeProductRequestBody = new LinkedMultiValueMap<>();
+    storeProductRequestBody.add("fileSize", String.valueOf(productFileSize));
+    storeProductRequestBody.add("mimeType", productMimeType);
+    storeProductRequestBody.add(
         "file",
         new InputStreamResource(productInputStream) {
 
@@ -391,15 +389,14 @@ public class SolrTests {
             return productFileName;
           }
         });
-    storeProductRequestBodyBuilder.part("fileName", productFileName);
+    storeProductRequestBody.add("fileName", productFileName);
     final HttpHeaders storeProductRequestHttpHeaders = new HttpHeaders();
     storeProductRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     final URI productLocation =
         restTemplate.postForLocation(
             "/mis/product/",
-            new HttpEntity<>(
-                storeProductRequestBodyBuilder.build(), storeProductRequestHttpHeaders));
+            new HttpEntity<>(storeProductRequestBody, storeProductRequestHttpHeaders));
 
     final String metadataContents = "{contents:\"" + productContents + "\"";
     final String metadataEncoding = "UTF-8";
@@ -408,10 +405,10 @@ public class SolrTests {
     final long firstMetadataFileSize = (long) metadataInputStream.available();
     final String metadataFileName = "test_file_name.txt";
     final String metadataMimeType = "text/plain";
-    final MultipartBodyBuilder firstStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    firstStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(firstMetadataFileSize));
-    firstStoreMetadataRequestBodyBuilder.part("mimeType", metadataMimeType);
-    firstStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreMetadataRequestBody = new LinkedMultiValueMap<>();
+    firstStoreMetadataRequestBody.add("fileSize", String.valueOf(firstMetadataFileSize));
+    firstStoreMetadataRequestBody.add("mimeType", metadataMimeType);
+    firstStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(metadataInputStream) {
 
@@ -425,23 +422,23 @@ public class SolrTests {
             return metadataFileName;
           }
         });
-    firstStoreMetadataRequestBodyBuilder.part("fileName", metadataFileName);
+    firstStoreMetadataRequestBody.add("fileName", metadataFileName);
     final HttpHeaders storeMetadataRequestHttpHeaders = new HttpHeaders();
     storeMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and the cst metadata is stored
     restTemplate.put(
         productLocation + "/cst",
-        new HttpEntity<>(
-            firstStoreMetadataRequestBodyBuilder.build(), storeMetadataRequestHttpHeaders));
+        new HttpEntity<>(firstStoreMetadataRequestBody, storeMetadataRequestHttpHeaders));
 
     final InputStream secondMetadataInputStream =
         IOUtils.toInputStream(metadataContents, metadataEncoding);
     final long secondMetadataFileSize = (long) secondMetadataInputStream.available();
-    final MultipartBodyBuilder secondStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    secondStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(secondMetadataFileSize));
-    secondStoreMetadataRequestBodyBuilder.part("mimeType", metadataMimeType);
-    secondStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> secondStoreMetadataRequestBody =
+        new LinkedMultiValueMap<>();
+    secondStoreMetadataRequestBody.add("fileSize", String.valueOf(secondMetadataFileSize));
+    secondStoreMetadataRequestBody.add("mimeType", metadataMimeType);
+    secondStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(secondMetadataInputStream) {
 
@@ -455,14 +452,13 @@ public class SolrTests {
             return metadataFileName;
           }
         });
-    secondStoreMetadataRequestBodyBuilder.part("fileName", storeMetadataRequestHttpHeaders);
+    secondStoreMetadataRequestBody.add("fileName", storeMetadataRequestHttpHeaders);
 
     // when
     // TODO handle when CST has already been stored
     restTemplate.put(
         productLocation + "/cst",
-        new HttpEntity<>(
-            secondStoreMetadataRequestBodyBuilder.build(), storeMetadataRequestHttpHeaders));
+        new HttpEntity<>(secondStoreMetadataRequestBody, storeMetadataRequestHttpHeaders));
 
     // then query should still work
     final URIBuilder queryUriBuilder = new URIBuilder();
@@ -481,10 +477,10 @@ public class SolrTests {
         IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
     final long firstFileSize = (long) firstInputStream.available();
     final String firstFileName = "test_file_name.txt";
-    final MultipartBodyBuilder firstMultipartBodyBuilder = new MultipartBodyBuilder();
-    firstMultipartBodyBuilder.part("fileSize", String.valueOf(firstFileSize));
-    firstMultipartBodyBuilder.part("mimeType", "text/plain");
-    firstMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreProductRequstBody = new LinkedMultiValueMap<>();
+    firstStoreProductRequstBody.add("fileSize", String.valueOf(firstFileSize));
+    firstStoreProductRequstBody.add("mimeType", "text/plain");
+    firstStoreProductRequstBody.add(
         "file",
         new InputStreamResource(firstInputStream) {
 
@@ -498,12 +494,12 @@ public class SolrTests {
             return firstFileName;
           }
         });
-    firstMultipartBodyBuilder.part("fileName", firstFileName);
+    firstStoreProductRequstBody.add("fileName", firstFileName);
     final HttpHeaders firstHttpHeaders = new HttpHeaders();
     firstHttpHeaders.set("Accept-Version", "0.1.0");
     final URI firstLocation =
         restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(firstMultipartBodyBuilder.build(), firstHttpHeaders));
+            "/mis/product/", new HttpEntity<>(firstStoreProductRequstBody, firstHttpHeaders));
 
     final String firstMetadataContents = "{contents:\"first product metadata\"";
     final String firstMetadataEncoding = "UTF-8";
@@ -512,10 +508,10 @@ public class SolrTests {
     final long firstMetadataFileSize = (long) firstMetadataInputStream.available();
     final String firstMetadataFileName = "test_file_name.txt";
     final String firstMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder firstStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    firstStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(firstMetadataFileSize));
-    firstStoreMetadataRequestBodyBuilder.part("mimeType", firstMetadataMimeType);
-    firstStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreMetadataRequestBody = new LinkedMultiValueMap<>();
+    firstStoreMetadataRequestBody.add("fileSize", String.valueOf(firstMetadataFileSize));
+    firstStoreMetadataRequestBody.add("mimeType", firstMetadataMimeType);
+    firstStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(firstMetadataInputStream) {
 
@@ -529,25 +525,24 @@ public class SolrTests {
             return firstMetadataFileName;
           }
         });
-    firstStoreMetadataRequestBodyBuilder.part("fileName", firstMetadataFileName);
+    firstStoreMetadataRequestBody.add("fileName", firstMetadataFileName);
     final HttpHeaders firstStoreMetadataRequestHttpHeaders = new HttpHeaders();
     firstStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for an initial product
     restTemplate.put(
         firstLocation + "/cst",
-        new HttpEntity<>(
-            firstStoreMetadataRequestBodyBuilder.build(), firstStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(firstStoreMetadataRequestBody, firstStoreMetadataRequestHttpHeaders));
 
     // and store second product
     final InputStream secondInputStream =
         IOUtils.toInputStream("second product contents", StandardCharsets.UTF_8);
     final long secondFileSize = (long) secondInputStream.available();
     final String secondFileName = "test_file_name.txt";
-    final MultipartBodyBuilder secondMultipartBodyBuilder = new MultipartBodyBuilder();
-    secondMultipartBodyBuilder.part("fileSize", String.valueOf(secondFileSize));
-    secondMultipartBodyBuilder.part("mimeType", "text/plain");
-    secondMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> secondStoreProductRequestBody = new LinkedMultiValueMap<>();
+    secondStoreProductRequestBody.add("fileSize", String.valueOf(secondFileSize));
+    secondStoreProductRequestBody.add("mimeType", "text/plain");
+    secondStoreProductRequestBody.add(
         "file",
         new InputStreamResource(secondInputStream) {
 
@@ -561,13 +556,12 @@ public class SolrTests {
             return secondFileName;
           }
         });
-    secondMultipartBodyBuilder.part("fileName", secondFileName);
+    secondStoreProductRequestBody.add("fileName", secondFileName);
     final HttpHeaders secondHttpHeaders = new HttpHeaders();
     secondHttpHeaders.set("Accept-Version", "0.1.0");
     final URI secondLocation =
         restTemplate.postForLocation(
-            "/mis/product/",
-            new HttpEntity<>(secondMultipartBodyBuilder.build(), secondHttpHeaders));
+            "/mis/product/", new HttpEntity<>(secondStoreProductRequestBody, secondHttpHeaders));
 
     final String secondMetadataContents = "{contents:\"second product metadata\"";
     final String secondMetadataEncoding = "UTF-8";
@@ -576,10 +570,11 @@ public class SolrTests {
     final long secondMetadataFileSize = (long) secondMetadataInputStream.available();
     final String secondMetadataFileName = "test_file_name.txt";
     final String secondMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder secondStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    secondStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(secondMetadataFileSize));
-    secondStoreMetadataRequestBodyBuilder.part("mimeType", secondMetadataMimeType);
-    secondStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> secondStoreMetadataRequestBody =
+        new LinkedMultiValueMap<>();
+    secondStoreMetadataRequestBody.add("fileSize", String.valueOf(secondMetadataFileSize));
+    secondStoreMetadataRequestBody.add("mimeType", secondMetadataMimeType);
+    secondStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(secondMetadataInputStream) {
 
@@ -593,25 +588,24 @@ public class SolrTests {
             return secondMetadataFileName;
           }
         });
-    secondStoreMetadataRequestBodyBuilder.part("fileName", secondMetadataFileName);
+    secondStoreMetadataRequestBody.add("fileName", secondMetadataFileName);
     final HttpHeaders secondStoreMetadataRequestHttpHeaders = new HttpHeaders();
     secondStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for the second product
     restTemplate.put(
         secondLocation + "/cst",
-        new HttpEntity<>(
-            secondStoreMetadataRequestBodyBuilder.build(), secondStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(secondStoreMetadataRequestBody, secondStoreMetadataRequestHttpHeaders));
 
     // and store third product
     final InputStream thirdInputStream =
         IOUtils.toInputStream("third product contents", StandardCharsets.UTF_8);
     final long thirdFileSize = (long) thirdInputStream.available();
     final String thirdFileName = "test_file_name.txt";
-    final MultipartBodyBuilder thirdMultipartBodyBuilder = new MultipartBodyBuilder();
-    thirdMultipartBodyBuilder.part("fileSize", String.valueOf(thirdFileSize));
-    thirdMultipartBodyBuilder.part("mimeType", "text/plain");
-    thirdMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> thirdStoreProductRequestBody = new LinkedMultiValueMap<>();
+    thirdStoreProductRequestBody.add("fileSize", String.valueOf(thirdFileSize));
+    thirdStoreProductRequestBody.add("mimeType", "text/plain");
+    thirdStoreProductRequestBody.add(
         "file",
         new InputStreamResource(thirdInputStream) {
 
@@ -625,12 +619,12 @@ public class SolrTests {
             return thirdFileName;
           }
         });
-    thirdMultipartBodyBuilder.part("fileName", thirdFileName);
+    thirdStoreProductRequestBody.add("fileName", thirdFileName);
     final HttpHeaders thirdHttpHeaders = new HttpHeaders();
     thirdHttpHeaders.set("Accept-Version", "0.1.0");
     final URI thirdLocation =
         restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(thirdMultipartBodyBuilder.build(), thirdHttpHeaders));
+            "/mis/product/", new HttpEntity<>(thirdStoreProductRequestBody, thirdHttpHeaders));
 
     final String thirdMetadataContents = "{contents:\"third product metadata\"";
     final String thirdMetadataEncoding = "UTF-8";
@@ -639,10 +633,10 @@ public class SolrTests {
     final long thirdMetadataFileSize = (long) thirdMetadataInputStream.available();
     final String thirdMetadataFileName = "test_file_name.txt";
     final String thirdMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder thirdStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    thirdStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(thirdMetadataFileSize));
-    thirdStoreMetadataRequestBodyBuilder.part("mimeType", thirdMetadataMimeType);
-    thirdStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> thirdStoreMetadataRequestBody = new LinkedMultiValueMap<>();
+    thirdStoreMetadataRequestBody.add("fileSize", String.valueOf(thirdMetadataFileSize));
+    thirdStoreMetadataRequestBody.add("mimeType", thirdMetadataMimeType);
+    thirdStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(thirdMetadataInputStream) {
 
@@ -656,15 +650,14 @@ public class SolrTests {
             return thirdMetadataFileName;
           }
         });
-    thirdStoreMetadataRequestBodyBuilder.part("fileName", thirdMetadataFileName);
+    thirdStoreMetadataRequestBody.add("fileName", thirdMetadataFileName);
     final HttpHeaders thirdStoreMetadataRequestHttpHeaders = new HttpHeaders();
     thirdStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for the third product
     restTemplate.put(
         thirdLocation + "/cst",
-        new HttpEntity<>(
-            thirdStoreMetadataRequestBodyBuilder.build(), thirdStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(thirdStoreMetadataRequestBody, thirdStoreMetadataRequestHttpHeaders));
 
     // verify
     final URIBuilder queryUriBuilder = new URIBuilder();
@@ -683,10 +676,10 @@ public class SolrTests {
         IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
     final long firstFileSize = (long) firstInputStream.available();
     final String firstFileName = "test_file_name.txt";
-    final MultipartBodyBuilder firstMultipartBodyBuilder = new MultipartBodyBuilder();
-    firstMultipartBodyBuilder.part("fileSize", String.valueOf(firstFileSize));
-    firstMultipartBodyBuilder.part("mimeType", "text/plain");
-    firstMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreProductRequestBody = new LinkedMultiValueMap<>();
+    firstStoreProductRequestBody.add("fileSize", String.valueOf(firstFileSize));
+    firstStoreProductRequestBody.add("mimeType", "text/plain");
+    firstStoreProductRequestBody.add(
         "file",
         new InputStreamResource(firstInputStream) {
 
@@ -700,12 +693,12 @@ public class SolrTests {
             return firstFileName;
           }
         });
-    firstMultipartBodyBuilder.part("fileName", firstFileName);
+    firstStoreProductRequestBody.add("fileName", firstFileName);
     final HttpHeaders firstHttpHeaders = new HttpHeaders();
     firstHttpHeaders.set("Accept-Version", "0.1.0");
     final URI firstLocation =
         restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(firstMultipartBodyBuilder.build(), firstHttpHeaders));
+            "/mis/product/", new HttpEntity<>(firstStoreProductRequestBody, firstHttpHeaders));
 
     final String firstMetadataContents = "{contents:\"first product metadata\"";
     final String firstMetadataEncoding = "UTF-8";
@@ -714,10 +707,10 @@ public class SolrTests {
     final long firstMetadataFileSize = (long) firstMetadataInputStream.available();
     final String firstMetadataFileName = "test_file_name.txt";
     final String firstMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder firstStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    firstStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(firstMetadataFileSize));
-    firstStoreMetadataRequestBodyBuilder.part("mimeType", firstMetadataMimeType);
-    firstStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreMetadataRequestBody = new LinkedMultiValueMap<>();
+    firstStoreMetadataRequestBody.add("fileSize", String.valueOf(firstMetadataFileSize));
+    firstStoreMetadataRequestBody.add("mimeType", firstMetadataMimeType);
+    firstStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(firstMetadataInputStream) {
 
@@ -731,25 +724,24 @@ public class SolrTests {
             return firstMetadataFileName;
           }
         });
-    firstStoreMetadataRequestBodyBuilder.part("fileName", firstMetadataFileName);
+    firstStoreMetadataRequestBody.add("fileName", firstMetadataFileName);
     final HttpHeaders firstStoreMetadataRequestHttpHeaders = new HttpHeaders();
     firstStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for an initial product
     restTemplate.put(
         firstLocation + "/cst",
-        new HttpEntity<>(
-            firstStoreMetadataRequestBodyBuilder.build(), firstStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(firstStoreMetadataRequestBody, firstStoreMetadataRequestHttpHeaders));
 
     // and store second product
     final InputStream secondInputStream =
         IOUtils.toInputStream("second product contents", StandardCharsets.UTF_8);
     final long secondFileSize = (long) secondInputStream.available();
     final String secondFileName = "test_file_name.txt";
-    final MultipartBodyBuilder secondMultipartBodyBuilder = new MultipartBodyBuilder();
-    secondMultipartBodyBuilder.part("fileSize", String.valueOf(secondFileSize));
-    secondMultipartBodyBuilder.part("mimeType", "text/plain");
-    secondMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> secondStoreProductRequestBody = new LinkedMultiValueMap<>();
+    secondStoreProductRequestBody.add("fileSize", String.valueOf(secondFileSize));
+    secondStoreProductRequestBody.add("mimeType", "text/plain");
+    secondStoreProductRequestBody.add(
         "file",
         new InputStreamResource(secondInputStream) {
 
@@ -763,13 +755,12 @@ public class SolrTests {
             return secondFileName;
           }
         });
-    secondMultipartBodyBuilder.part("fileName", secondFileName);
+    secondStoreProductRequestBody.add("fileName", secondFileName);
     final HttpHeaders secondHttpHeaders = new HttpHeaders();
     secondHttpHeaders.set("Accept-Version", "0.1.0");
     final URI secondLocation =
         restTemplate.postForLocation(
-            "/mis/product/",
-            new HttpEntity<>(secondMultipartBodyBuilder.build(), secondHttpHeaders));
+            "/mis/product/", new HttpEntity<>(secondStoreProductRequestBody, secondHttpHeaders));
 
     final String secondMetadataContents = "{contents:\"second product metadata\"";
     final String secondMetadataEncoding = "UTF-8";
@@ -778,10 +769,11 @@ public class SolrTests {
     final long secondMetadataFileSize = (long) secondMetadataInputStream.available();
     final String secondMetadataFileName = "test_file_name.txt";
     final String secondMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder secondStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    secondStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(secondMetadataFileSize));
-    secondStoreMetadataRequestBodyBuilder.part("mimeType", secondMetadataMimeType);
-    secondStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> secondStoreMetadataRequestBody =
+        new LinkedMultiValueMap<>();
+    secondStoreMetadataRequestBody.add("fileSize", String.valueOf(secondMetadataFileSize));
+    secondStoreMetadataRequestBody.add("mimeType", secondMetadataMimeType);
+    secondStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(secondMetadataInputStream) {
 
@@ -795,25 +787,24 @@ public class SolrTests {
             return secondMetadataFileName;
           }
         });
-    secondStoreMetadataRequestBodyBuilder.part("fileName", secondMetadataFileName);
+    secondStoreMetadataRequestBody.add("fileName", secondMetadataFileName);
     final HttpHeaders secondStoreMetadataRequestHttpHeaders = new HttpHeaders();
     secondStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for an initial product
     restTemplate.put(
         secondLocation + "/cst",
-        new HttpEntity<>(
-            secondStoreMetadataRequestBodyBuilder.build(), secondStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(secondStoreMetadataRequestBody, secondStoreMetadataRequestHttpHeaders));
 
     // and store third product
     final InputStream thirdInputStream =
         IOUtils.toInputStream("third product contents", StandardCharsets.UTF_8);
     final long thirdFileSize = (long) thirdInputStream.available();
     final String thirdFileName = "test_file_name.txt";
-    final MultipartBodyBuilder thirdMultipartBodyBuilder = new MultipartBodyBuilder();
-    thirdMultipartBodyBuilder.part("fileSize", String.valueOf(thirdFileSize));
-    thirdMultipartBodyBuilder.part("mimeType", "text/plain");
-    thirdMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> thirdStoreProductRequestBody = new LinkedMultiValueMap<>();
+    thirdStoreProductRequestBody.add("fileSize", String.valueOf(thirdFileSize));
+    thirdStoreProductRequestBody.add("mimeType", "text/plain");
+    thirdStoreProductRequestBody.add(
         "file",
         new InputStreamResource(thirdInputStream) {
 
@@ -827,12 +818,12 @@ public class SolrTests {
             return thirdFileName;
           }
         });
-    thirdMultipartBodyBuilder.part("fileName", thirdFileName);
+    thirdStoreProductRequestBody.add("fileName", thirdFileName);
     final HttpHeaders thirdHttpHeaders = new HttpHeaders();
     thirdHttpHeaders.set("Accept-Version", "0.1.0");
     final URI thirdLocation =
         restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(thirdMultipartBodyBuilder.build(), thirdHttpHeaders));
+            "/mis/product/", new HttpEntity<>(thirdStoreProductRequestBody, thirdHttpHeaders));
 
     final String thirdMetadataContents = "{contents:\"third product metadata\"";
     final String thirdMetadataEncoding = "UTF-8";
@@ -841,10 +832,10 @@ public class SolrTests {
     final long thirdMetadataFileSize = (long) thirdMetadataInputStream.available();
     final String thirdMetadataFileName = "test_file_name.txt";
     final String thirdMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder thirdStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    thirdStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(thirdMetadataFileSize));
-    thirdStoreMetadataRequestBodyBuilder.part("mimeType", thirdMetadataMimeType);
-    thirdStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> thirdStoreMetadataRequestBody = new LinkedMultiValueMap<>();
+    thirdStoreMetadataRequestBody.add("fileSize", String.valueOf(thirdMetadataFileSize));
+    thirdStoreMetadataRequestBody.add("mimeType", thirdMetadataMimeType);
+    thirdStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(thirdMetadataInputStream) {
 
@@ -858,15 +849,14 @@ public class SolrTests {
             return thirdMetadataFileName;
           }
         });
-    thirdStoreMetadataRequestBodyBuilder.part("fileName", thirdMetadataFileName);
+    thirdStoreMetadataRequestBody.add("fileName", thirdMetadataFileName);
     final HttpHeaders thirdStoreMetadataRequestHttpHeaders = new HttpHeaders();
     thirdStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for an initial product
     restTemplate.put(
         thirdLocation + "/cst",
-        new HttpEntity<>(
-            thirdStoreMetadataRequestBodyBuilder.build(), thirdStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(thirdStoreMetadataRequestBody, thirdStoreMetadataRequestHttpHeaders));
 
     // verify
     final URIBuilder queryUriBuilder = new URIBuilder();
@@ -885,10 +875,10 @@ public class SolrTests {
         IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
     final long firstFileSize = (long) firstInputStream.available();
     final String firstFileName = "test_file_name.txt";
-    final MultipartBodyBuilder firstMultipartBodyBuilder = new MultipartBodyBuilder();
-    firstMultipartBodyBuilder.part("fileSize", String.valueOf(firstFileSize));
-    firstMultipartBodyBuilder.part("mimeType", "text/plain");
-    firstMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreProductRequestBody = new LinkedMultiValueMap<>();
+    firstStoreProductRequestBody.add("fileSize", String.valueOf(firstFileSize));
+    firstStoreProductRequestBody.add("mimeType", "text/plain");
+    firstStoreProductRequestBody.add(
         "file",
         new InputStreamResource(firstInputStream) {
 
@@ -902,12 +892,12 @@ public class SolrTests {
             return firstFileName;
           }
         });
-    firstMultipartBodyBuilder.part("fileName", firstFileName);
+    firstStoreProductRequestBody.add("fileName", firstFileName);
     final HttpHeaders firstHttpHeaders = new HttpHeaders();
     firstHttpHeaders.set("Accept-Version", "0.1.0");
     final URI firstLocation =
         restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(firstMultipartBodyBuilder.build(), firstHttpHeaders));
+            "/mis/product/", new HttpEntity<>(firstStoreProductRequestBody, firstHttpHeaders));
 
     final String firstMetadataContents = "{contents:\"first product metadata\"";
     final String firstMetadataEncoding = "UTF-8";
@@ -916,10 +906,10 @@ public class SolrTests {
     final long firstMetadataFileSize = (long) firstMetadataInputStream.available();
     final String firstMetadataFileName = "test_file_name.txt";
     final String firstMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder firstStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    firstStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(firstMetadataFileSize));
-    firstStoreMetadataRequestBodyBuilder.part("mimeType", firstMetadataMimeType);
-    firstStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> firstStoreMetadataRequestBody = new LinkedMultiValueMap<>();
+    firstStoreMetadataRequestBody.add("fileSize", String.valueOf(firstMetadataFileSize));
+    firstStoreMetadataRequestBody.add("mimeType", firstMetadataMimeType);
+    firstStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(firstMetadataInputStream) {
 
@@ -933,25 +923,24 @@ public class SolrTests {
             return firstMetadataFileName;
           }
         });
-    firstStoreMetadataRequestBodyBuilder.part("fileName", firstMetadataFileName);
+    firstStoreMetadataRequestBody.add("fileName", firstMetadataFileName);
     final HttpHeaders firstStoreMetadataRequestHttpHeaders = new HttpHeaders();
     firstStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for an initial product
     restTemplate.put(
         firstLocation + "/cst",
-        new HttpEntity<>(
-            firstStoreMetadataRequestBodyBuilder.build(), firstStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(firstStoreMetadataRequestBody, firstStoreMetadataRequestHttpHeaders));
 
     // and store second product
     final InputStream secondInputStream =
         IOUtils.toInputStream("second product contents", StandardCharsets.UTF_8);
     final long secondFileSize = (long) secondInputStream.available();
     final String secondFileName = "test_file_name.txt";
-    final MultipartBodyBuilder secondMultipartBodyBuilder = new MultipartBodyBuilder();
-    secondMultipartBodyBuilder.part("fileSize", String.valueOf(secondFileSize));
-    secondMultipartBodyBuilder.part("mimeType", "text/plain");
-    secondMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> secondStoreProductRequestBody = new LinkedMultiValueMap<>();
+    secondStoreProductRequestBody.add("fileSize", String.valueOf(secondFileSize));
+    secondStoreProductRequestBody.add("mimeType", "text/plain");
+    secondStoreProductRequestBody.add(
         "file",
         new InputStreamResource(secondInputStream) {
 
@@ -965,13 +954,12 @@ public class SolrTests {
             return secondFileName;
           }
         });
-    secondMultipartBodyBuilder.part("fileName", secondFileName);
+    secondStoreProductRequestBody.add("fileName", secondFileName);
     final HttpHeaders secondHttpHeaders = new HttpHeaders();
     secondHttpHeaders.set("Accept-Version", "0.1.0");
     final URI secondLocation =
         restTemplate.postForLocation(
-            "/mis/product/",
-            new HttpEntity<>(secondMultipartBodyBuilder.build(), secondHttpHeaders));
+            "/mis/product/", new HttpEntity<>(secondStoreProductRequestBody, secondHttpHeaders));
 
     final String secondMetadataContents = "{contents:\"second product metadata\"";
     final String secondMetadataEncoding = "UTF-8";
@@ -980,10 +968,11 @@ public class SolrTests {
     final long secondMetadataFileSize = (long) secondMetadataInputStream.available();
     final String secondMetadataFileName = "test_file_name.txt";
     final String secondMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder secondStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    secondStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(secondMetadataFileSize));
-    secondStoreMetadataRequestBodyBuilder.part("mimeType", secondMetadataMimeType);
-    secondStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> secondStoreMetadataRequestBody =
+        new LinkedMultiValueMap<>();
+    secondStoreMetadataRequestBody.add("fileSize", String.valueOf(secondMetadataFileSize));
+    secondStoreMetadataRequestBody.add("mimeType", secondMetadataMimeType);
+    secondStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(secondMetadataInputStream) {
 
@@ -997,25 +986,24 @@ public class SolrTests {
             return secondMetadataFileName;
           }
         });
-    secondStoreMetadataRequestBodyBuilder.part("fileName", secondMetadataFileName);
+    secondStoreMetadataRequestBody.add("fileName", secondMetadataFileName);
     final HttpHeaders secondStoreMetadataRequestHttpHeaders = new HttpHeaders();
     secondStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for an initial product
     restTemplate.put(
         secondLocation + "/cst",
-        new HttpEntity<>(
-            secondStoreMetadataRequestBodyBuilder.build(), secondStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(secondStoreMetadataRequestBody, secondStoreMetadataRequestHttpHeaders));
 
     // and store third product
     final InputStream thirdInputStream =
         IOUtils.toInputStream("third product contents", StandardCharsets.UTF_8);
     final long thirdFileSize = (long) thirdInputStream.available();
     final String thirdFileName = "test_file_name.txt";
-    final MultipartBodyBuilder thirdMultipartBodyBuilder = new MultipartBodyBuilder();
-    thirdMultipartBodyBuilder.part("fileSize", String.valueOf(thirdFileSize));
-    thirdMultipartBodyBuilder.part("mimeType", "text/plain");
-    thirdMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> thirdStoreProductRequestBody = new LinkedMultiValueMap<>();
+    thirdStoreProductRequestBody.add("fileSize", String.valueOf(thirdFileSize));
+    thirdStoreProductRequestBody.add("mimeType", "text/plain");
+    thirdStoreProductRequestBody.add(
         "file",
         new InputStreamResource(thirdInputStream) {
 
@@ -1029,12 +1017,12 @@ public class SolrTests {
             return thirdFileName;
           }
         });
-    thirdMultipartBodyBuilder.part("fileName", thirdFileName);
+    thirdStoreProductRequestBody.add("fileName", thirdFileName);
     final HttpHeaders thirdHttpHeaders = new HttpHeaders();
     thirdHttpHeaders.set("Accept-Version", "0.1.0");
     final URI thirdLocation =
         restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(thirdMultipartBodyBuilder.build(), thirdHttpHeaders));
+            "/mis/product/", new HttpEntity<>(thirdStoreProductRequestBody, thirdHttpHeaders));
 
     final String thirdMetadataContents = "{contents:\"third product metadata\"";
     final String thirdMetadataEncoding = "UTF-8";
@@ -1043,10 +1031,10 @@ public class SolrTests {
     final long thirdMetadataFileSize = (long) thirdMetadataInputStream.available();
     final String thirdMetadataFileName = "test_file_name.txt";
     final String thirdMetadataMimeType = "text/plain";
-    final MultipartBodyBuilder thirdStoreMetadataRequestBodyBuilder = new MultipartBodyBuilder();
-    thirdStoreMetadataRequestBodyBuilder.part("fileSize", String.valueOf(thirdMetadataFileSize));
-    thirdStoreMetadataRequestBodyBuilder.part("mimeType", thirdMetadataMimeType);
-    thirdStoreMetadataRequestBodyBuilder.part(
+    final MultiValueMap<String, Object> thirdStoreMetadataRequestBody = new LinkedMultiValueMap<>();
+    thirdStoreMetadataRequestBody.add("fileSize", String.valueOf(thirdMetadataFileSize));
+    thirdStoreMetadataRequestBody.add("mimeType", thirdMetadataMimeType);
+    thirdStoreMetadataRequestBody.add(
         "file",
         new InputStreamResource(thirdMetadataInputStream) {
 
@@ -1060,15 +1048,14 @@ public class SolrTests {
             return thirdMetadataFileName;
           }
         });
-    thirdStoreMetadataRequestBodyBuilder.part("fileName", thirdMetadataFileName);
+    thirdStoreMetadataRequestBody.add("fileName", thirdMetadataFileName);
     final HttpHeaders thirdStoreMetadataRequestHttpHeaders = new HttpHeaders();
     thirdStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
     // and metadata is stored for an initial product
     restTemplate.put(
         thirdLocation + "/cst",
-        new HttpEntity<>(
-            thirdStoreMetadataRequestBodyBuilder.build(), thirdStoreMetadataRequestHttpHeaders));
+        new HttpEntity<>(thirdStoreMetadataRequestBody, thirdStoreMetadataRequestHttpHeaders));
 
     // verify
     final URIBuilder queryUriBuilder = new URIBuilder();

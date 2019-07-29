@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -43,10 +43,10 @@ public class StoreClient {
       @NotNull final InputStream inputStream,
       @NotBlank final String fileName)
       throws StoreException {
-    final MultipartBodyBuilder builder = new MultipartBodyBuilder();
-    builder.part("fileSize", fileSize);
-    builder.part("mimeType", mimeType);
-    builder.part(
+    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add("fileSize", fileSize);
+    body.add("mimeType", mimeType);
+    body.add(
         "file",
         new InputStreamResource(inputStream) {
 
@@ -60,13 +60,12 @@ public class StoreClient {
             return fileName;
           }
         });
-    builder.part("fileName", fileName);
+    body.add("fileName", fileName);
 
     final HttpHeaders headers = new HttpHeaders();
     headers.set("Accept-Version", "0.1.0");
 
-    final HttpEntity<MultiValueMap<String, HttpEntity<?>>> request =
-        new HttpEntity<>(builder.build(), headers);
+    final HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
     log.info("Sending POST request to {}: {}", storeEndpoint, request);
 
     final URI location;

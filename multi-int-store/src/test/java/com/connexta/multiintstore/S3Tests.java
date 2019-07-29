@@ -46,9 +46,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
@@ -123,10 +124,10 @@ public class S3Tests {
             StandardCharsets.UTF_8);
     final long fileSize = (long) inputStream.available();
     final String fileName = "test_file_name.txt";
-    final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
-    multipartBodyBuilder.part("fileSize", String.valueOf(fileSize));
-    multipartBodyBuilder.part("mimeType", "text/plain");
-    multipartBodyBuilder.part(
+    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add("fileSize", String.valueOf(fileSize));
+    body.add("mimeType", "text/plain");
+    body.add(
         "file",
         new InputStreamResource(inputStream) {
 
@@ -140,16 +141,14 @@ public class S3Tests {
             return fileName;
           }
         });
-    multipartBodyBuilder.part("fileName", fileName);
+    body.add("fileName", fileName);
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set("Accept-Version", "0.1.0");
 
     // when
     final ResponseEntity<Resource> response =
         restTemplate.postForEntity(
-            "/mis/product/",
-            new HttpEntity<>(multipartBodyBuilder.build(), httpHeaders),
-            Resource.class);
+            "/mis/product/", new HttpEntity<>(body, httpHeaders), Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -183,10 +182,10 @@ public class S3Tests {
         IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
     final long firstFileSize = (long) firstInputStream.available();
     final String firstFileName = "test_file_name.txt";
-    final MultipartBodyBuilder firstMultipartBodyBuilder = new MultipartBodyBuilder();
-    firstMultipartBodyBuilder.part("fileSize", String.valueOf(firstFileSize));
-    firstMultipartBodyBuilder.part("mimeType", "text/plain");
-    firstMultipartBodyBuilder.part(
+    final MultiValueMap<String, Object> firstBody = new LinkedMultiValueMap<>();
+    firstBody.add("fileSize", String.valueOf(firstFileSize));
+    firstBody.add("mimeType", "text/plain");
+    firstBody.add(
         "file",
         new InputStreamResource(firstInputStream) {
 
@@ -200,22 +199,22 @@ public class S3Tests {
             return firstFileName;
           }
         });
-    firstMultipartBodyBuilder.part("fileName", firstFileName);
+    firstBody.add("fileName", firstFileName);
     final HttpHeaders firstHttpHeaders = new HttpHeaders();
     firstHttpHeaders.set("Accept-Version", "0.1.0");
     final URI firstLocation =
         restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(firstMultipartBodyBuilder.build(), firstHttpHeaders));
+            "/mis/product/", new HttpEntity<>(firstBody, firstHttpHeaders));
 
     // and store another product
     final InputStream inputStream =
         IOUtils.toInputStream("another product contents", StandardCharsets.UTF_8);
     final long fileSize = (long) inputStream.available();
     final String fileName = "test_file_name.txt";
-    final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
-    multipartBodyBuilder.part("fileSize", String.valueOf(fileSize));
-    multipartBodyBuilder.part("mimeType", "text/plain");
-    multipartBodyBuilder.part(
+    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add("fileSize", String.valueOf(fileSize));
+    body.add("mimeType", "text/plain");
+    body.add(
         "file",
         new InputStreamResource(inputStream) {
 
@@ -229,16 +228,14 @@ public class S3Tests {
             return fileName;
           }
         });
-    multipartBodyBuilder.part("fileName", fileName);
+    body.add("fileName", fileName);
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set("Accept-Version", "0.1.0");
 
     // when
     final ResponseEntity<Resource> response =
         restTemplate.postForEntity(
-            "/mis/product/",
-            new HttpEntity<>(multipartBodyBuilder.build(), httpHeaders),
-            Resource.class);
+            "/mis/product/", new HttpEntity<>(body, httpHeaders), Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -277,10 +274,10 @@ public class S3Tests {
     final long fileSize = (long) inputStream.available();
     final String fileName = "test_file_name.txt";
     final String mimeType = "text/plain";
-    final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
-    multipartBodyBuilder.part("fileSize", String.valueOf(fileSize));
-    multipartBodyBuilder.part("mimeType", mimeType);
-    multipartBodyBuilder.part(
+    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add("fileSize", String.valueOf(fileSize));
+    body.add("mimeType", mimeType);
+    body.add(
         "file",
         new InputStreamResource(inputStream) {
 
@@ -294,13 +291,12 @@ public class S3Tests {
             return fileName;
           }
         });
-    multipartBodyBuilder.part("fileName", fileName);
+    body.add("fileName", fileName);
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set("Accept-Version", "0.1.0");
 
     final URI location =
-        restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(multipartBodyBuilder.build(), httpHeaders));
+        restTemplate.postForLocation("/mis/product/", new HttpEntity<>(body, httpHeaders));
 
     // when
     final ResponseEntity<Resource> response = restTemplate.getForEntity(location, Resource.class);
@@ -333,10 +329,10 @@ public class S3Tests {
             StandardCharsets.UTF_8);
     final long fileSize = (long) inputStream.available();
     final String fileName = "test_file_name.txt";
-    final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
-    multipartBodyBuilder.part("fileSize", String.valueOf(fileSize));
-    multipartBodyBuilder.part("mimeType", "text/plain");
-    multipartBodyBuilder.part(
+    final MultiValueMap<String, Object> multipartBodyBuilder = new LinkedMultiValueMap<>();
+    multipartBodyBuilder.add("fileSize", String.valueOf(fileSize));
+    multipartBodyBuilder.add("mimeType", "text/plain");
+    multipartBodyBuilder.add(
         "file",
         new InputStreamResource(inputStream) {
 
@@ -350,14 +346,12 @@ public class S3Tests {
             return fileName;
           }
         });
-    multipartBodyBuilder.part("fileName", fileName);
+    multipartBodyBuilder.add("fileName", fileName);
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set("Accept-Version", "0.1.0");
 
     restTemplate.postForEntity(
-        "/mis/product/",
-        new HttpEntity<>(multipartBodyBuilder.build(), httpHeaders),
-        Resource.class);
+        "/mis/product/", new HttpEntity<>(multipartBodyBuilder, httpHeaders), Resource.class);
 
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
     uriBuilder.setPath(uriBuilder.getPath() + "/1234");
