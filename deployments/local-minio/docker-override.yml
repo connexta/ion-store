@@ -10,8 +10,11 @@ services:
     environment:
       - MINIO_ACCESS_KEY=MINIOEXAMPLEACCESSKEY
       - MINIO_SECRET_KEY=MINIOEXAMPLESECRETKEY
+      - MINIO_DOMAIN=minio
     networks:
-      - cdr
+      cdr:
+        aliases:
+          - ingest-quarantine.minio
     command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
 
 secrets:
