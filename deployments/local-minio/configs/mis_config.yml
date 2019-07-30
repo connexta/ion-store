@@ -8,4 +8,4 @@ solr:
   host: solr
   port: 8983
 endpointUrl:
-  retrieve: http://cdr-ingest:9041/mis/product/
+  retrieve: http://multi-int-store:9041/mis/product/
