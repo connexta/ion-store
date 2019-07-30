@@ -36,7 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.test.web.client.MockRestServiceServer.MockRestServiceServerBuilder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
@@ -71,9 +70,7 @@ public class IngestApplicationIntegrationTest {
 
   @Before
   public void beforeEach() {
-    MockRestServiceServerBuilder builder = MockRestServiceServer.bindTo(nonBufferingRestTemplate);
-    builder.bufferContent();
-    storeServer = builder.build();
+    storeServer = MockRestServiceServer.createServer(nonBufferingRestTemplate);
     transformServer = MockRestServiceServer.createServer(restTemplate);
   }
 
