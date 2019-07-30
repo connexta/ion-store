@@ -26,7 +26,6 @@ version: '3.7'
 services:
   ingest:
     image: ${REGISTRY:-docker.io}/cnxta/cdr-ingest:0.1.0-SNAPSHOT
-    hostname: cdr-ingest
     ports:
       - target: 8080
         published: 9040
@@ -49,7 +48,6 @@ services:
       - "--spring.config.additional-location=file:/configs/transform_config.yml"
   multi-int-store:
     image: ${REGISTRY:-docker.io}/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
-    hostname: cdr-store
     ports:
       - target: 8080
         published: 9041
