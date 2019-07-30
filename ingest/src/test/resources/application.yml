@@ -1,7 +1,6 @@
-# Todo: Update these placeholders when we add tests that use them.
 endpointUrl:
-  store: http://localhost:1232/store/
-  transform: http://localhost:1231/transform/
+  store: http://localhost:9041/mis/product/
+  transform: http://localhost:9090/transform/
 endpoints:
   transform:
     version: testTransformApiVersion

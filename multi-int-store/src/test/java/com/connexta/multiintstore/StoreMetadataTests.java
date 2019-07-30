@@ -37,6 +37,10 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+/**
+ * This class contains tests for the store metadata endpoint that use a mocked {@link AmazonS3} and
+ * {@link SolrClient}.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc

@@ -25,7 +25,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.solr.client.solrj.SolrClient;
 import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -53,6 +55,10 @@ import org.springframework.util.MultiValueMap;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
+/**
+ * This class contains tests for the store product endpoint and retrieve endpoint that use a mocked
+ * {@link SolrClient}.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @DirtiesContext
@@ -153,26 +159,7 @@ public class S3Tests {
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     assertThat(
-        response.getHeaders().getLocation(),
-        allOf(
-            notNullValue(),
-            new TypeSafeMatcher<URI>() {
-              private final HttpStatus EXPECTED_GET_REQUEST_RESPONSE_STATUS = HttpStatus.OK;
-
-              @Override
-              public void describeTo(Description description) {
-                description.appendText(
-                    "a URI for which a GET request returns "
-                        + EXPECTED_GET_REQUEST_RESPONSE_STATUS
-                        + " but the URI");
-              }
-
-              @Override
-              protected boolean matchesSafely(URI uri) {
-                return restTemplate.getForEntity(uri, Resource.class).getStatusCode()
-                    == EXPECTED_GET_REQUEST_RESPONSE_STATUS;
-              }
-            }));
+        response.getHeaders().getLocation(), allOf(notNullValue(), getRequestIsSuccessful()));
   }
 
   @Test
@@ -241,27 +228,7 @@ public class S3Tests {
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     assertThat(
         response.getHeaders().getLocation(),
-        allOf(
-            notNullValue(),
-            not(equalTo(firstLocation)),
-            // TODO pull into private class
-            new TypeSafeMatcher<URI>() {
-              private final HttpStatus EXPECTED_GET_REQUEST_RESPONSE_STATUS = HttpStatus.OK;
-
-              @Override
-              public void describeTo(Description description) {
-                description.appendText(
-                    "a URI for which a GET request returns "
-                        + EXPECTED_GET_REQUEST_RESPONSE_STATUS
-                        + " but the URI");
-              }
-
-              @Override
-              protected boolean matchesSafely(URI uri) {
-                return restTemplate.getForEntity(uri, Resource.class).getStatusCode()
-                    == EXPECTED_GET_REQUEST_RESPONSE_STATUS;
-              }
-            }));
+        allOf(notNullValue(), not(equalTo(firstLocation)), getRequestIsSuccessful()));
   }
 
   @Test
@@ -375,5 +342,26 @@ public class S3Tests {
     assertThat(
         restTemplate.getForEntity(uriBuilder.build(), Resource.class).getStatusCode(),
         is(HttpStatus.INTERNAL_SERVER_ERROR));
+  }
+
+  @NotNull
+  private Matcher<URI> getRequestIsSuccessful() {
+    return new TypeSafeMatcher<URI>() {
+      private final HttpStatus EXPECTED_GET_REQUEST_RESPONSE_STATUS = HttpStatus.OK;
+
+      @Override
+      public void describeTo(Description description) {
+        description.appendText(
+            "a URI for which a GET request returns "
+                + EXPECTED_GET_REQUEST_RESPONSE_STATUS
+                + " but the URI");
+      }
+
+      @Override
+      protected boolean matchesSafely(URI uri) {
+        return restTemplate.getForEntity(uri, Resource.class).getStatusCode()
+            == EXPECTED_GET_REQUEST_RESPONSE_STATUS;
+      }
+    };
   }
 }

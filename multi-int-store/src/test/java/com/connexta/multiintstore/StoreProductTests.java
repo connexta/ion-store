@@ -38,6 +38,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
+/**
+ * This class contains tests for the store product endpoint that use a mocked {@link AmazonS3} and
+ * {@link SolrClient}.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
