@@ -7,9 +7,9 @@
 package com.connexta.ingest.config;
 
 import com.connexta.ingest.client.StoreClient;
+import javax.inject.Named;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +28,7 @@ public class StoreClientConfiguration {
 
   @Bean
   public StoreClient storeClient(
-      @NotNull @Qualifier("nonBufferingRestTemplate") RestTemplate restTemplate,
+      @NotNull @Named("nonBufferingRestTemplate") RestTemplate restTemplate,
       @NotBlank @Value("${endpointUrl.store}") String storeEndpoint) {
     return new StoreClient(restTemplate, storeEndpoint);
   }

@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.amazonaws.services.s3.AmazonS3;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -27,7 +28,6 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -49,7 +49,7 @@ public class StoreMetadataTests {
 
   @MockBean private SolrClient mockSolrClient;
 
-  @Autowired private MockMvc mockMvc;
+  @Inject private MockMvc mockMvc;
 
   @After
   public void after() {

@@ -21,6 +21,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.solr.client.solrj.SolrClient;
@@ -33,7 +34,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -96,8 +96,8 @@ public class S3Tests {
     }
   }
 
-  @Autowired private TestRestTemplate restTemplate;
-  @Autowired private AmazonS3 amazonS3;
+  @Inject private TestRestTemplate restTemplate;
+  @Inject private AmazonS3 amazonS3;
 
   @Value("${endpointUrl.retrieve}")
   private String endpointUrlRetrieve;

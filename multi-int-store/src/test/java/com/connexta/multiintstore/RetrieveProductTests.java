@@ -18,11 +18,11 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import javax.inject.Inject;
 import org.apache.solr.client.solrj.SolrClient;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,7 +44,7 @@ public class RetrieveProductTests {
 
   @MockBean private AmazonS3 mockAmazonS3;
 
-  @Autowired private MockMvc mockMvc;
+  @Inject private MockMvc mockMvc;
 
   @Value("${aws.s3.bucket.quarantine}")
   private String s3Bucket;

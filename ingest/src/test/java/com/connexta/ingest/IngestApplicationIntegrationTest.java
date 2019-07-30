@@ -20,13 +20,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.net.URI;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,11 +58,11 @@ public class IngestApplicationIntegrationTest {
   @Value("${endpoints.transform.version}")
   private String endpointsTransformVersion;
 
-  @Autowired private MockMvc mvc;
-  @Autowired private RestTemplate restTemplate;
+  @Inject private MockMvc mvc;
+  @Inject private RestTemplate restTemplate;
 
-  @Autowired
-  @Qualifier("nonBufferingRestTemplate")
+  @Inject
+  @Named("nonBufferingRestTemplate")
   private RestTemplate nonBufferingRestTemplate;
 
   private MockRestServiceServer storeServer;
