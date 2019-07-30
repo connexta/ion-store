@@ -31,6 +31,9 @@ services:
       - target: 8080
         published: 9040
         protocol: tcp
+      - target: 10050
+        published: 10050
+        protocol: tcp
     networks:
       - cdr
     deploy:
@@ -51,7 +54,9 @@ services:
       - target: 8080
         published: 9041
         protocol: tcp
-    restart: on-failure
+      - target: 10051
+        published: 10051
+        protocol: tcp
     networks:
       - cdr
     depends_on:

@@ -13,6 +13,17 @@ services:
     networks:
       - cdr
     command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
+  # Enable JVM monitoring
+  ingest:
+    ports:
+      - target: 10040
+        published: 10040
+        protocol: tcp
+  multi-int-store:
+    ports:
+      - target: 10041
+        published: 10041
+        protocol: tcp
 
 secrets:
   # Directories are relative to the master compose file
