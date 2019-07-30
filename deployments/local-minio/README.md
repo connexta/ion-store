@@ -11,12 +11,18 @@ includes a deploy.sh file that will attempt to create the docker network needed.
 * Linux/Mac
 
 ## How to Run
-From this directory, run and follow the prompts to complete deployment:
-```
+From this directory:
+```bash
 ./deploy.sh
 ```
 The script should provide appropriate error messages to resolve any issues that may occur while setting up
 the docker network or deploying the images.
+
+## How to Stop
+From this directory:
+```bash
+./deploy.sh clean
+```
 
 ## Minio
 The minio web client is exposed on port 9000 with the default login information:
