@@ -8,6 +8,7 @@ package com.connexta.multiintstore.controllers;
 
 import com.connexta.multiintstore.adaptors.RetrieveResponse;
 import com.connexta.multiintstore.common.ProductStorageManager;
+import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.services.api.RetrieveApi;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +53,7 @@ public class RetrieveController implements RetrieveApi {
           .contentType(retrieveResponse.getMediaType())
           .headers(httpHeaders)
           .body(new InputStreamResource(inputStream));
-    } catch (RuntimeException e) {
+    } catch (StorageException | RuntimeException e) {
       if (inputStream != null) {
         try {
           inputStream.close();

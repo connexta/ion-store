@@ -15,12 +15,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,31 +39,33 @@ public class StoreController implements StoreApi {
     this.metadataStorageManager = metadataStorageManager;
   }
 
+  /**
+   * TODO Use {@link org.springframework.web.server.ResponseStatusException} instead of catching
+   * {@link Exception}s
+   */
   @Override
   public ResponseEntity<Void> storeProduct(
-      @NotBlank String acceptVersion,
-      @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      @NotBlank String mimeType,
-      @Valid @NotNull MultipartFile file,
-      @NotBlank String fileName) {
-    final Long actualFileSize = file.getSize();
-    if (!fileSize.equals(actualFileSize)) {
-      log.warn(
-          "File size request param ({}) does not match the size of the file ({}).",
-          fileSize,
-          actualFileSize);
-      return ResponseEntity.badRequest().build();
-    }
+      @NotBlank final String acceptVersion, @Valid @NotNull final MultipartFile file) {
+    // TODO validate Accept-Version
+
+    final Long fileSize = file.getSize();
+    // TODO validate that fileSize is (0 GB, 10 GB]
+
+    final String contentType = file.getContentType();
+    // TODO verify that contentType is not blank and is a valid Content Type
+
+    final String fileName = file.getOriginalFilename();
+    // TODO verify that fileName is not blank
 
     final InputStream inputStream;
     try {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       log.warn(
-          "Unable to read file for storeProduct request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
+          "Unable to read file for storeProduct request with params acceptVersion={}, fileSize={}, contentType={}, fileName={}",
           acceptVersion,
           fileSize,
-          mimeType,
+          contentType,
           fileName,
           e);
       return ResponseEntity.badRequest().build();
@@ -74,15 +73,13 @@ public class StoreController implements StoreApi {
 
     final URI location;
     try {
-      location =
-          productStorageManager.storeProduct(
-              acceptVersion, fileSize, mimeType, inputStream, fileName);
+      location = productStorageManager.storeProduct(fileSize, contentType, fileName, inputStream);
     } catch (StorageException | URISyntaxException e) {
       log.warn(
-          "Unable to store product for request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
+          "Unable to store product for request with params acceptVersion={}, fileSize={}, contentType={}, fileName={}",
           acceptVersion,
           fileSize,
-          mimeType,
+          contentType,
           fileName,
           e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -91,28 +88,25 @@ public class StoreController implements StoreApi {
     return ResponseEntity.created(location).build();
   }
 
+  /**
+   * TODO Use {@link org.springframework.web.server.ResponseStatusException} instead of catching
+   * {@link Exception}s
+   */
   @Override
   public ResponseEntity<Void> storeMetadata(
-      @NotBlank String acceptVersion,
-      @NotBlank String productId,
-      @NotBlank String metadataType,
-      @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      @NotBlank String mimeType,
-      @Valid @NotNull MultipartFile file,
-      @NotBlank String fileName) {
-    if (!StringUtils.equals("cst", metadataType)) {
-      log.warn("Storing metadata of type {} is not yet supported", metadataType);
-      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-    }
+      @NotBlank final String acceptVersion,
+      @NotBlank final String productId,
+      @NotBlank final String metadataType,
+      @Valid @NotNull final MultipartFile file) {
+    // TODO validate Accept-Version
 
-    final Long actualFileSize = file.getSize();
-    if (!fileSize.equals(actualFileSize)) {
-      log.warn(
-          "File size request param ({}) does not match the size of the file ({}).",
-          fileSize,
-          actualFileSize);
-      return ResponseEntity.badRequest().build();
-    }
+    // TODO verify that metadataType is not blank
+
+    final Long fileSize = file.getSize();
+    // TODO validate that fileSize is (0 GB, 10 GB]
+
+    final String contentType = file.getContentType();
+    // TODO verify that contentType is not blank and is a valid Content Type
 
     // TODO verify id matches something in S3 before storing to solr
     // TODO handle when CST has already been stored
@@ -122,31 +116,28 @@ public class StoreController implements StoreApi {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       log.warn(
-          "Unable to read file for storeMetadata request with params acceptVersion={}, productId={}, metadataType={}, fileSize={}, mimeType={}, fileName={}",
+          "Unable to read file for storeMetadata request with params acceptVersion={}, productId={}, metadataType={}, contentType={}",
           acceptVersion,
           productId,
           metadataType,
-          fileSize,
-          mimeType,
-          fileName,
+          contentType,
           e);
       return ResponseEntity.badRequest().build();
     }
 
     try {
-      metadataStorageManager.storeMetadata(
-          acceptVersion, productId, metadataType, mimeType, inputStream, fileName);
-    } catch (IOException | StorageException e) {
+      metadataStorageManager.storeMetadata(productId, metadataType, contentType, inputStream);
+    } catch (StorageException e) {
       log.warn(
-          "Unable to store metadata request with params acceptVersion={}, productId={}, metadataType={}, fileSize={}, mimeType={}, fileName={}",
+          "Unable to store metadata request with params acceptVersion={}, productId={}, metadataType={}}, contentType={}",
           acceptVersion,
           productId,
           metadataType,
-          fileSize,
-          mimeType,
-          fileName,
+          contentType,
           e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    } catch (UnsupportedOperationException e) {
+      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
     return ResponseEntity.ok().build();

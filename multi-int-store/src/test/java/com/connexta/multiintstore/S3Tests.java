@@ -129,10 +129,7 @@ public class S3Tests {
             "All the color had been leached from Winterfell until only grey and white remained",
             StandardCharsets.UTF_8);
     final long fileSize = (long) inputStream.available();
-    final String fileName = "test_file_name.txt";
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("fileSize", String.valueOf(fileSize));
-    body.add("mimeType", "text/plain");
     body.add(
         "file",
         new InputStreamResource(inputStream) {
@@ -144,10 +141,9 @@ public class S3Tests {
 
           @Override
           public String getFilename() {
-            return fileName;
+            return "test_file_name.txt";
           }
         });
-    body.add("fileName", fileName);
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set("Accept-Version", "0.1.0");
 
@@ -168,10 +164,8 @@ public class S3Tests {
     final InputStream firstInputStream =
         IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
     final long firstFileSize = (long) firstInputStream.available();
-    final String firstFileName = "test_file_name.txt";
+    final String fileName = "test_file_name.txt";
     final MultiValueMap<String, Object> firstBody = new LinkedMultiValueMap<>();
-    firstBody.add("fileSize", String.valueOf(firstFileSize));
-    firstBody.add("mimeType", "text/plain");
     firstBody.add(
         "file",
         new InputStreamResource(firstInputStream) {
@@ -183,10 +177,9 @@ public class S3Tests {
 
           @Override
           public String getFilename() {
-            return firstFileName;
+            return fileName;
           }
         });
-    firstBody.add("fileName", firstFileName);
     final HttpHeaders firstHttpHeaders = new HttpHeaders();
     firstHttpHeaders.set("Accept-Version", "0.1.0");
     final URI firstLocation =
@@ -197,10 +190,7 @@ public class S3Tests {
     final InputStream inputStream =
         IOUtils.toInputStream("another product contents", StandardCharsets.UTF_8);
     final long fileSize = (long) inputStream.available();
-    final String fileName = "test_file_name.txt";
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("fileSize", String.valueOf(fileSize));
-    body.add("mimeType", "text/plain");
     body.add(
         "file",
         new InputStreamResource(inputStream) {
@@ -215,7 +205,6 @@ public class S3Tests {
             return fileName;
           }
         });
-    body.add("fileName", fileName);
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set("Accept-Version", "0.1.0");
 
@@ -239,11 +228,9 @@ public class S3Tests {
         "All the color had been leached from Winterfell until only grey and white remained";
     final InputStream inputStream = IOUtils.toInputStream(contents, encoding);
     final long fileSize = (long) inputStream.available();
+    final String contentType = "text/plain";
     final String fileName = "test_file_name.txt";
-    final String mimeType = "text/plain";
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("fileSize", String.valueOf(fileSize));
-    body.add("mimeType", mimeType);
     body.add(
         "file",
         new InputStreamResource(inputStream) {
@@ -258,7 +245,6 @@ public class S3Tests {
             return fileName;
           }
         });
-    body.add("fileName", fileName);
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set("Accept-Version", "0.1.0");
 
@@ -278,7 +264,7 @@ public class S3Tests {
     assertThat(
         getProductResponseHeaders.getContentDisposition().toString(),
         is(String.format("attachment; filename=\"%s\"", fileName)));
-    assertThat(getProductResponseHeaders.getContentType(), is(MediaType.valueOf(mimeType)));
+    assertThat(getProductResponseHeaders.getContentType(), is(MediaType.valueOf(contentType)));
     assertThat(
         IOUtils.toString(getProductResponseResource.getInputStream(), encoding), is(contents));
   }
@@ -295,10 +281,7 @@ public class S3Tests {
             "All the color had been leached from Winterfell until only grey and white remained",
             StandardCharsets.UTF_8);
     final long fileSize = (long) inputStream.available();
-    final String fileName = "test_file_name.txt";
     final MultiValueMap<String, Object> multipartBodyBuilder = new LinkedMultiValueMap<>();
-    multipartBodyBuilder.add("fileSize", String.valueOf(fileSize));
-    multipartBodyBuilder.add("mimeType", "text/plain");
     multipartBodyBuilder.add(
         "file",
         new InputStreamResource(inputStream) {
@@ -310,10 +293,9 @@ public class S3Tests {
 
           @Override
           public String getFilename() {
-            return fileName;
+            return "test_file_name.txt";
           }
         });
-    multipartBodyBuilder.add("fileName", fileName);
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set("Accept-Version", "0.1.0");
 

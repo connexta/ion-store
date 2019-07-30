@@ -16,11 +16,12 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class MetadataStorageManager {
 
-  private static final String INDEXED_PRODUCT_METADATA_CALLBACK_TYPE = "cst";
+  private static final String SUPPORTED_METADATA_TYPE = "cst";
 
   private final Dao<IndexedProductMetadata, String> cstDao;
 
@@ -29,24 +30,35 @@ public class MetadataStorageManager {
   }
 
   public void storeMetadata(
-      @NotBlank String acceptVersion,
-      @NotBlank String productId,
-      @NotBlank String metadataType,
-      @NotBlank String mimeType,
-      @NotNull InputStream inputStream,
-      @NotBlank String fileName)
-      throws IOException, StorageException {
-    if (metadataType.equals(INDEXED_PRODUCT_METADATA_CALLBACK_TYPE)) {
-      final IndexedProductMetadata indexedProductMetadata =
+      @NotBlank final String productId,
+      @NotBlank final String metadataType,
+      @NotBlank final String contentType,
+      @NotNull final InputStream inputStream)
+      throws UnsupportedOperationException, StorageException {
+    if (!StringUtils.equals(SUPPORTED_METADATA_TYPE, metadataType)) {
+      final String message = metadataType + " is not a supported metadata type";
+      log.warn(message);
+      throw new UnsupportedOperationException(message);
+    }
+
+    // TODO verify content-type for CST
+
+    storeCst(productId, inputStream);
+  }
+
+  private void storeCst(@NotBlank final String productId, @NotNull final InputStream inputStream)
+      throws StorageException {
+    final IndexedProductMetadata indexedProductMetadata;
+    try {
+      indexedProductMetadata =
           new IndexedProductMetadata(
               productId, IOUtils.toString(inputStream, StandardCharsets.UTF_8));
-      log.info("Attempting to store {} with name \"{}\" in Solr", metadataType, fileName);
-      cstDao.save(indexedProductMetadata);
-    } else {
-      log.info(
-          "Received non-"
-              + INDEXED_PRODUCT_METADATA_CALLBACK_TYPE
-              + " metadata, which is not yet supported");
+    } catch (IOException e) {
+      throw new StorageException("Unable to convert metadata to String", e);
     }
+
+    log.info(
+        "Attempting to store {} metadata for product id {}", SUPPORTED_METADATA_TYPE, productId);
+    cstDao.save(indexedProductMetadata);
   }
 }
