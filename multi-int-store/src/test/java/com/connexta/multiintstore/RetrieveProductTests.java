@@ -32,6 +32,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
+/**
+ * This class contains tests for the retrieve endpoint that use a mocked {@link AmazonS3} and {@link
+ * SolrClient}.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc

@@ -7,26 +7,29 @@
 package com.connexta.multiintstore;
 
 import static com.connexta.multiintstore.models.IndexedProductMetadata.SOLR_COLLECTION;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.connexta.multiintstore.config.AmazonS3Configuration;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.connexta.multiintstore.config.SolrClientConfiguration;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.solr.client.solrj.SolrClient;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -37,6 +40,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.InputStreamResource;
@@ -47,9 +51,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+/**
+ * This class contains tests for the store metadata endpoint and query endpoint that use a mocked
+ * {@link AmazonS3}.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @DirtiesContext
@@ -64,23 +71,6 @@ public class SolrTests {
           .withExposedPorts(SOLR_PORT)
           .waitingFor(Wait.forHttp("/solr/" + SOLR_COLLECTION + "/admin/ping"));
 
-  private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
-  private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
-  private static final int MINIO_PORT = 9000;
-
-  // TODO mock AmazonS3
-  @ClassRule
-  public static final GenericContainer minioContainer =
-      new GenericContainer("minio/minio:RELEASE.2019-07-10T00-34-56Z")
-          .withEnv("MINIO_ACCESS_KEY", MINIO_ADMIN_ACCESS_KEY)
-          .withEnv("MINIO_SECRET_KEY", MINIO_ADMIN_SECRET_KEY)
-          .withExposedPorts(MINIO_PORT)
-          .withCommand("server --compat /data")
-          .waitingFor(
-              new HttpWaitStrategy()
-                  .forPath("/minio/health/ready")
-                  .withStartupTimeout(Duration.ofSeconds(30)));
-
   @TestConfiguration
   static class Config {
 
@@ -89,22 +79,11 @@ public class SolrTests {
       return new SolrClientConfiguration(
           solrContainer.getContainerIpAddress(), solrContainer.getMappedPort(SOLR_PORT));
     }
-
-    // TODO mock AmazonS3
-    @Bean
-    public AmazonS3Configuration testAmazonS3Configuration() {
-      return new AmazonS3Configuration(
-          String.format(
-              "http://%s:%d",
-              minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
-          "local",
-          MINIO_ADMIN_ACCESS_KEY,
-          MINIO_ADMIN_SECRET_KEY);
-    }
   }
 
+  @MockBean AmazonS3 mockAmazonS3;
+
   @Autowired private TestRestTemplate restTemplate;
-  @Autowired private AmazonS3 amazonS3;
   @Autowired private SolrClient solrClient;
 
   @Value("${aws.s3.bucket.quarantine}")
@@ -115,18 +94,12 @@ public class SolrTests {
 
   @Before
   public void before() {
-    amazonS3.createBucket(s3Bucket);
+    when(mockAmazonS3.putObject(any(PutObjectRequest.class)))
+        .thenReturn(mock(PutObjectResult.class));
   }
 
-  @After
-  public void after() throws Exception {
-    amazonS3.listObjects(s3Bucket).getObjectSummaries().stream()
-        .map(S3ObjectSummary::getKey)
-        .forEach(key -> amazonS3.deleteObject(s3Bucket, key));
-    amazonS3.deleteBucket(s3Bucket);
-
-    emptySolrCore(solrClient, SOLR_COLLECTION);
-  }
+  @Test
+  public void testContextLoads() {}
 
   @Test
   public void testStoreMetadataCstWhenSolrIsEmpty() throws Exception {
@@ -167,7 +140,6 @@ public class SolrTests {
             "/mis/product/",
             new HttpEntity<>(storeProductRequestBody, storeProductRequestHttpHeaders));
 
-    // TODO improve comments for these sections
     final String metadataContents = "{contents:\"" + productContents + "\"";
     final String metadataEncoding = "UTF-8";
     final InputStream metadataInputStream =
@@ -206,8 +178,8 @@ public class SolrTests {
     queryUriBuilder.setPath("/search");
     queryUriBuilder.setParameter("q", queryKeyword);
     assertThat(
-        (List<URI>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
-        contains(productLocation.toString()));
+        (List<String>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
+        hasItem(productLocation.toString()));
   }
 
   @Test
@@ -465,8 +437,8 @@ public class SolrTests {
     queryUriBuilder.setPath("/search");
     queryUriBuilder.setParameter("q", queryKeyword);
     assertThat(
-        (List<URI>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
-        contains(productLocation.toString()));
+        (List<String>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
+        hasItem(productLocation.toString()));
   }
 
   @Test
@@ -529,7 +501,7 @@ public class SolrTests {
     final HttpHeaders firstStoreMetadataRequestHttpHeaders = new HttpHeaders();
     firstStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
-    // and metadata is stored for an initial product
+    // and metadata is stored for the first product
     restTemplate.put(
         firstLocation + "/cst",
         new HttpEntity<>(firstStoreMetadataRequestBody, firstStoreMetadataRequestHttpHeaders));
@@ -664,8 +636,8 @@ public class SolrTests {
     queryUriBuilder.setPath("/search");
     queryUriBuilder.setParameter("q", "contents");
     assertThat(
-        (List<URI>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
-        contains(firstLocation.toString(), secondLocation.toString(), thirdLocation.toString()));
+        (List<String>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
+        hasItems(firstLocation.toString(), secondLocation.toString(), thirdLocation.toString()));
   }
 
   @Test
@@ -728,7 +700,7 @@ public class SolrTests {
     final HttpHeaders firstStoreMetadataRequestHttpHeaders = new HttpHeaders();
     firstStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
-    // and metadata is stored for an initial product
+    // and metadata is stored for the first product
     restTemplate.put(
         firstLocation + "/cst",
         new HttpEntity<>(firstStoreMetadataRequestBody, firstStoreMetadataRequestHttpHeaders));
@@ -791,7 +763,7 @@ public class SolrTests {
     final HttpHeaders secondStoreMetadataRequestHttpHeaders = new HttpHeaders();
     secondStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
-    // and metadata is stored for an initial product
+    // and metadata is stored for the second product
     restTemplate.put(
         secondLocation + "/cst",
         new HttpEntity<>(secondStoreMetadataRequestBody, secondStoreMetadataRequestHttpHeaders));
@@ -853,7 +825,7 @@ public class SolrTests {
     final HttpHeaders thirdStoreMetadataRequestHttpHeaders = new HttpHeaders();
     thirdStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
-    // and metadata is stored for an initial product
+    // and metadata is stored for the third product
     restTemplate.put(
         thirdLocation + "/cst",
         new HttpEntity<>(thirdStoreMetadataRequestBody, thirdStoreMetadataRequestHttpHeaders));
@@ -862,9 +834,12 @@ public class SolrTests {
     final URIBuilder queryUriBuilder = new URIBuilder();
     queryUriBuilder.setPath("/search");
     queryUriBuilder.setParameter("q", "this keyword doesn't match any product");
-    // TODO confirm that doesn't contain the 3 locations
     assertThat(
-        (List<URI>) restTemplate.getForObject(queryUriBuilder.build(), List.class), is(empty()));
+        (List<URI>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
+        allOf(
+            not(hasItem(firstLocation)),
+            not(hasItem(secondLocation)),
+            not(hasItem(thirdLocation))));
   }
 
   @Test
@@ -927,7 +902,7 @@ public class SolrTests {
     final HttpHeaders firstStoreMetadataRequestHttpHeaders = new HttpHeaders();
     firstStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
-    // and metadata is stored for an initial product
+    // and metadata is stored the first product
     restTemplate.put(
         firstLocation + "/cst",
         new HttpEntity<>(firstStoreMetadataRequestBody, firstStoreMetadataRequestHttpHeaders));
@@ -990,7 +965,7 @@ public class SolrTests {
     final HttpHeaders secondStoreMetadataRequestHttpHeaders = new HttpHeaders();
     secondStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
-    // and metadata is stored for an initial product
+    // and metadata is stored for the second product
     restTemplate.put(
         secondLocation + "/cst",
         new HttpEntity<>(secondStoreMetadataRequestBody, secondStoreMetadataRequestHttpHeaders));
@@ -1052,7 +1027,7 @@ public class SolrTests {
     final HttpHeaders thirdStoreMetadataRequestHttpHeaders = new HttpHeaders();
     thirdStoreMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
 
-    // and metadata is stored for an initial product
+    // and metadata is stored the third product
     restTemplate.put(
         thirdLocation + "/cst",
         new HttpEntity<>(thirdStoreMetadataRequestBody, thirdStoreMetadataRequestHttpHeaders));
@@ -1062,8 +1037,8 @@ public class SolrTests {
     queryUriBuilder.setPath("/search");
     queryUriBuilder.setParameter("q", "first");
     assertThat(
-        (List<URI>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
-        contains(firstLocation.toString()));
+        (List<String>) restTemplate.getForObject(queryUriBuilder.build(), List.class),
+        hasItem(firstLocation.toString()));
   }
 
   @Test
@@ -1073,10 +1048,5 @@ public class SolrTests {
     queryUriBuilder.setParameter("q", "nothing is in solr so this won't match anything");
     assertThat(
         (List<URI>) restTemplate.getForObject(queryUriBuilder.build(), List.class), is(empty()));
-  }
-
-  private static void emptySolrCore(final SolrClient client, final String collection)
-      throws Exception {
-    client.deleteByQuery(collection, "*:*");
   }
 }

@@ -33,12 +33,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+/**
+ * This class contains tests for the query endpoint that use a mocked {@link AmazonS3} and {@link
+ * SolrClient}.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @MockBean(AmazonS3.class)
-// TODO add javadoc to the top of test classes, move to different packages, and/or use some naming
-// standard
 public class QueryTests {
 
   @MockBean private SolrClient mockSolrClient;
