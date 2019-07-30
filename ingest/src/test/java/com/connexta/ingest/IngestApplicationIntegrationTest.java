@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,17 +61,25 @@ public class IngestApplicationIntegrationTest {
   @Autowired private MockMvc mvc;
   @Autowired private RestTemplate restTemplate;
 
-  private MockRestServiceServer server;
+  @Autowired
+  @Qualifier("nonBufferingRestTemplate")
+  private RestTemplate nonBufferingRestTemplate;
+
+  private MockRestServiceServer storeServer;
+  private MockRestServiceServer transformServer;
 
   @Before
   public void beforeEach() {
-    server = MockRestServiceServer.createServer(restTemplate);
+    storeServer = MockRestServiceServer.createServer(nonBufferingRestTemplate);
+    transformServer = MockRestServiceServer.createServer(restTemplate);
   }
 
   @After
   public void afterEach() {
-    server.verify();
-    server.reset();
+    storeServer.verify();
+    storeServer.reset();
+    transformServer.verify();
+    transformServer.reset();
   }
 
   @Test
@@ -79,12 +88,12 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void testSuccessfulIngestRequest() throws Exception {
     final String location = "http://localhost:1232/store/1234";
-    server
+    storeServer
         .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withCreatedEntity(new URI(location)));
 
-    server
+    transformServer
         .expect(requestTo(endpointUrlTransform))
         .andExpect(method(HttpMethod.POST))
         .andExpect(header("Accept-Version", endpointsTransformVersion))
@@ -117,12 +126,12 @@ public class IngestApplicationIntegrationTest {
 
   @Test
   public void testStoreRequestBadRequest() throws Exception {
-    server
+    storeServer
         .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withBadRequest());
 
-    server.expect(never(), requestTo(endpointUrlTransform));
+    transformServer.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -139,12 +148,12 @@ public class IngestApplicationIntegrationTest {
 
   @Test
   public void testStoreRequestUnauthorizedRequest() throws Exception {
-    server
+    storeServer
         .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withUnauthorizedRequest());
 
-    server.expect(never(), requestTo(endpointUrlTransform));
+    transformServer.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -161,12 +170,12 @@ public class IngestApplicationIntegrationTest {
 
   @Test
   public void testStoreRequestForbidden() throws Exception {
-    server
+    storeServer
         .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withStatus(HttpStatus.FORBIDDEN));
 
-    server.expect(never(), requestTo(endpointUrlTransform));
+    transformServer.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -183,12 +192,12 @@ public class IngestApplicationIntegrationTest {
 
   @Test
   public void testStoreRequestNotImplemented() throws Exception {
-    server
+    storeServer
         .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withStatus(HttpStatus.NOT_IMPLEMENTED));
 
-    server.expect(never(), requestTo(endpointUrlTransform));
+    transformServer.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -205,12 +214,12 @@ public class IngestApplicationIntegrationTest {
 
   @Test
   public void testStoreRequestServerError() throws Exception {
-    server
+    storeServer
         .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withServerError());
 
-    server.expect(never(), requestTo(endpointUrlTransform));
+    transformServer.expect(never(), requestTo(endpointUrlTransform));
 
     mvc.perform(
             multipart("/ingest")
@@ -234,12 +243,12 @@ public class IngestApplicationIntegrationTest {
   @Test
   public void testUnsuccessfulTransformRequest() throws Exception {
     final String location = "http://localhost:1232/store/1234";
-    server
+    storeServer
         .expect(requestTo(endpointUrlStore))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withCreatedEntity(new URI(location)));
 
-    server
+    transformServer
         .expect(requestTo(endpointUrlTransform))
         .andExpect(method(HttpMethod.POST))
         .andExpect(header("Accept-Version", endpointsTransformVersion))
