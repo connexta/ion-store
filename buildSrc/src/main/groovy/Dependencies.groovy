@@ -33,11 +33,8 @@ class Dependencies {
   static def springBootGradlePlugin = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-gradle-plugin:${it}" }
 
   // OWASP Override Transitive Dependencies
-  // CVE-2018-10237
-  static def zookeeper = "org.apache.zookeeper:zookeeper:]3.4.14,)"
-  // CVE-2019-0232
-  static def guava = "com.google.guava:guava:]24.1.1,)"
-  // CVE-2019-12384 and CVE-2019-1281
+  // CVE-2018-10237 in 11.0 through 24.x before 24.1.1
+  static def guava = "com.google.guava:guava:[24.1.1,)"
+  // CVE-2019-12814 in 2.x through 2.9.9. It is fixed in 2.9.9.1.
   static def jacksonDatabind = "com.fasterxml.jackson.core:jackson-databind:[2.9.9.1,)"
-
 }

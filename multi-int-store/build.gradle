@@ -11,8 +11,8 @@ plugins {
 
 configurations.all {
     resolutionStrategy {
-        force Dependencies.guava,
-                Dependencies.zookeeper
+        force Dependencies.jacksonDatabind
+        force Dependencies.guava
     }
 }
 
