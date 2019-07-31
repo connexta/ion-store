@@ -18,6 +18,7 @@ configurations.all {
 
 dependencies {
     implementation(Dependencies.awsS3())
+    implementation(Dependencies.javaxInject())
     implementation(Dependencies.springActuator())
     implementation(Dependencies.springBootStarterWeb())
     implementation(Dependencies.springDataSolr())

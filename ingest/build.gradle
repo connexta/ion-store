@@ -19,10 +19,11 @@ dependencies {
     implementation(Dependencies.springBootStarterWeb())
     implementation(Dependencies.commonsIO())
     implementation(Dependencies.ingestAPI())
-    implementation(Dependencies.transformAPI())
+    implementation(Dependencies.javaxInject())
     implementation(Dependencies.springActuator())
     implementation(Dependencies.swagger())
     implementation(Dependencies.swaggerUi())
+    implementation(Dependencies.transformAPI())
     testImplementation(Dependencies.springBootStarterTest())
 }
 

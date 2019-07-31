@@ -168,7 +168,6 @@ subprojects {
     dependencies {
         compileOnly(Dependencies.lombok())
         annotationProcessor(Dependencies.lombok())
-
         //  Test Dependencies
         testImplementation(Dependencies.junit())
         testImplementation(Dependencies.mockito())

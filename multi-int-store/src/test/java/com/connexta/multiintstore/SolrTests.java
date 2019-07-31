@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.solr.client.solrj.SolrClient;
@@ -35,7 +36,6 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -83,8 +83,8 @@ public class SolrTests {
 
   @MockBean AmazonS3 mockAmazonS3;
 
-  @Autowired private TestRestTemplate restTemplate;
-  @Autowired private SolrClient solrClient;
+  @Inject private TestRestTemplate restTemplate;
+  @Inject private SolrClient solrClient;
 
   @Value("${aws.s3.bucket.quarantine}")
   private String s3Bucket;

@@ -11,6 +11,7 @@ class Dependencies {
   static def awsS3 = { it=Versions.aws -> "com.amazonaws:aws-java-sdk-s3:${it}" }
   static def commonsIO = { it=Versions.commonsIO -> "commons-io:commons-io:${it}" }
   static def ingestAPI = { it=Versions.ingestAPI -> "com.connexta.ion.ingest:ingest-api-rest-spring-stubs:${it}" }
+  static def javaxInject = { it=Versions.javaxInject -> "javax.inject:javax.inject:${it}"}
   static def lombok = { it=Versions.lombok -> "org.projectlombok:lombok:${it}" }
   static def springActuator = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-actuator:${it}" }
   static def springBootStarterWeb = { it=Versions.springBoot -> "org.springframework.boot:spring-boot-starter-web:${it}" }
