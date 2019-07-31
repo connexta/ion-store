@@ -6,9 +6,15 @@
  */
 package com.connexta.multiintstore.common;
 
+import com.connexta.multiintstore.adaptors.StorageAdaptor;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.services.api.Dao;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -24,9 +30,13 @@ public class MetadataStorageManager {
   private static final String SUPPORTED_METADATA_TYPE = "cst";
 
   private final Dao<IndexedProductMetadata, String> cstDao;
+  private final StorageAdaptor storageAdaptor;
 
-  public MetadataStorageManager(@NotNull final Dao<IndexedProductMetadata, String> cstDao) {
+  public MetadataStorageManager(
+      @NotNull final Dao<IndexedProductMetadata, String> cstDao,
+      @NotNull StorageAdaptor storageAdaptor) {
     this.cstDao = cstDao;
+    this.storageAdaptor = storageAdaptor;
   }
 
   public void storeMetadata(
