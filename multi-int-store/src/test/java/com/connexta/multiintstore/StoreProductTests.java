@@ -19,7 +19,6 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
@@ -68,30 +67,6 @@ public class StoreProductTests {
     mockMvc
         .perform(
             multipart("/mis/product")
-                .param("mimeType", "text/plain")
-                .param("fileName", "test_file_name.txt")
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void testFileSizeParamDoesntMatchFile() throws Exception {
-    final InputStream inputStream =
-        IOUtils.toInputStream(
-            "All the color had been leached from Winterfell until only grey and white remained",
-            StandardCharsets.UTF_8);
-    final String fileName = "test_file_name.txt";
-    final String mimeType = "text/plain";
-    final MockMultipartFile file = new MockMultipartFile("file", fileName, mimeType, inputStream);
-    mockMvc
-        .perform(
-            multipart("/mis/product")
-                .file(file)
-                .param("fileSize", String.valueOf(file.getSize() + 1))
-                .param("mimeType", mimeType)
-                .param("fileName", fileName)
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -117,20 +92,17 @@ public class StoreProductTests {
                     StringUtils.equals(putObjectRequest.getBucketName(), s3Bucket))))
         .thenThrow(amazonS3ExceptionBuilder.build());
 
-    final InputStream inputStream =
-        IOUtils.toInputStream(
-            "All the color had been leached from Winterfell until only grey and white remained",
-            StandardCharsets.UTF_8);
-    final String fileName = "test_file_name.txt";
-    final String mimeType = "text/plain";
-    final MockMultipartFile file = new MockMultipartFile("file", fileName, mimeType, inputStream);
     mockMvc
         .perform(
             multipart("/mis/product")
-                .file(file)
-                .param("fileSize", String.valueOf(file.getSize()))
-                .param("mimeType", mimeType)
-                .param("fileName", fileName)
+                .file(
+                    new MockMultipartFile(
+                        "file",
+                        "test_file_name.txt",
+                        "text/plain",
+                        IOUtils.toInputStream(
+                            "All the color had been leached from Winterfell until only grey and white remained",
+                            StandardCharsets.UTF_8)))
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -147,20 +119,17 @@ public class StoreProductTests {
   public void testS3ClientError() throws Exception {
     when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(SdkClientException.class);
 
-    final InputStream inputStream =
-        IOUtils.toInputStream(
-            "All the color had been leached from Winterfell until only grey and white remained",
-            StandardCharsets.UTF_8);
-    final String fileName = "test_file_name.txt";
-    final String mimeType = "text/plain";
-    final MockMultipartFile file = new MockMultipartFile("file", fileName, mimeType, inputStream);
     mockMvc
         .perform(
             multipart("/mis/product")
-                .file(file)
-                .param("fileSize", String.valueOf(file.getSize()))
-                .param("mimeType", mimeType)
-                .param("fileName", fileName)
+                .file(
+                    new MockMultipartFile(
+                        "file",
+                        "test_file_name.txt",
+                        "text/plain",
+                        IOUtils.toInputStream(
+                            "All the color had been leached from Winterfell until only grey and white remained",
+                            StandardCharsets.UTF_8)))
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -173,20 +142,17 @@ public class StoreProductTests {
     when(mockAmazonS3.putObject(any(PutObjectRequest.class)))
         .thenThrow(AmazonServiceException.class);
 
-    final InputStream inputStream =
-        IOUtils.toInputStream(
-            "All the color had been leached from Winterfell until only grey and white remained",
-            StandardCharsets.UTF_8);
-    final String fileName = "test_file_name.txt";
-    final String mimeType = "text/plain";
-    final MockMultipartFile file = new MockMultipartFile("file", fileName, mimeType, inputStream);
     mockMvc
         .perform(
             multipart("/mis/product")
-                .file(file)
-                .param("fileSize", String.valueOf(file.getSize()))
-                .param("mimeType", mimeType)
-                .param("fileName", fileName)
+                .file(
+                    new MockMultipartFile(
+                        "file",
+                        "test_file_name.txt",
+                        "text/plain",
+                        IOUtils.toInputStream(
+                            "All the color had been leached from Winterfell until only grey and white remained",
+                            StandardCharsets.UTF_8)))
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -197,20 +163,17 @@ public class StoreProductTests {
   public void testS3ThrowsRuntimeException() throws Exception {
     when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(RuntimeException.class);
 
-    final InputStream inputStream =
-        IOUtils.toInputStream(
-            "All the color had been leached from Winterfell until only grey and white remained",
-            StandardCharsets.UTF_8);
-    final String fileName = "test_file_name.txt";
-    final String mimeType = "text/plain";
-    final MockMultipartFile file = new MockMultipartFile("file", fileName, mimeType, inputStream);
     mockMvc
         .perform(
             multipart("/mis/product")
-                .file(file)
-                .param("fileSize", String.valueOf(file.getSize()))
-                .param("mimeType", mimeType)
-                .param("fileName", fileName)
+                .file(
+                    new MockMultipartFile(
+                        "file",
+                        "test_file_name.txt",
+                        "text/plain",
+                        IOUtils.toInputStream(
+                            "All the color had been leached from Winterfell until only grey and white remained",
+                            StandardCharsets.UTF_8)))
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
