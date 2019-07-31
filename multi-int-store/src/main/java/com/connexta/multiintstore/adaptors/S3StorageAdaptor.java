@@ -44,16 +44,16 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
   @Override
   public void store(
-      @NotBlank final String mimeType,
-      @NotNull final InputStream inputStream,
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
+      @NotBlank final String mediaType,
       @NotBlank final String fileName,
+      @NotNull final InputStream inputStream,
       @NotBlank final String key)
       throws StorageException {
     // TODO check if id already exists
 
     final ObjectMetadata objectMetadata = new ObjectMetadata();
-    objectMetadata.setContentType(mimeType);
+    objectMetadata.setContentType(mediaType);
     objectMetadata.setContentLength(fileSize);
     objectMetadata.addUserMetadata(FILE_NAME_METADATA_KEY, fileName);
 

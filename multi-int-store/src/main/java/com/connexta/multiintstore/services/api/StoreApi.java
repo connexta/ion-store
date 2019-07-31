@@ -7,8 +7,6 @@
 package com.connexta.multiintstore.services.api;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,11 +28,8 @@ public interface StoreApi {
       consumes = {"multipart/form-data"},
       method = RequestMethod.POST)
   ResponseEntity<Void> storeProduct(
-      @RequestHeader(value = "Accept-Version") @NotBlank String acceptVersion,
-      @RequestParam(value = "fileSize") @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      @RequestParam(value = "mimeType") @NotBlank String mimeType,
-      @Valid @RequestPart("file") @NotNull MultipartFile file,
-      @RequestParam(value = "fileName") @NotBlank String fileName);
+      @RequestHeader(value = "Accept-Version") @NotBlank final String acceptVersion,
+      @Valid @RequestPart("file") @NotNull final MultipartFile file);
 
   @RequestMapping(
       value = "/product/{productId}/{metadataType}",
@@ -43,11 +37,8 @@ public interface StoreApi {
       consumes = {"multipart/form-data"},
       method = RequestMethod.PUT)
   ResponseEntity<Void> storeMetadata(
-      @RequestHeader(value = "Accept-Version") @NotBlank String acceptVersion,
-      @PathVariable(value = "productId") @NotBlank String productId,
-      @PathVariable(value = "metadataType") @NotBlank String metadataType,
-      @RequestParam(value = "fileSize") @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      @RequestParam(value = "mimeType") @NotBlank String mimeType,
-      @Valid @RequestPart("file") @NotNull MultipartFile file,
-      @RequestParam(value = "fileName") @NotBlank String fileName);
+      @RequestHeader(value = "Accept-Version") @NotBlank final String acceptVersion,
+      @PathVariable(value = "productId") @NotBlank final String productId,
+      @PathVariable(value = "metadataType") @NotBlank final String metadataType,
+      @Valid @RequestPart("file") @NotNull final MultipartFile file);
 }
