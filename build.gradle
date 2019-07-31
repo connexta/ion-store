@@ -21,7 +21,7 @@ plugins {
     id "com.diffplug.gradle.spotless" version "3.23.1"
     id "java"
     id "maven"
-    id "org.owasp.dependencycheck" version "5.1.1"
+    id "org.owasp.dependencycheck" version "5.2.0"
     id "org.sonarqube" version "2.7.1"
 }
 
@@ -47,14 +47,6 @@ allprojects {
         format "misc", SpotlessConfig.getMisc()
         java SpotlessConfig.getJava(licenseFile)
         groovyGradle SpotlessConfig.getGroovy(licenseFile)
-    }
-
-    configurations.all {
-        resolutionStrategy {
-            force Dependencies.guava,
-                    Dependencies.zookeeper,
-                    Dependencies.jacksonDatabind
-        }
     }
 }
 
