@@ -32,7 +32,7 @@ public class MetadataStorageManager {
   public void storeMetadata(
       @NotBlank final String productId,
       @NotBlank final String metadataType,
-      @NotBlank final String contentType,
+      @NotBlank final String mediaType,
       @NotNull final InputStream inputStream)
       throws UnsupportedOperationException, StorageException {
     if (!StringUtils.equals(SUPPORTED_METADATA_TYPE, metadataType)) {
@@ -41,7 +41,7 @@ public class MetadataStorageManager {
       throw new UnsupportedOperationException(message);
     }
 
-    // TODO verify content-type for CST
+    // TODO verify Media Typeype for CST
 
     storeCst(productId, inputStream);
   }

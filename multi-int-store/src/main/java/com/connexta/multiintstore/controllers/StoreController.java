@@ -51,8 +51,8 @@ public class StoreController implements StoreApi {
     final Long fileSize = file.getSize();
     // TODO validate that fileSize is (0 GB, 10 GB]
 
-    final String contentType = file.getContentType();
-    // TODO verify that contentType is not blank and is a valid Content Type
+    final String mediaType = file.getContentType();
+    // TODO verify that mediaType is not blank and is a valid Content Type
 
     final String fileName = file.getOriginalFilename();
     // TODO verify that fileName is not blank
@@ -62,10 +62,10 @@ public class StoreController implements StoreApi {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       log.warn(
-          "Unable to read file for storeProduct request with params acceptVersion={}, fileSize={}, contentType={}, fileName={}",
+          "Unable to read file for storeProduct request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
           acceptVersion,
           fileSize,
-          contentType,
+          mediaType,
           fileName,
           e);
       return ResponseEntity.badRequest().build();
@@ -73,13 +73,13 @@ public class StoreController implements StoreApi {
 
     final URI location;
     try {
-      location = productStorageManager.storeProduct(fileSize, contentType, fileName, inputStream);
+      location = productStorageManager.storeProduct(fileSize, mediaType, fileName, inputStream);
     } catch (StorageException | URISyntaxException e) {
       log.warn(
-          "Unable to store product for request with params acceptVersion={}, fileSize={}, contentType={}, fileName={}",
+          "Unable to store product for request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
           acceptVersion,
           fileSize,
-          contentType,
+          mediaType,
           fileName,
           e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -105,8 +105,8 @@ public class StoreController implements StoreApi {
     final Long fileSize = file.getSize();
     // TODO validate that fileSize is (0 GB, 10 GB]
 
-    final String contentType = file.getContentType();
-    // TODO verify that contentType is not blank and is a valid Content Type
+    final String mediaType = file.getContentType();
+    // TODO verify that mediaType is not blank and is a valid Content Type
 
     // TODO verify id matches something in S3 before storing to solr
     // TODO handle when CST has already been stored
@@ -116,24 +116,24 @@ public class StoreController implements StoreApi {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       log.warn(
-          "Unable to read file for storeMetadata request with params acceptVersion={}, productId={}, metadataType={}, contentType={}",
+          "Unable to read file for storeMetadata request with params acceptVersion={}, productId={}, metadataType={}, mediaType={}",
           acceptVersion,
           productId,
           metadataType,
-          contentType,
+          mediaType,
           e);
       return ResponseEntity.badRequest().build();
     }
 
     try {
-      metadataStorageManager.storeMetadata(productId, metadataType, contentType, inputStream);
+      metadataStorageManager.storeMetadata(productId, metadataType, mediaType, inputStream);
     } catch (StorageException e) {
       log.warn(
-          "Unable to store metadata request with params acceptVersion={}, productId={}, metadataType={}}, contentType={}",
+          "Unable to store metadata request with params acceptVersion={}, productId={}, metadataType={}}, mediaType={}",
           acceptVersion,
           productId,
           metadataType,
-          contentType,
+          mediaType,
           e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     } catch (UnsupportedOperationException e) {

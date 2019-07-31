@@ -24,7 +24,7 @@ public interface StorageAdaptor {
    */
   void store(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotBlank final String contentType,
+      @NotBlank final String mediaType,
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream,
       @NotBlank final String key)

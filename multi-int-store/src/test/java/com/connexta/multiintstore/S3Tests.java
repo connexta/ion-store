@@ -228,7 +228,7 @@ public class S3Tests {
         "All the color had been leached from Winterfell until only grey and white remained";
     final InputStream inputStream = IOUtils.toInputStream(contents, encoding);
     final long fileSize = (long) inputStream.available();
-    final String contentType = "text/plain";
+    final String mediaType = "text/plain";
     final String fileName = "test_file_name.txt";
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
     body.add(
@@ -264,7 +264,7 @@ public class S3Tests {
     assertThat(
         getProductResponseHeaders.getContentDisposition().toString(),
         is(String.format("attachment; filename=\"%s\"", fileName)));
-    assertThat(getProductResponseHeaders.getContentType(), is(MediaType.valueOf(contentType)));
+    assertThat(getProductResponseHeaders.getContentType(), is(MediaType.valueOf(mediaType)));
     assertThat(
         IOUtils.toString(getProductResponseResource.getInputStream(), encoding), is(contents));
   }

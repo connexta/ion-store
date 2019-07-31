@@ -33,14 +33,14 @@ public class ProductStorageManager {
 
   public URI storeProduct(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotBlank final String contentType,
+      @NotBlank final String mediaType,
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream)
       throws StorageException, URISyntaxException {
     // TODO: Validate Accept-Version
     final String key = UUID.randomUUID().toString().replace("-", "");
 
-    storageAdaptor.store(fileSize, contentType, fileName, inputStream, key);
+    storageAdaptor.store(fileSize, mediaType, fileName, inputStream, key);
     return new URI(retrieveEndpoint + key);
   }
 
