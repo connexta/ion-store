@@ -50,13 +50,10 @@ allprojects {
     }
 }
 
-ext.quietTest = {
-    project.hasProperty("quiet")
-}
-
-ext.skipIntegrationTests = {
-    project.hasProperty("skipITests")
-}
+ext.configArgs = [
+        "parallel" : project.hasProperty("parallel"),
+        "skipITests": project.hasProperty("skipITests"),
+]
 
 subprojects {
     apply plugin: "java"
@@ -86,78 +83,12 @@ subprojects {
         //  Forces Gradle to always run the tests, regardless if they are up to date or not.
         outputs.upToDateWhen { false }
 
-        def styler = [(TestResult.ResultType.FAILURE): { msg -> "\033[31m${msg}\033[0m" },
-                      (TestResult.ResultType.SKIPPED): { msg -> "\033[33m${msg}\033[0m" },
-                      (TestResult.ResultType.SUCCESS): { msg -> "\033[32m${msg}\033[0m" }]
-
-
-        if (project.skipIntegrationTests()) {
+        if (project.configArgs["skipITests"]) {
             exclude "**/*IntegrationTest*"
         }
-
-        def parallel = { desc ->
-            if (project.quietTest()) {
-                return "\t >"
-            }
-            return " > " + desc
-        }
-        def lastTestClass = ""
-
-        //  Disable all events as we handle them
-        testLogging {
-            events = []
-        }
-
-        if (project.quietTest()) {
-            onOutput {
-                desc ->
-                    if (lastTestClass != desc.className && desc.className != null) {
-                        lastTestClass = desc.className
-                        def toPrint = " Starting tests for ${desc.className}: "
-                        logger.lifecycle("-=" * (toPrint.length() / 2) + "-")
-                        logger.lifecycle(toPrint)
-                    }
-            }
-        } else {
-            onOutput {
-                desc, event ->
-                    print(event.message)
-            }
-        }
-
-        afterTest { desc, result ->
-            logger.lifecycle("${parallel(desc.className)} ${desc.name}: ${styler[result.resultType](result.resultType)}")
-            if (result.exception) {
-                def stack = []
-                if (project.quietTest()) {
-                    def toTake = 1
-                    for (def ele : result.exception.getStackTrace()) {
-                        if (ele.getClassName() == desc.className) {
-                            break
-                        }
-                        toTake++
-                    }
-                    stack = result.exception.getStackTrace().take(toTake) +
-                            "... ${result.exception.getStackTrace().length - toTake} more"
-                } else {
-                    stack = result.exception.getStackTrace()
-                }
-                logger.lifecycle("\n${styler[result.resultType](result.exception)}\n\t" +
-                        styler[result.resultType]("at ${stack.join("\n\t")}") + "\n")
-            }
-        }
-
-        afterSuite { desc, result ->
-            if (!desc.parent) { // will match the outermost suite
-                def output = "Results: ${styler[result.resultType](result.resultType)} (${result.testCount} tests, " +
-                        "${result.successfulTestCount} successes, ${result.failedTestCount} failures, " +
-                        "${result.skippedTestCount} skipped)"
-                def startItem = "|  ", endItem = "  |"
-                def repeatLength = startItem.length() + output.length() + endItem.length()
-                logger.lifecycle("\n" + ("-" * repeatLength) + "\n" + startItem + output + endItem + "\n" + ("-" * repeatLength))
-            }
-        }
     }
+
+    tasks.withType(Test, TestLogger.configs(project.configArgs))
 
     repositories {
         mavenLocal()
