@@ -23,10 +23,10 @@ public interface StorageAdaptor {
    * @throws StorageException if there is an error when attempting to store
    */
   void store(
-      @NotBlank final String mimeType,
-      @NotNull final InputStream inputStream,
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
+      @NotBlank final String mediaType,
       @NotBlank final String fileName,
+      @NotNull final InputStream inputStream,
       @NotBlank final String key)
       throws StorageException;
 

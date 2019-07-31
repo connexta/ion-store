@@ -6,14 +6,15 @@
  */
 package com.connexta.multiintstore.services.api;
 
+import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.models.Storable;
 import java.util.Optional;
 
 public interface Dao<T extends Storable<U>, U> {
 
   /** @param id Takes the UUID of the object stored */
-  Optional<T> getById(U id);
+  Optional<T> getById(U id) throws StorageException;
 
   /** @param t The object to be stored. */
-  void save(T t);
+  void save(T t) throws StorageException;
 }
