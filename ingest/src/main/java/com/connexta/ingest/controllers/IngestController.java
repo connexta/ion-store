@@ -4,7 +4,7 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.ingest.endpoint;
+package com.connexta.ingest.controllers;
 
 import com.connexta.ingest.exceptions.StoreException;
 import com.connexta.ingest.exceptions.TransformException;
