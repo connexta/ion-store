@@ -18,7 +18,6 @@ configurations.all {
 
 dependencies {
     implementation(Dependencies.awsS3())
-    implementation(Dependencies.ingestAPI())
     implementation(Dependencies.javaxInject())
     implementation(Dependencies.springActuator())
     implementation(Dependencies.springBootStarterWeb())
