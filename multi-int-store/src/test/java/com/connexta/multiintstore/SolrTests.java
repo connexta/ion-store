@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +24,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.connexta.multiintstore.config.SolrClientConfiguration;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -31,9 +33,9 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,9 +95,12 @@ public class SolrTests {
   private String endpointUrlRetrieve;
 
   @Before
-  public void before() {
+  public void before() throws IOException, SolrServerException {
     when(mockAmazonS3.putObject(any(PutObjectRequest.class)))
         .thenReturn(mock(PutObjectResult.class));
+
+    solrClient.deleteByQuery(SOLR_COLLECTION, "*");
+    solrClient.commit(SOLR_COLLECTION);
   }
 
   @Test
@@ -103,6 +108,8 @@ public class SolrTests {
 
   @Test
   public void testStoreMetadataCstWhenSolrIsEmpty() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     final String queryKeyword = "Winterfell";
     final String productContents =
@@ -184,6 +191,8 @@ public class SolrTests {
 
   @Test
   public void testStoreMetadataCstWhenSolrIsNotEmpty() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     final InputStream firstInputStream =
         IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
@@ -326,13 +335,63 @@ public class SolrTests {
   }
 
   @Test
-  @Ignore("TODO verify id matches something in S3 before storing to solr")
-  public void testStoreMetadataProductIdNotFound() {
-    // TODO verify 404? 400?
+  public void testStoreMetadataProductIdNotFound() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
+    // given
+    final URI productLocation = new URI("http://localhost:8080/mis/product/12341");
+    final String queryKeyword = "Winterfell";
+    final String metadataContents =
+        "All the color had been leached from "
+            + queryKeyword
+            + " until only grey and white remained";
+    final String metadataEncoding = "UTF-8";
+    final InputStream metadataInputStream =
+        IOUtils.toInputStream(metadataContents, metadataEncoding);
+    final long metadataFileSize = (long) metadataInputStream.available();
+    final String metadataFileName = "test_file_name.txt";
+    final String metadataMimeType = "text/plain";
+    final MultiValueMap<String, Object> storeMetadataRequestBody = new LinkedMultiValueMap<>();
+    storeMetadataRequestBody.add("fileSize", String.valueOf(metadataFileSize));
+    storeMetadataRequestBody.add("mimeType", metadataMimeType);
+    storeMetadataRequestBody.add(
+        "file",
+        new InputStreamResource(metadataInputStream) {
+
+          @Override
+          public long contentLength() {
+            return metadataFileSize;
+          }
+
+          @Override
+          public String getFilename() {
+            return metadataFileName;
+          }
+        });
+    storeMetadataRequestBody.add("fileName", metadataFileName);
+    final HttpHeaders storeMetadataRequestHttpHeaders = new HttpHeaders();
+    storeMetadataRequestHttpHeaders.set("Accept-Version", "0.1.0");
+
+    // when
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.FALSE);
+
+    // attempt to store metadata
+    restTemplate.put(
+        productLocation + "/cst",
+        new HttpEntity<>(storeMetadataRequestBody, storeMetadataRequestHttpHeaders));
+
+    // query for metadata keyword and verify no search results are returned
+    final URIBuilder queryUriBuilder = new URIBuilder();
+    queryUriBuilder.setPath("/search");
+    queryUriBuilder.setParameter("q", queryKeyword);
+    assertThat(
+        (List<String>) restTemplate.getForObject(queryUriBuilder.build(), List.class), empty());
   }
 
   @Test
   public void testStoreMetadataCstHasAlreadyBeenStored() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     final String queryKeyword = "Winterfell";
     final String productContents =
@@ -443,6 +502,8 @@ public class SolrTests {
 
   @Test
   public void testQuery() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     // and store first product
     final InputStream firstInputStream =
@@ -844,6 +905,8 @@ public class SolrTests {
 
   @Test
   public void testQueryMultipleResults() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     // and store first product
     final InputStream firstInputStream =

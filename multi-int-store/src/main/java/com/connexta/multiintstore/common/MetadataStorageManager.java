@@ -6,6 +6,7 @@
  */
 package com.connexta.multiintstore.common;
 
+import com.connexta.multiintstore.adaptors.StorageAdaptor;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.services.api.Dao;
@@ -24,9 +25,13 @@ public class MetadataStorageManager {
   private static final String SUPPORTED_METADATA_TYPE = "cst";
 
   private final Dao<IndexedProductMetadata, String> cstDao;
+  private final StorageAdaptor storageAdaptor;
 
-  public MetadataStorageManager(@NotNull final Dao<IndexedProductMetadata, String> cstDao) {
+  public MetadataStorageManager(
+      @NotNull final Dao<IndexedProductMetadata, String> cstDao,
+      @NotNull StorageAdaptor storageAdaptor) {
     this.cstDao = cstDao;
+    this.storageAdaptor = storageAdaptor;
   }
 
   public void storeMetadata(
@@ -41,24 +46,31 @@ public class MetadataStorageManager {
       throw new UnsupportedOperationException(message);
     }
 
-    // TODO verify Media Typeype for CST
+    // TODO verify Media Type for CST
 
     storeCst(productId, inputStream);
   }
 
   private void storeCst(@NotBlank final String productId, @NotNull final InputStream inputStream)
       throws StorageException {
-    final IndexedProductMetadata indexedProductMetadata;
-    try {
-      indexedProductMetadata =
-          new IndexedProductMetadata(
-              productId, IOUtils.toString(inputStream, StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      throw new StorageException("Unable to convert metadata to String", e);
-    }
+    if (storageAdaptor.objectExists(productId)) {
+      final IndexedProductMetadata indexedProductMetadata;
+      try {
+        indexedProductMetadata =
+            new IndexedProductMetadata(
+                productId, IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+      } catch (IOException e) {
+        throw new StorageException("Unable to convert metadata to String", e);
+      }
 
-    log.info(
-        "Attempting to store {} metadata for product id {}", SUPPORTED_METADATA_TYPE, productId);
-    cstDao.save(indexedProductMetadata);
+      log.info(
+          "Attempting to store {} metadata for product id {}", SUPPORTED_METADATA_TYPE, productId);
+      cstDao.save(indexedProductMetadata);
+    } else {
+      throw new StorageException(
+          String.format(
+              "Unable to store Metadata because a product with key \"%s\" does not exist",
+              productId));
+    }
   }
 }
