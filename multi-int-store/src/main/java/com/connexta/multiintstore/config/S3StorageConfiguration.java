@@ -22,11 +22,9 @@ import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.Scope;
 
 @Slf4j
 @Configuration
@@ -45,18 +43,12 @@ public class S3StorageConfiguration {
         .build();
   }
 
-  // TODO does this need to be a separate bean?
-  @Bean
-  @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-  public TransferManager transferManager(@NotNull AmazonS3 amazonS3) {
-    return TransferManagerBuilder.standard().withS3Client(amazonS3).build();
-  }
-
   @Bean
   public S3StorageAdaptor s3StorageAdaptor(
       @NotNull final AmazonS3 amazonS3,
-      @NotNull TransferManager transferManager,
       @Value("${aws.s3.bucket.quarantine}") @NotBlank final String bucket) {
+    TransferManager transferManager =
+        TransferManagerBuilder.standard().withS3Client(amazonS3).build();
     return new S3StorageAdaptor(amazonS3, transferManager, bucket);
   }
 
