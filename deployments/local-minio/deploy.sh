@@ -108,7 +108,8 @@ else
         redeploy
         ;;
     clean | c)
-        cleanup
+        rm-stack
+        rm-network
         ;;
     *)
         printf "$helptext"
