@@ -66,7 +66,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
     } catch (RuntimeException | InterruptedException e) {
       throw new StorageException(
           String.format(
-              "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, key, bucket),
+              "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, bucket, key),
           e);
     }
 
@@ -116,5 +116,10 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
       throw t;
     }
+  }
+
+  @Override
+  public boolean objectExists(String key) {
+    return amazonS3.doesObjectExist(bucket, key);
   }
 }

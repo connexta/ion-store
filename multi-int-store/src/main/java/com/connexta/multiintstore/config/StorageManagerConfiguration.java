@@ -28,7 +28,7 @@ public class StorageManagerConfiguration {
 
   @Bean
   public MetadataStorageManager metadataStorageManager(
-      @NotNull Dao<IndexedProductMetadata, String> cstDao) {
-    return new MetadataStorageManager(cstDao);
+      @NotNull Dao<IndexedProductMetadata, String> cstDao, @NotNull StorageAdaptor storageAdaptor) {
+    return new MetadataStorageManager(cstDao, storageAdaptor);
   }
 }

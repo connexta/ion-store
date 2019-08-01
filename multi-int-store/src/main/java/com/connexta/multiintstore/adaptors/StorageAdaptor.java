@@ -38,4 +38,6 @@ public interface StorageAdaptor {
    */
   @NotNull
   RetrieveResponse retrieve(@NotBlank final String key) throws StorageException;
+
+  boolean objectExists(@NotBlank String key);
 }

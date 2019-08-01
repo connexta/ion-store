@@ -108,7 +108,6 @@ public class StoreController implements StoreApi {
     final String mediaType = file.getContentType();
     // TODO verify that mediaType is not blank and is a valid Content Type
 
-    // TODO verify id matches something in S3 before storing to solr
     // TODO handle when CST has already been stored
 
     final InputStream inputStream;
