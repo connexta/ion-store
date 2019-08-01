@@ -33,43 +33,23 @@ public class IngestController implements IngestApi {
   }
 
   @Override
-  public ResponseEntity<Void> ingest(
-      String acceptVersion, String fileName, Long fileSize, String mimeType, MultipartFile file) {
-    // TODO validate fileSize
-
-    log.info("Attempting to ingest {}", fileName);
-
-    final Long actualFileSize = file.getSize();
-    if (!fileSize.equals(actualFileSize)) {
-      log.warn(
-          "File size request param ({}) does not match the size of the file ({}).",
-          fileSize,
-          actualFileSize);
-      return ResponseEntity.badRequest().build();
-    }
-
+  public ResponseEntity<Void> ingest(String acceptVersion, MultipartFile multipartFile) {
+    String mediaType = multipartFile.getContentType();
+    String fileName = multipartFile.getOriginalFilename();
+    Long fileSize = multipartFile.getSize();
+    log.info("Attempting to ingest %s", fileName);
     try {
-      ingestService.ingest(fileSize, mimeType, file.getInputStream(), fileName);
-    } catch (StoreException | TransformException e) {
+      ingestService.ingest(fileSize, mediaType, multipartFile.getInputStream(), fileName);
+    } catch (IOException | StoreException | TransformException e) {
       log.warn(
-          "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
+          "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
           acceptVersion,
           fileSize,
-          mimeType,
+          mediaType,
           fileName,
           e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    } catch (IOException e) {
-      log.warn(
-          "Unable to read file for ingest request with params acceptVersion={}, fileSize={}, mimeType={}, fileName={}",
-          acceptVersion,
-          fileSize,
-          mimeType,
-          fileName,
-          e);
-      return ResponseEntity.badRequest().build();
     }
-
     return ResponseEntity.accepted().build();
   }
 }
