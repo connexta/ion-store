@@ -120,6 +120,6 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
   @Override
   public boolean objectExists(String key) {
-    return (amazonS3.doesObjectExist(bucket, key)) ? true : false;
+    return amazonS3.doesObjectExist(bucket, key);
   }
 }
