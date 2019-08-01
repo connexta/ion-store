@@ -37,7 +37,7 @@ public class IngestController implements IngestApi {
     String mediaType = multipartFile.getContentType();
     String fileName = multipartFile.getOriginalFilename();
     Long fileSize = multipartFile.getSize();
-    log.info("Attempting to ingest %s", fileName);
+    log.info("Attempting to ingest {}", fileName);
     try {
       ingestService.ingest(fileSize, mediaType, multipartFile.getInputStream(), fileName);
     } catch (IOException | StoreException | TransformException e) {
