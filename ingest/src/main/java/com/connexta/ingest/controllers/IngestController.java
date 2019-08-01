@@ -38,18 +38,17 @@ public class IngestController implements IngestApi {
     String fileName = multipartFile.getOriginalFilename();
     Long fileSize = multipartFile.getSize();
     log.info("Attempting to ingest %s", fileName);
-    String messageTemplate =
-        String.format(
-            "Unable to %%s for request with params acceptVersion=%s, fileSize=%s, mimeType=%s, fileName=%s",
-            acceptVersion, fileSize, mediaType, fileName);
     try {
       ingestService.ingest(fileSize, mediaType, multipartFile.getInputStream(), fileName);
-    } catch (StoreException | TransformException e) {
-      log.warn(String.format(messageTemplate, "complete ingest"), e);
+    } catch (IOException | StoreException | TransformException e) {
+      log.warn(
+          "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
+          acceptVersion,
+          fileSize,
+          mediaType,
+          fileName,
+          e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    } catch (IOException e) {
-      log.warn(String.format(messageTemplate, "read file"), e);
-      return ResponseEntity.badRequest().build();
     }
     return ResponseEntity.accepted().build();
   }
