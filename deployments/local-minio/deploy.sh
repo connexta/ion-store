@@ -35,9 +35,9 @@ function rm-stack () {
 function rm-network () {
     printf "Removing $name docker network...\n"
     docker network rm $name
-    printf "\nWaiting for docker network '$name' to go down."
+    printf "\nWaiting for docker network '$name' to go down.\n"
     wait-for-empty-results "docker network ls | grep -w $name"
-    printf "Done!\n"
+    printf "\nDone!\n"
 }
 
 # Waits for everything to start up
@@ -87,6 +87,7 @@ function redeploy () {
 
 # Fastest option. Does not pick up all changes.
 function update () {
+    print_warning
     configure-network
     deploy-images
     wait-for-containers
