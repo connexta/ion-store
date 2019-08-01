@@ -14,16 +14,15 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.multiintstore.common.exceptions.StorageException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.util.StringUtils;
-
+import java.io.IOException;
+import java.io.InputStream;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
-import java.io.InputStream;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 public class S3StorageAdaptor implements StorageAdaptor {
@@ -67,7 +66,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
     } catch (RuntimeException | InterruptedException e) {
       throw new StorageException(
           String.format(
-              "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, key, bucket),
+              "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, bucket, key),
           e);
     }
 

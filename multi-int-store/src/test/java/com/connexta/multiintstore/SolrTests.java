@@ -17,16 +17,13 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
-import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.config.SolrClientConfiguration;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -36,12 +33,11 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.matchers.Any;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,7 +51,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.testcontainers.containers.GenericContainer;
@@ -101,9 +96,12 @@ public class SolrTests {
   private String endpointUrlRetrieve;
 
   @Before
-  public void before() {
+  public void before() throws IOException, SolrServerException {
     when(mockAmazonS3.putObject(any(PutObjectRequest.class)))
         .thenReturn(mock(PutObjectResult.class));
+
+    solrClient.deleteByQuery(SOLR_COLLECTION, "*");
+    solrClient.commit(SOLR_COLLECTION);
   }
 
   @Test
@@ -111,6 +109,8 @@ public class SolrTests {
 
   @Test
   public void testStoreMetadataCstWhenSolrIsEmpty() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     final String queryKeyword = "Winterfell";
     final String productContents =
@@ -192,6 +192,8 @@ public class SolrTests {
 
   @Test
   public void testStoreMetadataCstWhenSolrIsNotEmpty() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     final InputStream firstInputStream =
         IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
@@ -335,13 +337,15 @@ public class SolrTests {
 
   @Test
   public void testStoreMetadataProductIdNotFound() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     final URI productLocation = new URI("http://localhost:8080/mis/product/12341");
-      final String queryKeyword = "Winterfell";
-      final String metadataContents =
-              "All the color had been leached from "
-                      + queryKeyword
-                      + " until only grey and white remained";
+    final String queryKeyword = "Winterfell";
+    final String metadataContents =
+        "All the color had been leached from "
+            + queryKeyword
+            + " until only grey and white remained";
     final String metadataEncoding = "UTF-8";
     final InputStream metadataInputStream =
         IOUtils.toInputStream(metadataContents, metadataEncoding);
@@ -387,6 +391,8 @@ public class SolrTests {
 
   @Test
   public void testStoreMetadataCstHasAlreadyBeenStored() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     final String queryKeyword = "Winterfell";
     final String productContents =
@@ -497,6 +503,8 @@ public class SolrTests {
 
   @Test
   public void testQuery() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     // and store first product
     final InputStream firstInputStream =
@@ -898,6 +906,8 @@ public class SolrTests {
 
   @Test
   public void testQueryMultipleResults() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
     // given
     // and store first product
     final InputStream firstInputStream =
