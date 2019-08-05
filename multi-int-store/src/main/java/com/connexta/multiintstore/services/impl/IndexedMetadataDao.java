@@ -6,7 +6,6 @@
  */
 package com.connexta.multiintstore.services.impl;
 
-import com.connexta.multiintstore.common.exceptions.DuplicateIdException;
 import com.connexta.multiintstore.common.exceptions.StorageException;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.repositories.IndexedMetadataRepository;
@@ -31,14 +30,8 @@ public class IndexedMetadataDao implements Dao<IndexedProductMetadata, String> {
   }
 
   @Override
-  public void save(IndexedProductMetadata indexedProductMetadata)
-      throws StorageException, DuplicateIdException {
+  public void save(IndexedProductMetadata indexedProductMetadata) throws StorageException {
     Optional<IndexedProductMetadata> document = getById(indexedProductMetadata.getId());
-    document.ifPresent(
-        (metadata) -> {
-          throw new DuplicateIdException(
-              "Metadata with id " + metadata.getId() + " already exists");
-        });
     try {
       repository.save(indexedProductMetadata);
     } catch (RuntimeException e) {
