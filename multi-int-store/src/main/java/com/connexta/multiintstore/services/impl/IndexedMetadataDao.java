@@ -31,7 +31,6 @@ public class IndexedMetadataDao implements Dao<IndexedProductMetadata, String> {
 
   @Override
   public void save(IndexedProductMetadata indexedProductMetadata) throws StorageException {
-    Optional<IndexedProductMetadata> document = getById(indexedProductMetadata.getId());
     try {
       repository.save(indexedProductMetadata);
     } catch (RuntimeException e) {
