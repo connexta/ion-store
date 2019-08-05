@@ -68,7 +68,7 @@ public class SolrTests {
 
   @ClassRule
   public static final GenericContainer solrContainer =
-      new GenericContainer("solr:8")
+      new GenericContainer("solr:8.1.1")
           .withCommand("solr-create -c " + SOLR_COLLECTION)
           .withExposedPorts(SOLR_PORT)
           .waitingFor(Wait.forHttp("/solr/" + SOLR_COLLECTION + "/admin/ping"));
