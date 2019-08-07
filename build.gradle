@@ -18,7 +18,7 @@ buildscript {
 }
 
 plugins {
-    id "com.diffplug.gradle.spotless" version "3.23.1"
+    id "com.diffplug.gradle.spotless" version "3.24.0"
     id "java"
     id "maven"
     id "org.owasp.dependencycheck" version "5.2.1"
