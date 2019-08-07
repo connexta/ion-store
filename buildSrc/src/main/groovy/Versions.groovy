@@ -17,7 +17,7 @@ class Versions {
     static String javaxInject = "1"
     static String lombok = "1.18.8"
     static String springBoot = "2.1.6.RELEASE"
-    static String springData = "4.0.9.RELEASE"
+    static String springData = "4.0.10.RELEASE"
     static String swagger = "2.9.2"
     static String transformAPI = "0.1.0"
 
