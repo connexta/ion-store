@@ -17,15 +17,19 @@ configurations.all {
 }
 
 dependencies {
+    annotationProcessor "org.projectlombok:lombok:1.18.8"
+    compileOnly "org.projectlombok:lombok:1.18.8"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.592"
     implementation "javax.inject:javax.inject:1"
+    implementation "io.springfox:springfox-swagger2:2.9.2"
+    implementation "io.springfox:springfox-swagger-ui:2.9.2"
     implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.6.RELEASE"
     implementation "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
     implementation "org.springframework.data:spring-data-solr:4.0.10.RELEASE"
-    implementation "io.springfox:springfox-swagger2:2.9.2"
-    implementation "io.springfox:springfox-swagger-ui:2.9.2"
     testImplementation "com.github.npathai:hamcrest-optional:2.0.0"
     testImplementation "com.xebialabs.restito:restito:0.9.3"
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.mockito:mockito-core:2.28.2"
     testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.6.RELEASE"
     testImplementation "org.testcontainers:testcontainers:1.11.3"
 }

@@ -12,9 +12,8 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE"
-
         classpath "gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE"
     }
 }
 
@@ -95,14 +94,6 @@ subprojects {
         mavenLocal()
         mavenCentral()
         maven { url "http://nexus.phx.connexta.com:8081/nexus/content/repositories/ion-releases/" }
-    }
-
-    dependencies {
-        compileOnly "org.projectlombok:lombok:1.18.8"
-        annotationProcessor "org.projectlombok:lombok:1.18.8"
-        //  Test Dependencies
-        testImplementation "junit:junit:4.12"
-        testImplementation "org.mockito:mockito-core:2.28.2"
     }
 
     task listDependencies(type: DependencyReportTask)
