@@ -11,24 +11,20 @@ plugins {
 
 configurations.all {
     resolutionStrategy {
-        force Dependencies.jacksonDatabind
+        force "com.fasterxml.jackson.core:jackson-databind:[2.9.9.3,)"
     }
 }
 
 dependencies {
-    implementation(Dependencies.springBootStarterWeb())
-    implementation(Dependencies.commonsIO())
-    implementation(Dependencies.ingestAPI())
-    implementation(Dependencies.javaxInject())
-    implementation(Dependencies.springActuator())
-    implementation(Dependencies.swagger())
-    implementation(Dependencies.swaggerUi())
-    implementation(Dependencies.transformAPI())
-    testImplementation(Dependencies.springBootStarterTest())
-}
-
-processResources {
-    expand([transformApiVersion: Versions.transformAPI])
+    implementation "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
+    implementation "commons-io:commons-io:2.6"
+    implementation "com.connexta.ion.ingest:ingest-api-rest-spring-stubs:0.3.0"
+    implementation "javax.inject:javax.inject:1"
+    implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.6.RELEASE"
+    implementation "io.springfox:springfox-swagger2:2.9.2"
+    implementation "io.springfox:springfox-swagger-ui:2.9.2"
+    implementation "com.connexta.transformation:transformation-api-rest-spring-stubs:0.1.0"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.6.RELEASE"
 }
 
 dependencyCheck {

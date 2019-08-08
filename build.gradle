@@ -12,8 +12,9 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath(Dependencies.springBootGradlePlugin())
-        classpath(Dependencies.palantir())
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE"
+
+        classpath "gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1"
     }
 }
 
@@ -27,8 +28,8 @@ plugins {
 
 allprojects {
 
-    sourceCompatibility = Versions.java
-    targetCompatibility = Versions.java
+    sourceCompatibility = 1.11
+    targetCompatibility = 1.11
 
     if (sourceCompatibility != Jvm.current().javaVersion) {
         throw new Exception("You need Java ${sourceCompatibility} to build and run ${project.name}.\n" +
@@ -38,7 +39,7 @@ allprojects {
     }
 
     group = "com.connexta.multiintstore"
-    version = Versions.project
+    version = "0.1.0-SNAPSHOT"
 
     apply plugin: "com.diffplug.gradle.spotless"
 
@@ -97,11 +98,11 @@ subprojects {
     }
 
     dependencies {
-        compileOnly(Dependencies.lombok())
-        annotationProcessor(Dependencies.lombok())
+        compileOnly "org.projectlombok:lombok:1.18.8"
+        annotationProcessor "org.projectlombok:lombok:1.18.8"
         //  Test Dependencies
-        testImplementation(Dependencies.junit())
-        testImplementation(Dependencies.mockito())
+        testImplementation "junit:junit:4.12"
+        testImplementation "org.mockito:mockito-core:2.28.2"
     }
 
     task listDependencies(type: DependencyReportTask)
