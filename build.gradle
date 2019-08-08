@@ -12,8 +12,8 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath(Dependencies.springBootGradlePlugin())
-        classpath(Dependencies.palantir())
+        classpath "gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE"
     }
 }
 
@@ -27,8 +27,8 @@ plugins {
 
 allprojects {
 
-    sourceCompatibility = Versions.java
-    targetCompatibility = Versions.java
+    sourceCompatibility = 1.11
+    targetCompatibility = 1.11
 
     if (sourceCompatibility != Jvm.current().javaVersion) {
         throw new Exception("You need Java ${sourceCompatibility} to build and run ${project.name}.\n" +
@@ -38,7 +38,7 @@ allprojects {
     }
 
     group = "com.connexta.multiintstore"
-    version = Versions.project
+    version = "0.1.0-SNAPSHOT"
 
     apply plugin: "com.diffplug.gradle.spotless"
 
@@ -94,14 +94,6 @@ subprojects {
         mavenLocal()
         mavenCentral()
         maven { url "http://nexus.phx.connexta.com:8081/nexus/content/repositories/ion-releases/" }
-    }
-
-    dependencies {
-        compileOnly(Dependencies.lombok())
-        annotationProcessor(Dependencies.lombok())
-        //  Test Dependencies
-        testImplementation(Dependencies.junit())
-        testImplementation(Dependencies.mockito())
     }
 
     task listDependencies(type: DependencyReportTask)
