@@ -19,7 +19,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
@@ -71,8 +70,8 @@ public class StoreClient {
     final URI location;
     try {
       location = restTemplate.postForLocation(storeEndpoint, request);
-    } catch (final RestClientException e) {
-      throw new StoreException("Unable to POST to store endpoint", e);
+    } catch (Exception e) {
+      throw new StoreException(e);
     }
     return location;
   }

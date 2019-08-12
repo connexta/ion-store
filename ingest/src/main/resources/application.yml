@@ -14,4 +14,4 @@ management:
         include: "*"
 endpoints:
   transform:
-    version: ${transformApiVersion}
+    version: "0.1.0" #TODO Use variable substitution from gradle.build file for ${transformApiVersion}

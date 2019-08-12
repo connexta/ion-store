@@ -6,13 +6,12 @@
  */
 package com.connexta.ingest.controllers;
 
-import com.connexta.ingest.exceptions.StoreException;
-import com.connexta.ingest.exceptions.TransformException;
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.ingest.service.api.IngestService;
 import java.io.IOException;
+import java.io.InputStream;
+import javax.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,19 +36,20 @@ public class IngestController implements IngestApi {
     String mediaType = multipartFile.getContentType();
     String fileName = multipartFile.getOriginalFilename();
     Long fileSize = multipartFile.getSize();
-    log.info("Attempting to ingest {}", fileName);
+    log.info(
+        "Ingest request received acceptVersion={}, fileName={}, fileSize={}, mediaType={}",
+        acceptVersion,
+        fileName,
+        fileSize,
+        mediaType);
+    InputStream inputStream;
     try {
-      ingestService.ingest(fileSize, mediaType, multipartFile.getInputStream(), fileName);
-    } catch (IOException | StoreException | TransformException e) {
-      log.warn(
-          "Unable to complete ingest request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
-          acceptVersion,
-          fileSize,
-          mediaType,
-          fileName,
-          e);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+      inputStream = multipartFile.getInputStream();
+    } catch (IOException e) {
+      throw new ValidationException("Could not open attachment");
     }
+    ingestService.ingest(fileSize, mediaType, inputStream, fileName);
+
     return ResponseEntity.accepted().build();
   }
 }

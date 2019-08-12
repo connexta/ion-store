@@ -31,6 +31,10 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.7.RELEASE"
 }
 
+processResources {
+    expand([transformApiVersion: "0.1.0"])
+}
+
 dependencyCheck {
     suppressionFile = "${projectDir}/owasp-suppressions.xml"
 }

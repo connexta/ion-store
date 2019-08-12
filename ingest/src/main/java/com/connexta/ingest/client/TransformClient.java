@@ -53,8 +53,8 @@ public class TransformClient {
 
     try {
       restTemplate.postForEntity(transformEndpoint, transformRequestHttpEntity, Void.class);
-    } catch (RuntimeException e) {
-      throw new TransformException("Unable to complete transform request", e);
+    } catch (Exception e) {
+      throw new TransformException(e);
     }
   }
 }
