@@ -8,7 +8,7 @@ package com.connexta.ingest.exceptions;
 
 public class StoreException extends IngestException {
 
-  public StoreException(String reason, Throwable cause) {
-    super(reason, cause);
+  public StoreException(Throwable cause) {
+    super("Store exception", cause);
   }
 }

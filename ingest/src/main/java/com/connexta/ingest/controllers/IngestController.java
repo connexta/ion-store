@@ -36,8 +36,12 @@ public class IngestController implements IngestApi {
     String mediaType = multipartFile.getContentType();
     String fileName = multipartFile.getOriginalFilename();
     Long fileSize = multipartFile.getSize();
-    String detail = getDescription(acceptVersion, mediaType, fileName, fileSize);
-    log.info("Ingest request received {}", detail);
+    log.info(
+        "Ingest request received acceptVersion={}, fileName={}, fileSize={}, mediaType={}",
+        acceptVersion,
+        fileName,
+        fileSize,
+        mediaType);
     InputStream inputStream;
     try {
       inputStream = multipartFile.getInputStream();
@@ -47,12 +51,5 @@ public class IngestController implements IngestApi {
     ingestService.ingest(fileSize, mediaType, inputStream, fileName);
 
     return ResponseEntity.accepted().build();
-  }
-
-  private String getDescription(
-      String acceptVersion, String mediaType, String fileName, Long fileSize) {
-    return String.format(
-        "acceptVersion=%s, fileName=%s, fileSize=%d, mediaType=%s",
-        acceptVersion, fileName, fileSize, mediaType);
   }
 }

@@ -8,7 +8,7 @@ package com.connexta.ingest.exceptions;
 
 public class TransformException extends IngestException {
 
-  public TransformException(String reason, Throwable cause) {
-    super(reason, cause);
+  public TransformException(Throwable cause) {
+    super("Transform service exception", cause);
   }
 }

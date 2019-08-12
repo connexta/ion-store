@@ -71,7 +71,7 @@ public class StoreClient {
     try {
       location = restTemplate.postForLocation(storeEndpoint, request);
     } catch (Exception e) {
-      throw new StoreException("Store exception", e);
+      throw new StoreException(e);
     }
     return location;
   }

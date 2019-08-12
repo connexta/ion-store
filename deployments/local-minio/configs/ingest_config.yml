@@ -1,19 +1,2 @@
 endpointUrl:
   store: http://multi-int-store:8080/mis/product/
-spring:
-  servlet:
-    multipart:
-      max-file-size: 10GB
-      max-request-size: 11GB
-logging:
-  level:
-    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
-    org.springframework.web.client: DEBUG
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-endpoints:
-  transform:
-    version: "0.1.0" #TODO Use variable substitution from gradle.build file for ${transformApiVersion}
