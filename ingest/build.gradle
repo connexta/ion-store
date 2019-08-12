@@ -24,7 +24,7 @@ dependencies {
     implementation "javax.inject:javax.inject:1"
     implementation "io.springfox:springfox-swagger2:2.9.2"
     implementation "io.springfox:springfox-swagger-ui:2.9.2"
-    implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.6.RELEASE"
+    implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.7.RELEASE"
     implementation "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
     testImplementation "junit:junit:4.12"
     testImplementation "org.mockito:mockito-core:3.0.0"
