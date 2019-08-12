@@ -31,7 +31,7 @@ dependencies {
     testImplementation "junit:junit:4.12"
     testImplementation "org.mockito:mockito-core:3.0.0"
     testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.7.RELEASE"
-    testImplementation "org.testcontainers:testcontainers:1.11.3"
+    testImplementation "org.testcontainers:testcontainers:1.12.0"
 }
 
 dependencyCheck {
