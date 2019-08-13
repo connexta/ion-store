@@ -44,7 +44,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @MockBean(AmazonS3.class)
-public class StoreMetadataTests {
+public class IndexTests {
 
   @MockBean private SolrClient mockSolrClient;
 
