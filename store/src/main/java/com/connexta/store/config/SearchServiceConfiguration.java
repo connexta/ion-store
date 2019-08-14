@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SearchServiceConfiguration {
+
   @Bean
   public SearchService searchService(
       @NotNull IndexedMetadataRepository indexedMetadataRepository,
