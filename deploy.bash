@@ -9,7 +9,7 @@ SET_DOCKER_W=""
 DOCKER_REG=${DOCKER_REGISTRY:-${SET_DOCKER_REG}}
 
 # The name of the preface for the docker images
-DOCKER_NAME="cnxta/cdr"
+DOCKER_NAME="cnxta/cdr-"
 
 # DOCKER_REGISTRY
 
