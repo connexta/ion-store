@@ -12,13 +12,15 @@ plugins {
 configurations.all {
     resolutionStrategy {
         force "com.fasterxml.jackson.core:jackson-databind:[2.9.9.3,)"
+        force "com.google.guava:guava:[24.1.1,)"
+
     }
 }
 
 dependencies {
     annotationProcessor "org.projectlombok:lombok:1.18.8"
     compileOnly "org.projectlombok:lombok:1.18.8"
-    implementation "com.connexta.ion.ingest:ingest-api-rest-spring-stubs:0.3.0"
+    implementation "com.connexta.ingest:ingest-api-rest-spring-stubs:0.4.0"
     implementation "com.connexta.transformation:transformation-api-rest-spring-stubs:0.1.0"
     implementation "commons-io:commons-io:2.6"
     implementation "javax.inject:javax.inject:1"
