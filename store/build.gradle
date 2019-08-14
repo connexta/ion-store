@@ -19,7 +19,7 @@ configurations.all {
 dependencies {
     annotationProcessor "org.projectlombok:lombok:1.18.8"
     compileOnly "org.projectlombok:lombok:1.18.8"
-    implementation "com.amazonaws:aws-java-sdk-s3:1.11.609"
+    implementation "com.amazonaws:aws-java-sdk-s3:1.11.610"
     implementation "com.connexta.search:index-api-rest-spring-stubs:0.1.0-SNAPSHOT" // TODO replace with released version
     implementation "javax.inject:javax.inject:1"
     implementation "io.springfox:springfox-swagger2:2.9.2"
