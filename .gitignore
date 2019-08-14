@@ -2,6 +2,7 @@
 *.project
 *.settings/
 *.vscode/
+**/bin/
 
 # IntelliJ
 *.iml

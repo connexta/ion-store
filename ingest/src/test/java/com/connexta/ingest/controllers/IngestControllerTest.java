@@ -23,6 +23,6 @@ public class IngestControllerTest {
     MultipartFile multipartFile = mock(MultipartFile.class);
     Mockito.doThrow(new IOException()).when(multipartFile).getInputStream();
     IngestController controller = new IngestController(service);
-    controller.ingest("nothing", multipartFile);
+    controller.ingest("nothing", multipartFile, "also nothing");
   }
 }

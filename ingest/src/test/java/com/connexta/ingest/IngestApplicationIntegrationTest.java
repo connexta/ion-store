@@ -46,8 +46,6 @@ import org.springframework.web.client.RestTemplate;
 public class IngestApplicationIntegrationTest {
 
   private static final byte[] TEST_FILE = "some-content".getBytes();
-  private static final int TEST_FILE_SIZE = TEST_FILE.length;
-  private static final String TEST_MIME_TYPE = "text/plain";
 
   @Value("${endpointUrl.store}")
   private String endpointUrlStore;
@@ -111,6 +109,7 @@ public class IngestApplicationIntegrationTest {
             multipart("/ingest")
                 .file("file", TEST_FILE)
                 .header("Accept-Version", "1.2.1")
+                .param("correlationId", "000f4fa4")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isAccepted());
@@ -130,6 +129,7 @@ public class IngestApplicationIntegrationTest {
     mvc.perform(
             multipart("/ingest")
                 .file("file", TEST_FILE)
+                .param("correlationId", "000f4fa4")
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -148,10 +148,7 @@ public class IngestApplicationIntegrationTest {
     mvc.perform(
             multipart("/ingest")
                 .file("file", TEST_FILE)
-                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-                .param("fileName", "testFile.txt")
-                .param("title", "qualityTitle")
-                .param("mimeType", "plain/text")
+                .param("correlationId", "000f4fa4")
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -170,10 +167,7 @@ public class IngestApplicationIntegrationTest {
     mvc.perform(
             multipart("/ingest")
                 .file("file", TEST_FILE)
-                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-                .param("fileName", "testFile.txt")
-                .param("title", "qualityTitle")
-                .param("mimeType", "plain/text")
+                .param("correlationId", "000f4fa4")
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -192,10 +186,7 @@ public class IngestApplicationIntegrationTest {
     mvc.perform(
             multipart("/ingest")
                 .file("file", TEST_FILE)
-                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-                .param("fileName", "testFile.txt")
-                .param("title", "qualityTitle")
-                .param("mimeType", "plain/text")
+                .param("correlationId", "000f4fa4")
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -214,10 +205,7 @@ public class IngestApplicationIntegrationTest {
     mvc.perform(
             multipart("/ingest")
                 .file("file", TEST_FILE)
-                .param("fileSize", String.valueOf(TEST_FILE_SIZE))
-                .param("fileName", "testFile.txt")
-                .param("title", "qualityTitle")
-                .param("mimeType", "plain/text")
+                .param("correlationId", "000f4fa4")
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -248,6 +236,7 @@ public class IngestApplicationIntegrationTest {
     mvc.perform(
             multipart("/ingest")
                 .file("file", TEST_FILE)
+                .param("correlationId", "000f4fa4")
                 .header("Accept-Version", "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
