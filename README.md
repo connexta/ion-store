@@ -1,4 +1,4 @@
-# Multi-Int Store
+# Store
 
 ## Prerequisites
 * Java 11
@@ -134,20 +134,20 @@ docker stack deploy -c docker-compose.yml cdr
     ```bash
     REPOSITORY                                     TAG                 IMAGE ID            CREATED             SIZE
     cnxta/cdr-ingest                               0.1.0-SNAPSHOT      4ca707d86ddb        2 hours ago         290MB
-    cnxta/cdr-multi-int-store                      0.1.0-SNAPSHOT      39b44248f9c1        19 hours ago        308MB
+    cnxta/cdr-store                      0.1.0-SNAPSHOT      39b44248f9c1        19 hours ago        308MB
     ```
 
     For each image, use `docker tag SOURCE TARGET` to create an alias with the address of the target registry. For
     example, if the address of the target registry is `<docker_registry>`:
     ```bash
     docker tag cnxta/cdr-ingest:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
-    docker tag cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
+    docker tag cnxta/cdr-store:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-store:0.1.0-SNAPSHOT
     ```
 2. Push each image.
 
     ```bash
     docker push <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
-    docker push <docker_registry>/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
+    docker push <docker_registry>/cnxta/cdr-store:0.1.0-SNAPSHOT
     ```
 3. Deploy the service in the cloud.
     > **Note**: All of the commands in this section must be executed from the cloud environment, not the local
@@ -185,10 +185,10 @@ in the external config file take precedence over config files that are built wit
 
 ## Using
 
-### Multi-Int Store Service
-The Multi-Int Store service is capable of storing data in an S3-compatible data store. The configuration to access S3 is found as
+### Store Service
+The Store service is capable of storing data in an S3-compatible data store. The configuration to access S3 is found as
 a list of commands under the ingest service in the `docker-compose.yml` file. Here you can change the endpoint URL, the
-S3 bucket name, and the credentials the service will use to connect to S3. The Multi-Int Store uses docker secrets
+S3 bucket name, and the credentials the service will use to connect to S3. The Store uses docker secrets
 for the AWS Access Key and the AWS Secret Key. The key values are stored in files called `aws_s3_access.sec` and
 `aws_s3_secret.sec`. These files must be in the same directory as the `docker-compose.yml` and will not be version
 controlled.

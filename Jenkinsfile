@@ -21,7 +21,7 @@ pipeline {
     }
     environment {
         GITHUB_USERNAME = 'connexta'
-        GITHUB_REPONAME = 'multi-int-store'
+        GITHUB_REPONAME = 'ion-store'
         ORG_GRADLE_PROJECT_dependencyCheckUrlModified = 'http://10.101.190.7:10179/nvdcve-1.0-modified.json.gz'
         ORG_GRADLE_PROJECT_dependencyCheckUrlBase = 'http://10.101.190.7:10179/nvdcve-1.0-%d.json.gz'
     }
@@ -77,7 +77,7 @@ pipeline {
             steps {
                 timeout(time: 25, unit: 'MINUTES') {
                     withCredentials([string(credentialsId: 'SonarQubeGithubToken', variable: 'SONARQUBE_GITHUB_TOKEN'), string(credentialsId: 'cxbot-sonarcloud', variable: 'SONAR_TOKEN')]) {
-                        sh './gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=cx -Dsonar.projectKey=multi-int-store'
+                        sh './gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=cx -Dsonar.projectKey=ion-store'
                     }
                 }
             }

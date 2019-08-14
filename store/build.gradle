@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) 2019 Connexta, LLC
+ *
+ * Released under the GNU Lesser General Public License version 3; see
+ * https://www.gnu.org/licenses/lgpl-3.0.html
+ */
+/* Build Script */
+plugins {
+    id "org.springframework.boot"
+}
+
+configurations.all {
+    resolutionStrategy {
+        force "com.fasterxml.jackson.core:jackson-databind:[2.9.9.3,)"
+        force "com.google.guava:guava:[24.1.1,)"
+    }
+}
+
+dependencies {
+    annotationProcessor "org.projectlombok:lombok:1.18.8"
+    compileOnly "org.projectlombok:lombok:1.18.8"
+    implementation "com.amazonaws:aws-java-sdk-s3:1.11.609"
+    implementation "com.connexta.search:index-api-rest-spring-stubs:0.1.0-SNAPSHOT" // TODO replace with released version
+    implementation "javax.inject:javax.inject:1"
+    implementation "io.springfox:springfox-swagger2:2.9.2"
+    implementation "io.springfox:springfox-swagger-ui:2.9.2"
+    implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.7.RELEASE"
+    implementation "org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE"
+    implementation "org.springframework.data:spring-data-solr:4.0.10.RELEASE"
+    testImplementation "com.github.npathai:hamcrest-optional:2.0.0"
+    testImplementation "com.xebialabs.restito:restito:0.9.3"
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.mockito:mockito-core:3.0.0"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:2.1.7.RELEASE"
+    testImplementation "org.testcontainers:testcontainers:1.12.0"
+}
+
+dependencyCheck {
+    suppressionFile = "${projectDir}/owasp-suppressions.xml"
+}
+
+bootJar {
+    launchScript()
+}
+
+docker {
+    files tasks.bootJar.outputs
+    name "cnxta/cdr-store:${project.version}"
+    buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
+}
+
+assemble.finalizedBy("docker")
+build.finalizedBy("docker")

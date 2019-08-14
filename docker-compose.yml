@@ -46,8 +46,8 @@ services:
     command:
       - "--spring.config.additional-location=file:/configs/ingest_config.yml"
       - "--spring.config.additional-location=file:/configs/transform_config.yml"
-  multi-int-store:
-    image: ${REGISTRY:-docker.io}/cnxta/cdr-multi-int-store:0.1.0-SNAPSHOT
+  store:
+    image: ${REGISTRY:-docker.io}/cnxta/cdr-store:0.1.0-SNAPSHOT
     ports:
       - target: 8080
         published: 9041

@@ -18,7 +18,7 @@ services:
       - target: 10040
         published: 10040
         protocol: tcp
-  multi-int-store:
+  store:
     ports:
       - target: 10041
         published: 10041
