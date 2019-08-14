@@ -4,7 +4,11 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-/* Build Script */
-rootProject.name = "content-discovery-retrieval"
-include "store"
-include "ingest"
+package com.connexta.store.models;
+
+public class Product implements Storable<String> {
+  @Override
+  public String getId() {
+    return null;
+  }
+}

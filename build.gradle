@@ -34,10 +34,10 @@ allprojects {
         throw new Exception("You need Java ${sourceCompatibility} to build and run ${project.name}.\n" +
                 "The current version installed is ${Jvm.current().javaVersion.majorVersion}.\n" +
                 "For further reading see: \n\t> " +
-                "https://github.com/connexta/multi-int-store#prerequisites")
+                "https://github.com/connexta/ion-store#prerequisites")
     }
 
-    group = "com.connexta.multiintstore"
+    group = "com.connexta.store"
     version = "0.1.0-SNAPSHOT"
 
     apply plugin: "com.diffplug.gradle.spotless"
