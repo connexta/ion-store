@@ -7,7 +7,7 @@
 package com.connexta.multiintstore.config;
 
 import com.connexta.multiintstore.adaptors.StorageAdaptor;
-import com.connexta.multiintstore.common.MetadataStorageManager;
+import com.connexta.multiintstore.common.IndexManager;
 import com.connexta.multiintstore.common.ProductStorageManager;
 import com.connexta.multiintstore.models.IndexedProductMetadata;
 import com.connexta.multiintstore.services.api.Dao;
@@ -27,8 +27,8 @@ public class StorageManagerConfiguration {
   }
 
   @Bean
-  public MetadataStorageManager metadataStorageManager(
+  public IndexManager metadataStorageManager(
       @NotNull Dao<IndexedProductMetadata, String> cstDao, @NotNull StorageAdaptor storageAdaptor) {
-    return new MetadataStorageManager(cstDao, storageAdaptor);
+    return new IndexManager(cstDao, storageAdaptor);
   }
 }

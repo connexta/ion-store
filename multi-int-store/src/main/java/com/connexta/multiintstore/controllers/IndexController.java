@@ -6,15 +6,11 @@
  */
 package com.connexta.multiintstore.controllers;
 
-import com.connexta.multiintstore.common.ProductStorageManager;
+import com.connexta.multiintstore.common.IndexManager;
 import com.connexta.multiintstore.common.exceptions.StorageException;
-import com.connexta.multiintstore.services.api.StoreApi;
+import com.connexta.search.rest.spring.IndexApi;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,12 +22,12 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @RestController
 @RequestMapping("/mis")
-public class StoreController implements StoreApi {
+public class IndexController implements IndexApi {
 
-  @NotNull private final ProductStorageManager productStorageManager;
+  @NotNull private final IndexManager indexManager;
 
-  public StoreController(@NotNull final ProductStorageManager productStorageManager) {
-    this.productStorageManager = productStorageManager;
+  public IndexController(@NotNull final IndexManager indexManager) {
+    this.indexManager = indexManager;
   }
 
   /**
@@ -39,9 +35,10 @@ public class StoreController implements StoreApi {
    * {@link Exception}s
    */
   @Override
-  public ResponseEntity<Void> storeProduct(
-      @NotBlank final String acceptVersion, @Valid @NotNull final MultipartFile file) {
+  public ResponseEntity<Void> index(
+      final String acceptVersion, final String productId, final MultipartFile file) {
     // TODO validate Accept-Version
+    // TODO validate productId
 
     final Long fileSize = file.getSize();
     // TODO validate that fileSize is (0 GB, 10 GB]
@@ -49,37 +46,35 @@ public class StoreController implements StoreApi {
     final String mediaType = file.getContentType();
     // TODO verify that mediaType is not blank and is a valid Content Type
 
-    final String fileName = file.getOriginalFilename();
-    // TODO verify that fileName is not blank
+    // TODO handle when CST has already been stored
 
     final InputStream inputStream;
     try {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       log.warn(
-          "Unable to read file for storeProduct request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
+          "Unable to read file for index request with params acceptVersion={}, productId={}, mediaType={}",
           acceptVersion,
-          fileSize,
+          productId,
           mediaType,
-          fileName,
           e);
       return ResponseEntity.badRequest().build();
     }
 
-    final URI location;
     try {
-      location = productStorageManager.storeProduct(fileSize, mediaType, fileName, inputStream);
-    } catch (StorageException | URISyntaxException e) {
+      indexManager.index(productId, mediaType, inputStream);
+    } catch (StorageException e) {
       log.warn(
-          "Unable to store product for request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
+          "Unable to complete index request with params acceptVersion={}, productId={}, metadataType={}}, mediaType={}",
           acceptVersion,
-          fileSize,
+          productId,
           mediaType,
-          fileName,
           e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    } catch (UnsupportedOperationException e) {
+      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
-    return ResponseEntity.created(location).build();
+    return ResponseEntity.ok().build();
   }
 }

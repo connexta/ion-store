@@ -44,7 +44,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @MockBean(AmazonS3.class)
-public class StoreMetadataTests {
+public class IndexTests {
 
   @MockBean private SolrClient mockSolrClient;
 
@@ -59,13 +59,58 @@ public class StoreMetadataTests {
   public void testContextLoads() {}
 
   @Test
-  public void testBadRequest() throws Exception {
+  public void testMissingFile() throws Exception {
+    mockMvc
+        .perform(
+            multipart("/mis/product/00067360b70e4acfab561fe593ad3f7a/cst")
+                .header("Accept-Version", "0.1.0-SNAPSHOT")
+                .with(
+                    request -> {
+                      request.setMethod(HttpMethod.PUT.toString());
+                      return request;
+                    })
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void testInvalidProductId() throws Exception {
     mockMvc
         .perform(
             multipart("/mis/product/1234/cst")
-                .param("mimeType", "plain/text")
-                .param("fileName", "test_file_name.txt")
-                .header("Accept-Version", "1.2.1")
+                .file(
+                    new MockMultipartFile(
+                        "file",
+                        "test_file_name.txt",
+                        "text/plain",
+                        IOUtils.toInputStream(
+                            "All the color had been leached from Winterfell until only grey and white remained",
+                            StandardCharsets.UTF_8)))
+                .header("Accept-Version", "0.1.0-SNAPSHOT")
+                .with(
+                    request -> {
+                      request.setMethod(HttpMethod.PUT.toString());
+                      return request;
+                    })
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void testMissingVersion() throws Exception {
+    mockMvc
+        .perform(
+            multipart("/mis/product/00067360b70e4acfab561fe593ad3f7a/cst")
+                .file(
+                    new MockMultipartFile(
+                        "file",
+                        "test_file_name.txt",
+                        "text/plain",
+                        IOUtils.toInputStream(
+                            "All the color had been leached from Winterfell until only grey and white remained",
+                            StandardCharsets.UTF_8)))
                 .with(
                     request -> {
                       request.setMethod(HttpMethod.PUT.toString());
@@ -86,7 +131,7 @@ public class StoreMetadataTests {
   public void testNonCST() throws Exception {
     mockMvc
         .perform(
-            multipart("/mis/product/1234/anotherMetadataType")
+            multipart("/mis/product/00067360b70e4acfab561fe593ad3f7a/anotherMetadataType")
                 .file(
                     new MockMultipartFile(
                         "file",
@@ -95,7 +140,7 @@ public class StoreMetadataTests {
                         IOUtils.toInputStream(
                             "All the color had been leached from Winterfell until only grey and white remained",
                             StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
+                .header("Accept-Version", "0.1.0-SNAPSHOT")
                 .with(
                     request -> {
                       request.setMethod(HttpMethod.PUT.toString());
@@ -103,7 +148,7 @@ public class StoreMetadataTests {
                     })
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isNotImplemented());
+        .andExpect(status().isNotFound());
   }
 
   /** @see SolrClient#query(String, SolrParams, METHOD) */
@@ -114,7 +159,7 @@ public class StoreMetadataTests {
 
     mockMvc
         .perform(
-            multipart("/mis/product/1234/cst")
+            multipart("/mis/product/00067360b70e4acfab561fe593ad3f7a/cst")
                 .file(
                     new MockMultipartFile(
                         "file",
@@ -123,7 +168,7 @@ public class StoreMetadataTests {
                         IOUtils.toInputStream(
                             "All the color had been leached from Winterfell until only grey and white remained",
                             StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
+                .header("Accept-Version", "0.1.0-SNAPSHOT")
                 .with(
                     request -> {
                       request.setMethod(HttpMethod.PUT.toString());
@@ -142,7 +187,7 @@ public class StoreMetadataTests {
 
     mockMvc
         .perform(
-            multipart("/mis/product/1234/cst")
+            multipart("/mis/product/00067360b70e4acfab561fe593ad3f7a/cst")
                 .file(
                     new MockMultipartFile(
                         "file",
@@ -151,7 +196,7 @@ public class StoreMetadataTests {
                         IOUtils.toInputStream(
                             "All the color had been leached from Winterfell until only grey and white remained",
                             StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
+                .header("Accept-Version", "0.1.0-SNAPSHOT")
                 .with(
                     request -> {
                       request.setMethod(HttpMethod.PUT.toString());
@@ -169,7 +214,7 @@ public class StoreMetadataTests {
 
     mockMvc
         .perform(
-            multipart("/mis/product/1234/cst")
+            multipart("/mis/product/00067360b70e4acfab561fe593ad3f7a/cst")
                 .file(
                     new MockMultipartFile(
                         "file",
@@ -178,7 +223,7 @@ public class StoreMetadataTests {
                         IOUtils.toInputStream(
                             "All the color had been leached from Winterfell until only grey and white remained",
                             StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
+                .header("Accept-Version", "0.1.0-SNAPSHOT")
                 .with(
                     request -> {
                       request.setMethod(HttpMethod.PUT.toString());
