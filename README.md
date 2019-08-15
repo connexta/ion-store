@@ -231,13 +231,13 @@ After configuring the build system, run the gradle task `deploy`:
 ```
 
 ## Inspecting
-The MIS service is deployed with (Springfox) **Swagger UI**. This library uses Spring Boot
+The Store service is deployed with (Springfox) **Swagger UI**. This library uses Spring Boot
 annotations to create documentation for the service endpoints. To view Swagger UI in a local
 deployment, enter this URL into a web browser:
 
 `http://127.0.0.1:9041/swagger-ui.html`
 
-The Store service deployed with Spring Boot Actuator. To view the Actuator
+The Store service is deployed with Spring Boot Actuator. To view the Actuator
 endpoints in a local deployment, enter this URL into a web browser:
 
 `http://127.0.0.1:9041/actuator/`
