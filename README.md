@@ -1,4 +1,7 @@
 # Store
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=connexta/ion-store)](https://dependabot.com)
+[![Known Vulnerabilities](https://snyk.io/test/github/connexta/ion-store/badge.svg)](https://snyk.io/test/github/connexta/ion-store)
+[![CircleCI](https://circleci.com/gh/connexta/ion-store/tree/master.svg?style=svg)](https://circleci.com/gh/connexta/ion-store/tree/master)
 
 ## Prerequisites
 * Java 11
