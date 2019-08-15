@@ -136,20 +136,17 @@ docker stack deploy -c docker-compose.yml cdr
     Look in the list for the images to be deployed:
     ```bash
     REPOSITORY                                     TAG                 IMAGE ID            CREATED             SIZE
-    cnxta/cdr-ingest                               0.1.0-SNAPSHOT      4ca707d86ddb        2 hours ago         290MB
     cnxta/cdr-store                      0.1.0-SNAPSHOT      39b44248f9c1        19 hours ago        308MB
     ```
 
     For each image, use `docker tag SOURCE TARGET` to create an alias with the address of the target registry. For
     example, if the address of the target registry is `<docker_registry>`:
     ```bash
-    docker tag cnxta/cdr-ingest:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
     docker tag cnxta/cdr-store:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-store:0.1.0-SNAPSHOT
     ```
 2. Push each image.
 
     ```bash
-    docker push <docker_registry>/cnxta/cdr-ingest:0.1.0-SNAPSHOT
     docker push <docker_registry>/cnxta/cdr-store:0.1.0-SNAPSHOT
     ```
 3. Deploy the service in the cloud.
@@ -190,18 +187,11 @@ in the external config file take precedence over config files that are built wit
 
 ### Store Service
 The Store service is capable of storing data in an S3-compatible data store. The configuration to access S3 is found as
-a list of commands under the ingest service in the `docker-compose.yml` file. Here you can change the endpoint URL, the
+a list of commands under the store service in the `docker-compose.yml` file. Here you can change the endpoint URL, the
 S3 bucket name, and the credentials the service will use to connect to S3. The Store uses docker secrets
 for the AWS Access Key and the AWS Secret Key. The key values are stored in files called `aws_s3_access.sec` and
 `aws_s3_secret.sec`. These files must be in the same directory as the `docker-compose.yml` and will not be version
 controlled.
-
-Example configs/ingest_config.yml:
-```yaml
-endpointUrl:
-  store: http://localhost:9041/mis/product/
-  transform: http://localhost:9090/transform/
-```
 
 Example configs/mis_config.yml:
 ```yaml
@@ -247,7 +237,7 @@ deployment, enter this URL into a web browser:
 
 `http://127.0.0.1:9041/swagger-ui.html`
 
-The Ingest and MIS services are deployed with Spring Boot Actuator. To view the Actuator
+The Store service deployed with Spring Boot Actuator. To view the Actuator
 endpoints in a local deployment, enter this URL into a web browser:
 
 `http://127.0.0.1:9041/actuator/`
