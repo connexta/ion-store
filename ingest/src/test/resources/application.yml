@@ -1,6 +1,0 @@
-endpointUrl:
-  store: http://localhost:9041/mis/product/
-  transform: http://localhost:9090/transform/
-endpoints:
-  transform:
-    version: testTransformApiVersion

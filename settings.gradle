@@ -7,4 +7,3 @@
 /* Build Script */
 rootProject.name = "content-discovery-retrieval"
 include "store"
-include "ingest"
