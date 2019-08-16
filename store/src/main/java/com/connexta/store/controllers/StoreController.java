@@ -6,32 +6,41 @@
  */
 package com.connexta.store.controllers;
 
-import com.connexta.store.common.ProductStorageManager;
-import com.connexta.store.common.exceptions.StorageException;
-import com.connexta.store.services.api.StoreApi;
+import com.connexta.store.adaptors.RetrieveResponse;
+import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Slf4j
 @RestController
 @RequestMapping("/mis")
 public class StoreController implements StoreApi {
 
-  @NotNull private final ProductStorageManager productStorageManager;
+  @NotNull private final StoreService storeService;
 
-  public StoreController(@NotNull final ProductStorageManager productStorageManager) {
-    this.productStorageManager = productStorageManager;
+  public StoreController(@NotNull final StoreService storeService) {
+    this.storeService = storeService;
   }
 
   /**
@@ -68,8 +77,8 @@ public class StoreController implements StoreApi {
 
     final URI location;
     try {
-      location = productStorageManager.storeProduct(fileSize, mediaType, fileName, inputStream);
-    } catch (StorageException | URISyntaxException e) {
+      location = storeService.createProduct(fileSize, mediaType, fileName, inputStream);
+    } catch (StoreException | URISyntaxException e) {
       log.warn(
           "Unable to store product for request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
           acceptVersion,
@@ -81,5 +90,61 @@ public class StoreController implements StoreApi {
     }
 
     return ResponseEntity.created(location).build();
+  }
+
+  @Override
+  public @NotNull ResponseEntity<Resource> retrieveProduct(@NotBlank String productId) {
+    InputStream inputStream = null;
+    try {
+      // TODO return 404 if key doesn't exist
+      final RetrieveResponse retrieveResponse = storeService.retrieveProduct(productId);
+      log.info("Successfully retrieved id={}", productId);
+
+      final HttpHeaders httpHeaders = new HttpHeaders();
+      httpHeaders.setContentDisposition(
+          ContentDisposition.builder("attachment")
+              .filename(retrieveResponse.getFileName())
+              .build());
+      inputStream = retrieveResponse.getInputStream();
+      return ResponseEntity.ok()
+          .contentType(retrieveResponse.getMediaType())
+          .headers(httpHeaders)
+          .body(new InputStreamResource(inputStream));
+    } catch (StoreException | RuntimeException e) {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException ioe) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, ioe);
+        }
+      }
+
+      log.warn("Unable to retrieve {}", productId, e);
+      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (Throwable t) {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
+        }
+      }
+
+      throw t;
+    }
+  }
+
+  // TODO replace this with better error handling
+  @ControllerAdvice
+  private class ConstraintViolationExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    protected ResponseEntity<Object> handleConstraintViolation(
+        @NotNull final ConstraintViolationException e, @NotNull final WebRequest request) {
+      final String message = e.getMessage();
+      final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+      log.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
+      return handleExceptionInternal(e, message, new HttpHeaders(), httpStatus, request);
+    }
   }
 }

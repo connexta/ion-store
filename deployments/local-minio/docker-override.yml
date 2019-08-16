@@ -1,6 +1,9 @@
 version: '3.7'
 
 services:
+  store:
+    depends_on:
+      - minio
   minio:
     image: minio/minio
     entrypoint: sh
@@ -12,12 +15,6 @@ services:
     networks:
       - cdr
     command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
-  # Enable JVM monitoring
-  store:
-    ports:
-      - target: 10041
-        published: 10041
-        protocol: tcp
 
 secrets:
   # Directories are relative to the master compose file
@@ -28,5 +25,7 @@ secrets:
 
 configs:
   # Directories are relative to the master compose file
-  mis_config:
-    file: deployments/local-minio/configs/mis_config.yml
+  s3_config:
+    file: deployments/local-minio/configs/s3_config.yml
+  store_config:
+    file: deployments/local-minio/configs/store_config.yml

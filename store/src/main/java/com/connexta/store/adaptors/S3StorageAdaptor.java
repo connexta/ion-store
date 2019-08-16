@@ -12,8 +12,9 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
-import com.connexta.store.common.exceptions.StorageException;
+import com.connexta.store.common.exceptions.StoreException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -33,12 +34,9 @@ public class S3StorageAdaptor implements StorageAdaptor {
   private final AmazonS3 amazonS3;
   private final TransferManager transferManager;
 
-  public S3StorageAdaptor(
-      @NotNull final AmazonS3 amazonS3,
-      @NotNull final TransferManager transferManager,
-      @NotBlank final String bucket) {
+  public S3StorageAdaptor(@NotNull final AmazonS3 amazonS3, @NotBlank final String bucket) {
     this.amazonS3 = amazonS3;
-    this.transferManager = transferManager;
+    this.transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
     this.bucket = bucket;
   }
 
@@ -49,7 +47,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream,
       @NotBlank final String key)
-      throws StorageException {
+      throws StoreException {
     // TODO check if id already exists
 
     final ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -64,7 +62,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       upload.waitForCompletion();
       log.info(String.format("Transfer state: %s", upload.getState()));
     } catch (RuntimeException | InterruptedException e) {
-      throw new StorageException(
+      throw new StoreException(
           String.format(
               "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, bucket, key),
           e);
@@ -79,7 +77,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
    */
   @Override
   @NotNull
-  public RetrieveResponse retrieve(@NotBlank final String key) throws StorageException {
+  public RetrieveResponse retrieve(@NotBlank final String key) throws StoreException {
     log.info("Retrieving product in bucket \"{}\" with key \"{}\"", bucket, key);
 
     S3Object s3Object;
@@ -88,13 +86,13 @@ public class S3StorageAdaptor implements StorageAdaptor {
       try {
         s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
       } catch (SdkClientException e) {
-        throw new StorageException("Unable to retrieve product with key " + key, e);
+        throw new StoreException("Unable to retrieve product with key " + key, e);
       }
 
       final String fileName =
           s3Object.getObjectMetadata().getUserMetaDataOf(FILE_NAME_METADATA_KEY);
       if (StringUtils.isEmpty(fileName)) {
-        throw new StorageException(
+        throw new StoreException(
             String.format(
                 "Expected S3 object to have a non-null metadata value for %s",
                 FILE_NAME_METADATA_KEY));
@@ -116,10 +114,5 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
       throw t;
     }
-  }
-
-  @Override
-  public boolean objectExists(String key) {
-    return amazonS3.doesObjectExist(bucket, key);
   }
 }

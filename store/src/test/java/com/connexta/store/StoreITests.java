@@ -24,7 +24,6 @@ import java.time.Duration;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.solr.client.solrj.SolrClient;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -38,7 +37,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.InputStreamResource;
@@ -55,15 +53,10 @@ import org.springframework.util.MultiValueMap;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
-/**
- * This class contains tests for the store product endpoint and retrieve endpoint that use a mocked
- * {@link SolrClient}.
- */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @DirtiesContext
-@MockBean(SolrClient.class)
-public class S3Tests {
+public class StoreITests {
 
   private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
   private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
@@ -271,7 +264,7 @@ public class S3Tests {
 
   /**
    * @see #testRetrieveProductWhenS3IsEmpty()
-   * @see RetrieveProductTests#testS3KeyDoesNotExist()
+   * @see RetrieveProductITests#testS3KeyDoesNotExist()
    */
   @Test
   public void testRetrieveProductIdNotFound() throws Exception {
@@ -314,7 +307,7 @@ public class S3Tests {
 
   /**
    * @see #testRetrieveProductIdNotFound()
-   * @see RetrieveProductTests#testS3KeyDoesNotExist()
+   * @see RetrieveProductITests#testS3KeyDoesNotExist()
    */
   @Test
   public void testRetrieveProductWhenS3IsEmpty() throws Exception {

@@ -19,7 +19,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import javax.inject.Inject;
-import org.apache.solr.client.solrj.SolrClient;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,15 +31,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
-/**
- * This class contains tests for the retrieve endpoint that use a mocked {@link AmazonS3} and {@link
- * SolrClient}.
- */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-@MockBean(SolrClient.class)
-public class RetrieveProductTests {
+public class RetrieveProductITests {
 
   @MockBean private AmazonS3 mockAmazonS3;
 
@@ -65,8 +59,8 @@ public class RetrieveProductTests {
   }
 
   /**
-   * @see S3Tests#testRetrieveProductIdNotFound()
-   * @see S3Tests#testRetrieveProductWhenS3IsEmpty()
+   * @see StoreITests#testRetrieveProductIdNotFound()
+   * @see StoreITests#testRetrieveProductWhenS3IsEmpty()
    */
   @Test
   public void testS3KeyDoesNotExist() throws Exception {

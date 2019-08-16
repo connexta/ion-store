@@ -6,13 +6,13 @@
  */
 package com.connexta.store.common.exceptions;
 
-public class StorageException extends Exception {
+public class StoreException extends Exception {
 
-  public StorageException(String message, Throwable cause) {
+  public StoreException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public StorageException(String message) {
+  public StoreException(String message) {
     super(message);
   }
 }

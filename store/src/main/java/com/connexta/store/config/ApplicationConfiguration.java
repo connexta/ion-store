@@ -6,8 +6,6 @@
  */
 package com.connexta.store.config;
 
-import com.connexta.store.repositories.IndexedMetadataRepository;
-import com.connexta.store.services.impl.IndexedMetadataDao;
 import javax.validation.constraints.NotNull;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -34,10 +32,5 @@ public class ApplicationConfiguration {
     filter.setAfterMessagePrefix("Inbound Request: ");
     filter.setMaxPayloadLength(5120);
     return filter;
-  }
-
-  @Bean
-  public IndexedMetadataDao indexedMetadataDao(@NotNull IndexedMetadataRepository repository) {
-    return new IndexedMetadataDao(repository);
   }
 }

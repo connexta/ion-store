@@ -22,7 +22,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import java.nio.charset.StandardCharsets;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
-import org.apache.solr.client.solrj.SolrClient;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,15 +36,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
-/**
- * This class contains tests for the store product endpoint that use a mocked {@link AmazonS3} and
- * {@link SolrClient}.
- */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-@MockBean(SolrClient.class)
-public class StoreProductTests {
+public class CreateProductITests {
 
   @MockBean private AmazonS3 mockAmazonS3;
 

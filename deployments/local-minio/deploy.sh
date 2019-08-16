@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Name to give the docker network and stack. Update network instances in docker-compose.yml file if modified.
-name="cdr"
+networkName="cdr"
+stackName="store-stack"
 
 helptext="\
 Usage: deploy.sh [command]
@@ -26,53 +26,53 @@ function wait-for-empty-results() {
 
 # Stop running stack
 function rm-stack () {
-    printf "Removing $name docker stack...\n"
-    docker stack rm $name
+    printf "Removing $stackName docker stack...\n"
+    docker stack rm $stackName
     printf "Done!\n"
 }
 
 # Docker networks usually take a few seconds to go down, so it waits to prevent redeployment issues
 function rm-network () {
-    printf "Removing $name docker network...\n"
-    docker network rm $name
-    printf "\nWaiting for docker network '$name' to go down.\n"
-    wait-for-empty-results "docker network ls | grep -w $name"
+    printf "Removing $networkName docker network...\n"
+    docker network rm $networkName
+    printf "\nWaiting for docker network '$networkName' to go down.\n"
+    wait-for-empty-results "docker network ls | grep -w $networkName"
     printf "\nDone!\n"
 }
 
 # Waits for everything to start up
 function wait-for-containers () {
     printf "\nWaiting for docker services to start (safe to exit)."
-    wait-for-empty-results "docker service ls | grep $name_.*0/[1-9]"
+    wait-for-empty-results "docker service ls | grep $stackName_*0/[1-9]"
     printf "Done!\n"
 }
 
 # Deploy docker-compose.yml file via docker stacks
 function deploy-images () {
     printf "\nDeploying Docker Images...\n"
-    docker stack deploy -c ../../docker-compose.yml -c docker-override.yml $name
+    docker stack deploy -c ../../docker-compose.yml -c docker-override.yml $stackName
 }
 
 # Create attachable overlay docker network
 function create-network () {
-    printf "\nCreating docker '$name' network...\n"
-    docker network create --driver=overlay --attachable $name
+    printf "\nCreating docker '$networkName' network...\n"
+    docker network create --driver=overlay --attachable $networkName
 }
 
 # Check is network already does not exist or is not attachable.
 function configure-network () {
     printf "Checking Docker Network...\n"
-    network=`docker network ls | grep "$name"`
-    networktype=$(docker network inspect $name 2>/dev/null | grep -i "\"driver\": \"overlay\"")
-    attachable=$(docker network inspect $name 2>/dev/null | grep -i "\"attachable\": true")
+    network=`docker network ls | grep "$networkName"`
+    networktype=$(docker network inspect $networkName 2>/dev/null | grep -i "\"driver\": \"overlay\"")
+    attachable=$(docker network inspect $networkName 2>/dev/null | grep -i "\"attachable\": true")
     if [ -z "$network" ]; then
-        printf "Network '$name' does not exist, creating new network... \n"
+        printf "Network '$networkName' does not exist, creating new network... \n"
         create-network
     elif [ -z "$networktype" ] || [ -z "$attachable" ]; then
-        printf  "ERROR: The docker network '$name' exists, but is not an attachable overlay network. Please run 'clean' or 'redeploy' to remove or update this network.\n"
+        printf  "ERROR: The docker network '$networkName' exists, but is not an attachable overlay network. Please run 'clean' or 'redeploy' to remove or update this network.\n"
         exit 1
     else
-        printf "Network '$name' already exists and is attachable. \n"
+        printf "Network '$networkName' already exists and is attachable. \n"
     fi
 }
 
