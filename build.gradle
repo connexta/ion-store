@@ -121,7 +121,7 @@ tasks.withType(Test, TestLogger.configs(project.configArgs))
 task listDependencies(type: DependencyReportTask)
 
 task deploy(type: Exec) {
-    dependsOn subprojects.build
+    dependsOn build
     commandLine "./deploy.bash"
 }
 
