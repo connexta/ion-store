@@ -5,5 +5,4 @@
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
 /* Build Script */
-rootProject.name = "content-discovery-retrieval"
-include "store"
+rootProject.name = "store"

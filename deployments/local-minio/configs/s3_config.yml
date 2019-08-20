@@ -1,0 +1,6 @@
+aws:
+  s3:
+    endpointUrl: http://minio:9000
+    region: local
+    bucket:
+      quarantine: ingest-quarantine

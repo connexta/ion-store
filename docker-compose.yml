@@ -1,42 +1,16 @@
-# Configurable Registries
-#    This compose file allows the composition to be used in multiple environments. Instead of
-#    using hard-coded strings to identify the names of images, variable interpolation is used
-#    to make the registry part of the name configurable at runtime.
-#
-#    If the REGISTRY environment variable is not set, the registry defaults to
-#    Docker Hub (docker.io).
-#
-#    If the REGISTRY variable is set, interpolation on the command line can be used to inject
-#    a registry's address when the Docker service is deployed. the format of the command is:
-#
-#        docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr
-#
-#    where <registry-url> is changed to be the address of the target registry.
-# --------------------------------------------------------------------------------------------------
-# To deploy to a cloud:
-#    1. Build the images locally.
-#    2. Tag those images to include the target registry address.
-#    3. Push those images.
-#    4. From the cloud environment, execute:
-#
-#        docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr
-#
-#
 version: '3.7'
 services:
   store:
-    image: ${REGISTRY:-docker.io}/cnxta/cdr-store:0.1.0-SNAPSHOT
+    image: ${REGISTRY:-docker.io}/cnxta/ion-store:0.1.0-SNAPSHOT
     ports:
       - target: 8080
-        published: 9041
+        published: 9043
         protocol: tcp
-      - target: 10051
-        published: 10051
+      - target: 10053
+        published: 10053
         protocol: tcp
     networks:
       - cdr
-    depends_on:
-      - solr
     deploy:
       restart_policy:
         condition: any
@@ -46,34 +20,25 @@ services:
       - source: aws_s3_access
         target: /secrets/aws_s3_access.sec
     configs:
-      - source: mis_config
-        target: /configs/mis_config.yml
+      - source: s3_config
+        target: /configs/s3_config.yml
+      - source: store_config
+        target: /configs/store_config.yml
     command:
       - "--aws.s3.secret.file=/secrets/aws_s3_secret.sec"
       - "--aws.s3.access.file=/secrets/aws_s3_access.sec"
-      - "--spring.config.additional-location=file:/configs/mis_config.yml"
-  solr:
-    image: solr:8.1.1
-    ports:
-      - "9983:8983"
-    volumes:
-      - data:/opt/solr/server/solr/mycores
-    entrypoint:
-      - docker-entrypoint.sh
-      - solr-precreate
-      - searchTerms
-    networks:
-      - cdr
+      - "--spring.config.additional-location=file:/configs/s3_config.yml"
+      - "--spring.config.additional-location=file:/configs/store_config.yml"
 networks:
   cdr:
     external: true
-volumes:
-  data:
 secrets:
   aws_s3_secret:
     file: aws_s3_secret.sec
   aws_s3_access:
     file: aws_s3_access.sec
 configs:
-  mis_config:
-    file: ./configs/mis_config.yml
+  s3_config:
+    file: ./configs/s3_config.yml
+  store_config:
+    file: ./configs/store_config.yml

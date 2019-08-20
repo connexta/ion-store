@@ -52,164 +52,72 @@ For more information about spotless checks see
 * To skip integration tests, add `-PskipITests`.
 
 ## Running
+### Configuring
+1. The service can be configured with an external configuration file that will be applied to the docker container during deployment.
+    The configuration YAML files can be found under `<PROJECT_ROOT>/configs/` and are not version-controlled.
+    The properties in these files will be merged with any properties that you have configured in the service.
+    The properties in the external config file take precedence over config files that are built with the service.
 
-### Run Locally
-Start the service using one of the following:
-* [`docker-compose`](#start-the-service-locally-via-docker-compose)
-* [`docker stack`](#start-the-service-locally-via-docker-stack)
+    Example configs/s3_config.yml:
+    ```yaml
+    aws:
+      s3:
+        endpointUrl: https://s3.us-west-1.amazonaws.com
+        region: us-west-1
+        bucket:
+          quarantine: ingest-quarantine
+    ```
 
-To determine the ports assigned to the services:
+    Example configs/store_config.yml:
+    ```yaml
+    endpointUrl:
+      retrieve: http://store-stack_store:9043/mis/product/
+    ```
+
+    The service is capable of storing data in an S3-compatible data store.
+    The configuration to access S3 is found as a list of commands under the store service in the `docker-compose.yml` file.
+    Here you can change the endpoint URL, the S3 bucket name, and the credentials the service will use to connect to S3.
+    The `docker-compose.yml` file uses docker secrets for the AWS Access Key and the AWS Secret Key.
+    The key values are stored in files called `aws_s3_access.sec` and `aws_s3_secret.sec`.
+    These files must be in the same directory as the `docker-compose.yml` and are not version-controlled.
+
+2. A Docker network named `cdr` is needed to run via docker-compose.
+
+    Determine if the network already exists:
+    ```bash
+    docker network ls
+    ```
+    If the network exists, the output includes a reference to it:
+    ```bash
+    NETWORK ID          NAME                DRIVER              SCOPE
+    zk0kg1knhd6g        cdr                 overlay             swarm
+    ```
+    If the network has not been created:
+    ```bash
+    docker network create --driver=overlay --attachable cdr
+    ```
+
+### Running Locally via `docker stack`
 ```bash
-docker-compose ps
+docker stack deploy -c docker-compose.yml store-stack
 ```
 
-#### Start the Service Locally via `docker-compose`
-1. A Docker network named `cdr` is needed to run via docker-compose.
-
-    1. Determine if the network already exists:
-        ```bash
-        docker network ls
-        ```
-        If the network exists, the output includes a reference to it:
-        ```bash
-        NETWORK ID          NAME                DRIVER              SCOPE
-        zk0kg1knhd6g        cdr                 overlay             swarm
-        ```
-    2. If the network has not been created:
-        ```bash
-        docker network create --driver=overlay --attachable cdr
-        ```
-2. Start the Docker service:
-    ```bash
-    docker-compose up -d
-    ```
-
-##### Helpful `docker-compose` Commands
+#### Helpful `docker stack` Commands
 * To stop the Docker service:
     ```bash
-    docker-compose down
-    ```
-* To stream the logs to the console:
-    ```bash
-    docker-compose logs
-    ```
-* To stream the logs to the console for a specific service:
-    ```bash
-    docker-compose logs -f <service_name>
-    ```
-
-#### Start the Service Locally via `docker stack`
-```bash
-docker stack deploy -c docker-compose.yml cdr
-```
-
-##### Helpful `docker stack` Commands
-* To stop the Docker service:
-    ```bash
-    docker stack rm cdr
+    docker stack rm store-stack
     ```
 * To check the status of all services in the stack:
     ```bash
-    docker stack services cdr
-    ```
-* To stream the logs to the console:
-    ```bash
-    docker service logs
+    docker stack services store-stack
     ```
 * To stream the logs to the console for a specific service:
     ```bash
     docker service logs -f <service_name>
     ```
 
-### Run on a Docker Swarm
-1. Tag each image.
-
-    To successfully push an image to a registry, the IP or hostname of the registry, along with its port number must be
-    added to the name of the image. This is accomplished by the `docker tag` command which creates and alias to a Docker
-    image.
-
-    To see the images in your local image cache:
-    ```bash
-    docker image ls
-    ```
-
-    Look in the list for the images to be deployed:
-    ```bash
-    REPOSITORY                                     TAG                 IMAGE ID            CREATED             SIZE
-    cnxta/cdr-store                      0.1.0-SNAPSHOT      39b44248f9c1        19 hours ago        308MB
-    ```
-
-    For each image, use `docker tag SOURCE TARGET` to create an alias with the address of the target registry. For
-    example, if the address of the target registry is `<docker_registry>`:
-    ```bash
-    docker tag cnxta/cdr-store:0.1.0-SNAPSHOT <docker_registry>/cnxta/cdr-store:0.1.0-SNAPSHOT
-    ```
-2. Push each image.
-
-    ```bash
-    docker push <docker_registry>/cnxta/cdr-store:0.1.0-SNAPSHOT
-    ```
-3. Deploy the service in the cloud.
-    > **Note**: All of the commands in this section must be executed from the cloud environment, not the local
-    environment.
-
-    ```bash
-    docker stack deploy -c <(REGISTRY=<docker_registry> docker-compose config) cdr-stack
-    ```
-    > **Note**: Replace *<docker_registry>* in the above command with the
-    *ip:port* or *host:port* of the Docker registry.
-
-    This command first sets the `REGISTRY` environment variable and then runs `docker-compose config` to substitute the
-    value of the variable into the compose file. It then takes the contents of the compose file with the substituted
-    text and redirects it to `stdin`.
-
-#### Helpful Docker swarm commands
-> **Note**: All of the commands in this section must be executed from the cloud environment, not the local environment.
-* To monitor the service:
-    ```bash
-    docker stack services cdr-stack
-    ```
-    ```bash
-    docker stack ps cdr-stack
-    ```
-* To stop the service:
-    ```bash
-    docker stack rm cdr-stack
-    ```
-
-## Configuration
-Services can be configured with an external configuration file that will be applied to the docker container during
-deployment. The configuration YAML files can be found under: `<PROJECT_ROOT>/configs/` and are not verison-controlled.
-The properties in these files will be merged with any properties that you have configured in the service. The properties
-in the external config file take precedence over config files that are built with the service.
-
-## Using
-
-### Store Service
-The Store service is capable of storing data in an S3-compatible data store. The configuration to access S3 is found as
-a list of commands under the store service in the `docker-compose.yml` file. Here you can change the endpoint URL, the
-S3 bucket name, and the credentials the service will use to connect to S3. The Store uses docker secrets
-for the AWS Access Key and the AWS Secret Key. The key values are stored in files called `aws_s3_access.sec` and
-`aws_s3_secret.sec`. These files must be in the same directory as the `docker-compose.yml` and will not be version
-controlled.
-
-Example configs/mis_config.yml:
-```yaml
-aws:
-  s3:
-    endpointUrl: https://s3.us-west-1.amazonaws.com
-    region: us-west-1
-    bucket:
-      quarantine: ingest-quarantine
-solr:
-  host: localhost
-  port: 9983
-endpointUrl:
-  retrieve: http://localhost:9041/mis/product/
-```
-
-## Deploying
-There are two ways to configure the build system to deploy the CDR service to a cloud:
+### Running in the Cloud
+There are two ways to configure the build system to deploy the service to a cloud:
 - Edit the`deploy.bash` file. Set two variables near the top of the file:
   - `SET_DOCKER_REG="ip:port"`
   - `SET_DOCKER_W="/path/to/docker/wrapper/"`
@@ -217,27 +125,19 @@ There are two ways to configure the build system to deploy the CDR service to a 
 OR
 
 - Avoid editing a file in source control by exporting values:
-
     ```bash
     export DOCKER_REGISTRY="ip:port"
     export DOCKER_WRAPPER="/path/to/docker/wrapper/"
     ```
 
-
-After configuring the build system, run the gradle task `deploy`:
-
+After configuring the build system:
 ```bash
 ./gradlew deploy
 ```
 
 ## Inspecting
-The Store service is deployed with (Springfox) **Swagger UI**. This library uses Spring Boot
-annotations to create documentation for the service endpoints. To view Swagger UI in a local
-deployment, enter this URL into a web browser:
-
-`http://127.0.0.1:9041/swagger-ui.html`
-
-The Store service is deployed with Spring Boot Actuator. To view the Actuator
-endpoints in a local deployment, enter this URL into a web browser:
-
-`http://127.0.0.1:9041/actuator/`
+The service is deployed with (Springfox) **Swagger UI**.
+This library uses Spring Boot annotations to create documentation for the service endpoints.
+The `/swagger-ui.html` endpoint can be used to view Swagger UI.
+The service is also deployed with Spring Boot Actuator.
+The `/actuator` endpoint can be used to view the Actuator.

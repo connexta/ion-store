@@ -9,12 +9,12 @@ SET_DOCKER_W=""
 DOCKER_REG=${DOCKER_REGISTRY:-${SET_DOCKER_REG}}
 
 # The name of the preface for the docker images
-DOCKER_NAME="cnxta/cdr-"
+DOCKER_IMAGE_NAME="cnxta/ion-store:0.1.0-SNAPSHOT"
 
 # DOCKER_REGISTRY
 
 # The stack you want the docker compose file named
-STACK="cdr-stack"
+STACK="store-stack"
 
 # The path to the Docker Wrapper
 # IMPORTANT!
@@ -57,24 +57,12 @@ function header() {
 
 checkVars || exit 1
 
-listOfImages=$(docker image ls | egrep "^${DOCKER_NAME}" | awk '{print $1,$2}' OFS=':')
+header "Tagging and pushing the docker image to ${DOCKER_REG}"
+run "docker tag ${DOCKER_IMAGE_NAME} ${DOCKER_REG}/${DOCKER_IMAGE_NAME}"
+run "docker push ${DOCKER_REG}/${DOCKER_IMAGE_NAME}"
 
-if [[ -z ${listOfImages} ]]; then
-    echo "docker image ls | egrep ^${DOCKER_NAME} returned 0 images"
-    exit 1
-fi
-
-header "Tagging and pushing docker images to ${DOCKER_REG}"
-for i in $(echo ${listOfImages}); do
-    run "docker tag ${i} ${DOCKER_REG}/${i}"
-    run "docker push ${DOCKER_REG}/${i}"
-done
-
-header "Pulling the docker images on ${DOCKER_REG}"
-
-for i in $(echo ${listOfImages}); do
-    run "${DOCKER_W} pull ${DOCKER_REG}/${i}"
-done
+header "Pulling the docker image on ${DOCKER_REG}"
+run "${DOCKER_W} pull ${DOCKER_REG}/${DOCKER_IMAGE_NAME}"
 
 header "Deploying the application on ${STACK}"
 
