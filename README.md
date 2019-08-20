@@ -44,7 +44,7 @@ For more information about spotless checks see
 * To change logging to better suit parallel builds pass `-Pparallel` or the `--info` flag
 * To run a single test suite:
     ```bash
-    ./gradlew module:test --test fullClassName
+    ./gradlew test --tests TestClass
     ```
 
 ##### Integration Tests

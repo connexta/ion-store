@@ -264,7 +264,7 @@ public class StoreITests {
 
   /**
    * @see #testRetrieveProductWhenS3IsEmpty()
-   * @see RetrieveProductITests#testS3KeyDoesNotExist()
+   * @see RetrieveProductTests#testS3KeyDoesNotExist()
    */
   @Test
   public void testRetrieveProductIdNotFound() throws Exception {
@@ -307,7 +307,7 @@ public class StoreITests {
 
   /**
    * @see #testRetrieveProductIdNotFound()
-   * @see RetrieveProductITests#testS3KeyDoesNotExist()
+   * @see RetrieveProductTests#testS3KeyDoesNotExist()
    */
   @Test
   public void testRetrieveProductWhenS3IsEmpty() throws Exception {
