@@ -4,10 +4,10 @@ services:
     image: ${REGISTRY:-docker.io}/cnxta/ion-store:0.1.0-SNAPSHOT
     ports:
       - target: 8080
-        published: 9043
+        published: 9042
         protocol: tcp
-      - target: 10053
-        published: 10053
+      - target: 10052
+        published: 10052
         protocol: tcp
     networks:
       - cdr
