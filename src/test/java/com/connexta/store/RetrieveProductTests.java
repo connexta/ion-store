@@ -34,7 +34,7 @@ import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class RetrieveProductITests {
+public class RetrieveProductTests {
 
   @MockBean private AmazonS3 mockAmazonS3;
 

@@ -112,7 +112,7 @@ tasks.withType(Test) {
     outputs.upToDateWhen { false }
 
     if (project.configArgs["skipITests"]) {
-        exclude "**/*IntegrationTest*"
+        exclude "**/*ITests*"
     }
 }
 
