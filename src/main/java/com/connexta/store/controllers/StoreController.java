@@ -8,6 +8,7 @@ package com.connexta.store.controllers;
 
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.rest.spring.ProductApi;
 import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +36,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Slf4j
 @RestController
 @RequestMapping("/mis")
-public class StoreController implements StoreApi {
+public class StoreController implements ProductApi {
 
   @NotNull private final StoreService storeService;
 
@@ -93,7 +94,8 @@ public class StoreController implements StoreApi {
   }
 
   @Override
-  public @NotNull ResponseEntity<Resource> retrieveProduct(@NotBlank String productId) {
+  public @NotNull ResponseEntity<Resource> retrieveProduct(
+      @NotBlank final String acceptVersion, @NotBlank String productId) {
     InputStream inputStream = null;
     try {
       // TODO return 404 if key doesn't exist
