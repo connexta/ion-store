@@ -44,6 +44,4 @@ workflows:
   default:
     jobs:
       - FullBuild
-      - OWASP:
-          requires:
-            - FullBuild
+      - OWASP
