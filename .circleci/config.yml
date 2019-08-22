@@ -1,17 +1,25 @@
 version: 2.1
 jobs:
-  Full build without itests:
-    docker: &image
-      - image: circleci/openjdk:11-jdk
+  Full Build:
+    machine:
+      image: circleci/classic:latest
+      docker_layer_caching: true
     steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
       - checkout
       - run:
-          name: Building
-          # Skip itests, which require another docker image and don't work in CircleCI
+          name: Install java 11
           command: |
-            ./gradlew clean build -PskipITests --info
+            sudo add-apt-repository ppa:openjdk-r/ppa
+            sudo apt-get update -q
+            sudo apt install -y openjdk-11-jdk
+      - run:
+          name: Set default java 11
+          command:
+            sudo update-java-alternatives --set java-1.11.0-openjdk-amd64
+      - run:
+          name: Building
+          command: |
+            ./gradlew clean build --info
       - run:
           name: Save test results
           command: |
@@ -23,7 +31,8 @@ jobs:
       - store_artifacts:
           path: ~/test-results/junit
   OWASP:
-    docker: *image
+    docker:
+      - image: circleci/openjdk:11-jdk
     steps:
       - checkout
       - run:
@@ -32,9 +41,7 @@ jobs:
             ./gradlew dependencyCheckAnalyze --info
 workflows:
   version: 2.1
-  Full build without itests:
+  default:
     jobs:
-      - Full build without itests
-  OWASP:
-    jobs:
+      - Full Build
       - OWASP
