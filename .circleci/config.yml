@@ -1,17 +1,17 @@
 version: 2.1
 jobs:
   Full build without itests:
-    docker: &image
-      - image: circleci/openjdk:11-jdk
+    machine:
+      image: ubuntu-1604:201903-01
+      docker_layer_caching: true
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
       - run:
           name: Building
-          # Skip itests, which require another docker image and don't work in CircleCI
           command: |
-            ./gradlew clean build -PskipITests --info
+            ./gradlew clean build --info
       - run:
           name: Save test results
           command: |
@@ -23,7 +23,8 @@ jobs:
       - store_artifacts:
           path: ~/test-results/junit
   OWASP:
-    docker: *image
+    docker:
+      - image: circleci/openjdk:11-jdk
     steps:
       - checkout
       - run:
