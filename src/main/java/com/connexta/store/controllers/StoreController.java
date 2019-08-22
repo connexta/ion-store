@@ -48,7 +48,7 @@ public class StoreController implements ProductApi {
    */
   @Override
   public ResponseEntity<Void> storeProduct(
-      @NotBlank final String acceptVersion, @Valid @NotNull final MultipartFile file) {
+      final String acceptVersion, @Valid final MultipartFile file) {
     // TODO validate Accept-Version
 
     final Long fileSize = file.getSize();
@@ -93,7 +93,7 @@ public class StoreController implements ProductApi {
 
   @Override
   public @NotNull ResponseEntity<Resource> retrieveProduct(
-      @NotBlank final String acceptVersion, @NotBlank String productId) {
+      final String acceptVersion, String productId) {
     InputStream inputStream = null;
     try {
       // TODO return 404 if key doesn't exist
@@ -121,7 +121,7 @@ public class StoreController implements ProductApi {
 
       log.warn("Unable to retrieve {}", productId, e);
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (Throwable t) {
+    } catch (Exception exception) {
       if (inputStream != null) {
         try {
           inputStream.close();
@@ -130,7 +130,7 @@ public class StoreController implements ProductApi {
         }
       }
 
-      throw t;
+      throw exception;
     }
   }
 

@@ -49,6 +49,7 @@ public class RetrieveProductTests {
   }
 
   @Test
+  @SuppressWarnings("squid:S2699") // Test case missing assertion
   public void testContextLoads() {}
 
   @Test
