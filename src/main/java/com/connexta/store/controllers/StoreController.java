@@ -16,7 +16,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;

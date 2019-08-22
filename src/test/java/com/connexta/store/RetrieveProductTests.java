@@ -82,7 +82,8 @@ public class RetrieveProductTests {
 
     // TODO return 404 if key doesn't exist
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/" + key))
+        .perform(
+            MockMvcRequestBuilders.get("/mis/product/" + key).header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 
@@ -103,7 +104,8 @@ public class RetrieveProductTests {
         .thenThrow(amazonS3ExceptionBuilder.build());
 
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/" + key))
+        .perform(
+            MockMvcRequestBuilders.get("/mis/product/" + key).header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 
@@ -114,7 +116,7 @@ public class RetrieveProductTests {
 
     // TODO return 404 if key doesn't exist
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/1234"))
+        .perform(MockMvcRequestBuilders.get("/mis/product/1234").header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 
@@ -125,7 +127,7 @@ public class RetrieveProductTests {
         .thenThrow(AmazonServiceException.class);
 
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/1234"))
+        .perform(MockMvcRequestBuilders.get("/mis/product/1234").header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 
@@ -135,7 +137,7 @@ public class RetrieveProductTests {
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenReturn(null);
 
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/1234"))
+        .perform(MockMvcRequestBuilders.get("/mis/product/1234").header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 
@@ -144,7 +146,7 @@ public class RetrieveProductTests {
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(RuntimeException.class);
 
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/1234"))
+        .perform(MockMvcRequestBuilders.get("/mis/product/1234").header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 }
