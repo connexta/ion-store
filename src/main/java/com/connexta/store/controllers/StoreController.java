@@ -25,13 +25,11 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Slf4j
 @RestController
@@ -136,17 +134,12 @@ public class StoreController implements ProductApi {
     }
   }
 
-  // TODO replace this with better error handling
-  @ControllerAdvice
-  private class ConstraintViolationExceptionHandler extends ResponseEntityExceptionHandler {
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    protected ResponseEntity<Object> handleConstraintViolation(
-        @NotNull final ConstraintViolationException e, @NotNull final WebRequest request) {
-      final String message = e.getMessage();
-      final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-      log.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
-      return handleExceptionInternal(e, message, new HttpHeaders(), httpStatus, request);
-    }
+  @ExceptionHandler(ConstraintViolationException.class)
+  protected ResponseEntity<Object> handleConstraintViolation(
+      @NotNull final ConstraintViolationException e, @NotNull final WebRequest request) {
+    final String message = e.getMessage();
+    final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+    log.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
+    return new ResponseEntity<>(e, httpStatus);
   }
 }
