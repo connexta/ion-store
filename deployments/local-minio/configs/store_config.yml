@@ -1,2 +1,2 @@
 endpointUrl:
-  retrieve: http://localhost:9042/mis/product/
+  retrieve: http://localhost:9142/mis/product/
