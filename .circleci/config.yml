@@ -6,7 +6,7 @@ jobs:
       docker_layer_caching: true
     steps:
       - checkout
-      - run: java --version
+      - run: circleci-install java oraclejdk11 && circleci-install java openjdk11
       - run:
           name: Building
           command: |
