@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  Full build without itests:
+  FullBuild:
     machine:
       image: circleci/classic:latest
       docker_layer_caching: true
@@ -41,9 +41,9 @@ jobs:
             ./gradlew dependencyCheckAnalyze --info
 workflows:
   version: 2.1
-  Full build without itests:
+  default:
     jobs:
-      - Full build without itests
-#  OWASP:
-#    jobs:
-#      - OWASP
+      - FullBuild
+      - OWASP:
+          requires:
+            - FullBuild
