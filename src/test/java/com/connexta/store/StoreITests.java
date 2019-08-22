@@ -6,6 +6,7 @@
  */
 package com.connexta.store;
 
+import static com.connexta.store.RetrieveProductTests.PRODUCT_ID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.not;
@@ -269,7 +270,7 @@ public class StoreITests {
     restTemplate.postForEntity("/mis/product/", multipartBodyBuilder, Resource.class);
 
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
-    uriBuilder.setPath(uriBuilder.getPath() + "/1234");
+    uriBuilder.setPath(uriBuilder.getPath() + "/" + PRODUCT_ID);
 
     // verify
     // TODO return 404 if key doesn't exist
@@ -285,7 +286,7 @@ public class StoreITests {
   @Test
   public void testRetrieveProductWhenS3IsEmpty() throws Exception {
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
-    uriBuilder.setPath(uriBuilder.getPath() + "/1234");
+    uriBuilder.setPath(uriBuilder.getPath() + "/" + PRODUCT_ID);
     // TODO return 404 if key doesn't exist
     assertThat(
         restTemplate.getForEntity(uriBuilder.build(), Resource.class).getStatusCode(),

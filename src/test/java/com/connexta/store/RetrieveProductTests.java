@@ -36,6 +36,7 @@ import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 @AutoConfigureMockMvc
 public class RetrieveProductTests {
 
+  public static final String PRODUCT_ID = "341d6c1ce5e0403a99fe86edaed66eea";
   @MockBean private AmazonS3 mockAmazonS3;
 
   @Inject private MockMvc mockMvc;
@@ -65,7 +66,7 @@ public class RetrieveProductTests {
    */
   @Test
   public void testS3KeyDoesNotExist() throws Exception {
-    final String key = "1234";
+    final String key = PRODUCT_ID;
     final AmazonS3ExceptionBuilder amazonS3ExceptionBuilder = new AmazonS3ExceptionBuilder();
     amazonS3ExceptionBuilder.setErrorCode("NoSuchKey");
     amazonS3ExceptionBuilder.setErrorMessage("The specified key does not exist.");
@@ -89,7 +90,7 @@ public class RetrieveProductTests {
 
   @Test
   public void testS3BucketDoesNotExist() throws Exception {
-    final String key = "1234";
+    final String key = PRODUCT_ID;
     final AmazonS3ExceptionBuilder amazonS3ExceptionBuilder = new AmazonS3ExceptionBuilder();
     amazonS3ExceptionBuilder.setErrorCode("NoSuchBucket");
     amazonS3ExceptionBuilder.setErrorMessage("The specified bucket does not exist");
@@ -116,7 +117,9 @@ public class RetrieveProductTests {
 
     // TODO return 404 if key doesn't exist
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/1234").header("Accept-Version", "'0.1.0"))
+        .perform(
+            MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID)
+                .header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 
@@ -127,7 +130,9 @@ public class RetrieveProductTests {
         .thenThrow(AmazonServiceException.class);
 
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/1234").header("Accept-Version", "'0.1.0"))
+        .perform(
+            MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID)
+                .header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 
@@ -137,7 +142,9 @@ public class RetrieveProductTests {
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenReturn(null);
 
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/1234").header("Accept-Version", "'0.1.0"))
+        .perform(
+            MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID)
+                .header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 
@@ -146,7 +153,9 @@ public class RetrieveProductTests {
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(RuntimeException.class);
 
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/1234").header("Accept-Version", "'0.1.0"))
+        .perform(
+            MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID)
+                .header("Accept-Version", "'0.1.0"))
         .andExpect(status().isInternalServerError());
   }
 }

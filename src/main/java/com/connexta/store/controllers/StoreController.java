@@ -14,8 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
@@ -91,8 +91,8 @@ public class StoreController implements ProductApi {
   }
 
   @Override
-  public @NotNull ResponseEntity<Resource> retrieveProduct(
-      final String acceptVersion, String productId) {
+  public @NotNull ResponseEntity<Resource> retrieveProduct(String productId) {
+    new UuidValidator().validate(productId);
     InputStream inputStream = null;
     try {
       // TODO return 404 if key doesn't exist
@@ -128,14 +128,13 @@ public class StoreController implements ProductApi {
           log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
         }
       }
-
       throw exception;
     }
   }
 
-  @ExceptionHandler(ConstraintViolationException.class)
+  @ExceptionHandler(ValidationException.class)
   protected ResponseEntity<Object> handleConstraintViolation(
-      @NotNull final ConstraintViolationException e, @NotNull final WebRequest request) {
+      @NotNull final ValidationException e, @NotNull final WebRequest request) {
     final String message = e.getMessage();
     final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
     log.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
