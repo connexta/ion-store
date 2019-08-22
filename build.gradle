@@ -29,20 +29,20 @@ version = "0.1.0-SNAPSHOT"
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url "http://nexus.phx.connexta.com:8081/nexus/content/repositories/ion-releases/" }
+    maven { url "https://artifacts.codice.org/content/repositories/ion-releases/" }
 }
 
 dependencies {
     annotationProcessor "org.projectlombok:lombok:1.18.8"
     compileOnly "org.projectlombok:lombok:1.18.8"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
+    implementation "com.connexta.store:store-api-rest-spring-stubs:0.1.0-SNAPSHOT" // TODO replace this with released version
     implementation "io.springfox:springfox-swagger2:2.9.2"
     implementation "io.springfox:springfox-swagger-ui:2.9.2"
     implementation "javax.inject:javax.inject:1"
     implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.7.RELEASE"
     implementation "org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE"
     implementation "org.springframework.data:spring-data-solr:4.0.10.RELEASE"
-    implementation "com.connexta.store:store-api-rest-spring-stubs:0.1.0-SNAPSHOT"
     testCompile "junit:junit:4.12"
     testCompile "org.mockito:mockito-core:3.0.0"
     testCompile "org.testcontainers:testcontainers:1.12.0"

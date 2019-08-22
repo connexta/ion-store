@@ -16,3 +16,7 @@ spring:
     multipart:
       max-file-size: 10GB
       max-request-size: 11GB
+
+# The index endpoint should be deployed in the same network, so we don't need a config.yml file for it.
+endpointUrl:
+  index: http://search:8080/mis/product/

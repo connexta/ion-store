@@ -6,7 +6,6 @@
  */
 package com.connexta.store;
 
-import static com.connexta.store.RetrieveProductTests.PRODUCT_ID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.not;
@@ -60,6 +59,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 @DirtiesContext
 public class StoreITests {
 
+  private static final String PRODUCT_ID = "341d6c1ce5e0403a99fe86edaed66eea";
   private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
   private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
   private static final int MINIO_PORT = 9000;

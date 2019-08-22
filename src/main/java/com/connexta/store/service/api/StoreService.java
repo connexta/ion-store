@@ -15,15 +15,17 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 public interface StoreService {
 
   @NotNull
   URI createProduct(
-      @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
-      @NotBlank String mediaType,
-      @NotBlank String fileName,
-      @NotNull InputStream inputStream)
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
+      @NotBlank final String mediaType,
+      @NotBlank final String fileName,
+      @NotNull final InputStream inputStream)
       throws StoreException, URISyntaxException;
 
   /**
@@ -31,5 +33,11 @@ public interface StoreService {
    * RetrieveResponse}.
    */
   @NotNull
-  RetrieveResponse retrieveProduct(@NotBlank String id) throws StoreException;
+  RetrieveResponse retrieveProduct(@NotBlank final String id) throws StoreException;
+
+  void indexProduct(
+      @NotNull final InputStream cstInputStream,
+      @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId)
+      throws StoreException;
 }

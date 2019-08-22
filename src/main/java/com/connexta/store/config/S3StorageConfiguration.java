@@ -12,6 +12,7 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.connexta.store.adaptors.S3StorageAdaptor;
+import com.connexta.store.adaptors.StorageAdaptor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,7 +43,7 @@ public class S3StorageConfiguration {
   }
 
   @Bean
-  public S3StorageAdaptor s3StorageAdaptor(
+  public StorageAdaptor s3StorageAdaptor(
       @NotNull final AmazonS3 amazonS3,
       @Value("${aws.s3.bucket.quarantine}") @NotBlank final String bucket) {
     return new S3StorageAdaptor(amazonS3, bucket);
