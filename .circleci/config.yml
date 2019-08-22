@@ -6,7 +6,14 @@ jobs:
       docker_layer_caching: true
     steps:
       - checkout
-      - run: circleci-install java oraclejdk11 && circleci-install java openjdk11
+      - run:
+          name: Install java 11
+          command:
+            sudo apt-get -y install openjdk-11-jdk
+      - run:
+          name: Set default java 11
+          command:
+            sudo update-java-alternatives --set java-1.11.0-openjdk-amd64
       - run:
           name: Building
           command: |
