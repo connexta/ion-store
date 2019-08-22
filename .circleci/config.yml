@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  FullBuild:
+  Full Build:
     machine:
       image: circleci/classic:latest
       docker_layer_caching: true
@@ -43,5 +43,5 @@ workflows:
   version: 2.1
   default:
     jobs:
-      - FullBuild
+      - Full Build
       - OWASP
