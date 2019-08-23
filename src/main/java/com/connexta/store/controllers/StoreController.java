@@ -8,15 +8,17 @@ package com.connexta.store.controllers;
 
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.common.exceptions.StoreException;
-import com.connexta.store.rest.spring.ProductApi;
+import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -24,16 +26,18 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Slf4j
 @RestController
 @RequestMapping("/mis")
-public class StoreController implements ProductApi {
+public class StoreController implements StoreApi {
 
   @NotNull private final StoreService storeService;
 
@@ -91,8 +95,8 @@ public class StoreController implements ProductApi {
   }
 
   @Override
-  public @NotNull ResponseEntity<Resource> retrieveProduct(String productId) {
-    new UuidValidator().validate(productId);
+  public ResponseEntity<Resource> retrieveProduct(
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId) {
     InputStream inputStream = null;
     try {
       // TODO return 404 if key doesn't exist
@@ -132,12 +136,17 @@ public class StoreController implements ProductApi {
     }
   }
 
-  @ExceptionHandler(ValidationException.class)
-  protected ResponseEntity<Object> handleConstraintViolation(
-      @NotNull final ValidationException e, @NotNull final WebRequest request) {
-    final String message = e.getMessage();
-    final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-    log.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
-    return new ResponseEntity<>(e, httpStatus);
+  // TODO replace this with better error handling
+  @ControllerAdvice
+  private class ConstraintViolationExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    protected ResponseEntity<Object> handleConstraintViolation(
+        @NotNull final ConstraintViolationException e, @NotNull final WebRequest request) {
+      final String message = e.getMessage();
+      final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+      log.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
+      return handleExceptionInternal(e, message, new HttpHeaders(), httpStatus, request);
+    }
   }
 }
