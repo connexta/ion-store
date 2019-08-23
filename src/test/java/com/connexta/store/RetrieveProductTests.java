@@ -36,7 +36,8 @@ import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 @AutoConfigureMockMvc
 public class RetrieveProductTests {
 
-  public static final String PRODUCT_ID = "341d6c1ce5e0403a99fe86edaed66eea";
+  private static final String PRODUCT_ID = "341d6c1ce5e0403a99fe86edaed66eea";
+
   @MockBean private AmazonS3 mockAmazonS3;
 
   @Inject private MockMvc mockMvc;
