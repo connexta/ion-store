@@ -124,7 +124,7 @@ public class StoreController implements StoreApi {
 
       log.warn("Unable to retrieve {}", productId, e);
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (Exception exception) {
+    } catch (Throwable t) {
       if (inputStream != null) {
         try {
           inputStream.close();
@@ -132,7 +132,7 @@ public class StoreController implements StoreApi {
           log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
         }
       }
-      throw exception;
+      throw t;
     }
   }
 
