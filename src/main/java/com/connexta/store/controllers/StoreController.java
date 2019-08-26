@@ -8,6 +8,7 @@ package com.connexta.store.controllers;
 
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,9 +16,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.solr.common.StringUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -49,7 +52,7 @@ public class StoreController implements StoreApi {
    */
   @Override
   public ResponseEntity<Void> storeProduct(
-      @NotBlank final String acceptVersion, @Valid @NotNull final MultipartFile file) {
+      final String acceptVersion, @Valid final MultipartFile file) {
     // TODO validate Accept-Version
 
     final Long fileSize = file.getSize();
@@ -66,9 +69,7 @@ public class StoreController implements StoreApi {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       log.warn(
-          "Unable to read file for storeProduct request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
-          acceptVersion,
-          fileSize,
+          "Unable to read file for storeProduct request with for a file with mediaType={} and fileName={}",
           mediaType,
           fileName,
           e);
@@ -80,9 +81,7 @@ public class StoreController implements StoreApi {
       location = storeService.createProduct(fileSize, mediaType, fileName, inputStream);
     } catch (StoreException | URISyntaxException e) {
       log.warn(
-          "Unable to store product for request with params acceptVersion={}, fileSize={}, mediaType={}, fileName={}",
-          acceptVersion,
-          fileSize,
+          "Unable to complete storeProduct request for a file with mediaType={} and fileName={}",
           mediaType,
           fileName,
           e);
@@ -93,7 +92,45 @@ public class StoreController implements StoreApi {
   }
 
   @Override
-  public @NotNull ResponseEntity<Resource> retrieveProduct(@NotBlank String productId) {
+  public ResponseEntity<Void> addMetadata(
+      final String acceptVersion,
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId,
+      @Pattern(regexp = "^[0-9a-zA-Z\\-]+$") @Size(min = 1, max = 32) final String metadataType,
+      @Valid final MultipartFile file) {
+    // TODO validate params
+
+    if (!StringUtils.equals(metadataType, "cst")) {
+      log.warn("Metadata type {} is not yet supported", metadataType);
+      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
+
+    final Long fileSize = file.getSize();
+    // TODO validate that fileSize is (0 GB, 10 GB]
+
+    final InputStream inputStream;
+    try {
+      inputStream = file.getInputStream();
+    } catch (IOException e) {
+      log.warn("Unable to read file for PUT CST request for id={}", productId, e);
+      return ResponseEntity.badRequest().build();
+    }
+
+    try {
+      storeService.indexProduct(inputStream, fileSize, productId);
+    } catch (final StoreException e) {
+      log.warn(
+          "Unable to complete store metadata request with for metadataType=cst and productId={}",
+          productId,
+          e);
+      return ResponseEntity.badRequest().build();
+    }
+
+    return ResponseEntity.ok().build();
+  }
+
+  @Override
+  public ResponseEntity<Resource> retrieveProduct(
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId) {
     InputStream inputStream = null;
     try {
       // TODO return 404 if key doesn't exist
@@ -129,7 +166,6 @@ public class StoreController implements StoreApi {
           log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
         }
       }
-
       throw t;
     }
   }

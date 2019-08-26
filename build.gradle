@@ -29,13 +29,14 @@ version = "0.1.0-SNAPSHOT"
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url "http://nexus.phx.connexta.com:8081/nexus/content/repositories/ion-releases/" }
+    maven { url "https://artifacts.codice.org/content/repositories/ion-releases/" }
 }
 
 dependencies {
     annotationProcessor "org.projectlombok:lombok:1.18.8"
     compileOnly "org.projectlombok:lombok:1.18.8"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
+    implementation "com.connexta.store:store-api-rest-spring-stubs:0.1.0"
     implementation "io.springfox:springfox-swagger2:2.9.2"
     implementation "io.springfox:springfox-swagger-ui:2.9.2"
     implementation "javax.inject:javax.inject:1"

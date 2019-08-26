@@ -33,15 +33,16 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -58,6 +59,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 @DirtiesContext
 public class StoreITests {
 
+  private static final String PRODUCT_ID = "341d6c1ce5e0403a99fe86edaed66eea";
   private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
   private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
   private static final int MINIO_PORT = 9000;
@@ -74,22 +76,8 @@ public class StoreITests {
                   .forPath("/minio/health/ready")
                   .withStartupTimeout(Duration.ofSeconds(30)));
 
-  @TestConfiguration
-  static class Config {
-
-    @Bean
-    public AmazonS3Configuration testAmazonS3Configuration() {
-      return new AmazonS3Configuration(
-          String.format(
-              "http://%s:%d",
-              minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
-          "local",
-          MINIO_ADMIN_ACCESS_KEY,
-          MINIO_ADMIN_SECRET_KEY);
-    }
-  }
-
-  @Inject private TestRestTemplate restTemplate;
+  private TestRestTemplate restTemplate;
+  @Autowired private ApplicationContext applicationContext;
   @Inject private AmazonS3 amazonS3;
 
   @Value("${endpointUrl.retrieve}")
@@ -100,6 +88,8 @@ public class StoreITests {
 
   @Before
   public void before() {
+    restTemplate =
+        new CustomTestRestTemplate(applicationContext).addRequestHeader("Accept-Version", "0.1.0");
     amazonS3.createBucket(s3Bucket);
   }
 
@@ -137,13 +127,10 @@ public class StoreITests {
             return "test_file_name.txt";
           }
         });
-    final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set("Accept-Version", "0.1.0");
 
     // when
     final ResponseEntity<Resource> response =
-        restTemplate.postForEntity(
-            "/mis/product/", new HttpEntity<>(body, httpHeaders), Resource.class);
+        restTemplate.postForEntity("/mis/product/", body, Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -173,11 +160,7 @@ public class StoreITests {
             return fileName;
           }
         });
-    final HttpHeaders firstHttpHeaders = new HttpHeaders();
-    firstHttpHeaders.set("Accept-Version", "0.1.0");
-    final URI firstLocation =
-        restTemplate.postForLocation(
-            "/mis/product/", new HttpEntity<>(firstBody, firstHttpHeaders));
+    final URI firstLocation = restTemplate.postForLocation("/mis/product/", firstBody);
 
     // and store another product
     final InputStream inputStream =
@@ -198,13 +181,10 @@ public class StoreITests {
             return fileName;
           }
         });
-    final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set("Accept-Version", "0.1.0");
 
     // when
     final ResponseEntity<Resource> response =
-        restTemplate.postForEntity(
-            "/mis/product/", new HttpEntity<>(body, httpHeaders), Resource.class);
+        restTemplate.postForEntity("/mis/product/", body, Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -238,11 +218,8 @@ public class StoreITests {
             return fileName;
           }
         });
-    final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set("Accept-Version", "0.1.0");
 
-    final URI location =
-        restTemplate.postForLocation("/mis/product/", new HttpEntity<>(body, httpHeaders));
+    final URI location = restTemplate.postForLocation("/mis/product/", body);
 
     // when
     final ResponseEntity<Resource> response = restTemplate.getForEntity(location, Resource.class);
@@ -289,14 +266,11 @@ public class StoreITests {
             return "test_file_name.txt";
           }
         });
-    final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set("Accept-Version", "0.1.0");
 
-    restTemplate.postForEntity(
-        "/mis/product/", new HttpEntity<>(multipartBodyBuilder, httpHeaders), Resource.class);
+    restTemplate.postForEntity("/mis/product/", multipartBodyBuilder, Resource.class);
 
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
-    uriBuilder.setPath(uriBuilder.getPath() + "/1234");
+    uriBuilder.setPath(uriBuilder.getPath() + "/" + PRODUCT_ID);
 
     // verify
     // TODO return 404 if key doesn't exist
@@ -312,7 +286,7 @@ public class StoreITests {
   @Test
   public void testRetrieveProductWhenS3IsEmpty() throws Exception {
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
-    uriBuilder.setPath(uriBuilder.getPath() + "/1234");
+    uriBuilder.setPath(uriBuilder.getPath() + "/" + PRODUCT_ID);
     // TODO return 404 if key doesn't exist
     assertThat(
         restTemplate.getForEntity(uriBuilder.build(), Resource.class).getStatusCode(),
@@ -338,5 +312,20 @@ public class StoreITests {
             == EXPECTED_GET_REQUEST_RESPONSE_STATUS;
       }
     };
+  }
+
+  @TestConfiguration
+  static class Config {
+
+    @Bean
+    public AmazonS3Configuration testAmazonS3Configuration() {
+      return new AmazonS3Configuration(
+          String.format(
+              "http://%s:%d",
+              minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
+          "local",
+          MINIO_ADMIN_ACCESS_KEY,
+          MINIO_ADMIN_SECRET_KEY);
+    }
   }
 }

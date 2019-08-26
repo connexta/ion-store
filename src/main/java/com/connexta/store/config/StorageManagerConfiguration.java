@@ -7,6 +7,7 @@
 package com.connexta.store.config;
 
 import com.connexta.store.adaptors.StorageAdaptor;
+import com.connexta.store.clients.IndexClient;
 import com.connexta.store.service.api.StoreService;
 import com.connexta.store.service.impl.StoreServiceImpl;
 import javax.validation.constraints.NotBlank;
@@ -20,8 +21,9 @@ public class StorageManagerConfiguration {
 
   @Bean
   public StoreService productStorageManager(
-      @NotBlank @Value("${endpointUrl.retrieve}") String retrieveEndpoint,
-      @NotNull StorageAdaptor storageAdapter) {
-    return new StoreServiceImpl(retrieveEndpoint, storageAdapter);
+      @NotBlank @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
+      @NotNull final StorageAdaptor storageAdapter,
+      @NotNull final IndexClient indexClient) {
+    return new StoreServiceImpl(retrieveEndpoint, storageAdapter, indexClient);
   }
 }
