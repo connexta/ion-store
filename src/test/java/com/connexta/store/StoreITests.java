@@ -28,11 +28,11 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,13 +48,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @DirtiesContext
 public class StoreITests {
@@ -86,14 +86,14 @@ public class StoreITests {
   @Value("${aws.s3.bucket.quarantine}")
   private String s3Bucket;
 
-  @Before
+  @BeforeEach
   public void before() {
     restTemplate =
         new CustomTestRestTemplate(applicationContext).addRequestHeader("Accept-Version", "0.1.0");
     amazonS3.createBucket(s3Bucket);
   }
 
-  @After
+  @AfterEach
   public void after() {
     amazonS3.listObjects(s3Bucket).getObjectSummaries().stream()
         .map(S3ObjectSummary::getKey)

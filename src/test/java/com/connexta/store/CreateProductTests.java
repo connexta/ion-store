@@ -22,21 +22,21 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import java.nio.charset.StandardCharsets;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CreateProductTests {
@@ -48,7 +48,7 @@ public class CreateProductTests {
   @Value("${aws.s3.bucket.quarantine}")
   private String s3Bucket;
 
-  @After
+  @AfterEach
   public void after() {
     verifyNoMoreInteractions(ignoreStubs(mockAmazonS3));
   }
