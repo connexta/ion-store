@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   store:
-    image: ${REGISTRY:-docker.io}/cnxta/ion-store:0.1.0-SNAPSHOT
+    image: ${REGISTRY:-docker.io}/cnxta/ion-store
     ports:
       - target: 8080
         published: 9042
