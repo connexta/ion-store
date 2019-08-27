@@ -62,8 +62,8 @@ For more information about spotless checks see
     ```yaml
     aws:
       s3:
-        endpointUrl: https://s3.us-west-1.amazonaws.com
-        region: us-west-1
+        endpointUrl: http://minio:9000
+        region: local
         bucket:
           quarantine: ingest-quarantine
     ```
@@ -71,7 +71,7 @@ For more information about spotless checks see
     Example configs/store_config.yml:
     ```yaml
     endpointUrl:
-      retrieve: http://store:9042/mis/product/
+      retrieve: http://localhost:9042/mis/product/
     ```
 
     The service is capable of storing data in an S3-compatible data store.
