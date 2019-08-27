@@ -20,12 +20,15 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -68,7 +71,7 @@ public class CreateProductTests {
   }
 
   @Test
-  @Ignore("TODO")
+  @Disabled("TODO")
   public void testCantReadAttachment() {
     // TODO verify 400
   }
@@ -85,78 +88,22 @@ public class CreateProductTests {
                 putObjectRequest ->
                     StringUtils.equals(putObjectRequest.getBucketName(), s3Bucket))))
         .thenThrow(amazonS3ExceptionBuilder.build());
-
-    mockMvc
-        .perform(
-            multipart("/mis/product")
-                .file(
-                    new MockMultipartFile(
-                        "file",
-                        "test_file_name.txt",
-                        "text/plain",
-                        IOUtils.toInputStream(
-                            "All the color had been leached from Winterfell until only grey and white remained",
-                            StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isInternalServerError());
+    sendRequest();
   }
 
-  @Test
-  public void testS3KeyAlreadyExists() {
-    // TODO
+  @ParameterizedTest
+  @MethodSource("exceptionsToTest")
+  public void testExceptionsInS3(RuntimeException e) throws Exception {
+    when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(e);
+    sendRequest();
   }
 
-  /** @see AmazonS3#putObject(PutObjectRequest) */
-  @Test
-  public void testS3ClientError() throws Exception {
-    when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(SdkClientException.class);
-
-    mockMvc
-        .perform(
-            multipart("/mis/product")
-                .file(
-                    new MockMultipartFile(
-                        "file",
-                        "test_file_name.txt",
-                        "text/plain",
-                        IOUtils.toInputStream(
-                            "All the color had been leached from Winterfell until only grey and white remained",
-                            StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isInternalServerError());
+  private static Stream<RuntimeException> exceptionsToTest() {
+    return Stream.of(
+        new SdkClientException(""), new AmazonServiceException(""), new RuntimeException());
   }
 
-  /** @see AmazonS3#putObject(PutObjectRequest) */
-  @Test
-  public void testS3ServiceError() throws Exception {
-    when(mockAmazonS3.putObject(any(PutObjectRequest.class)))
-        .thenThrow(AmazonServiceException.class);
-
-    mockMvc
-        .perform(
-            multipart("/mis/product")
-                .file(
-                    new MockMultipartFile(
-                        "file",
-                        "test_file_name.txt",
-                        "text/plain",
-                        IOUtils.toInputStream(
-                            "All the color had been leached from Winterfell until only grey and white remained",
-                            StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isInternalServerError());
-  }
-
-  @Test
-  public void testS3ThrowsRuntimeException() throws Exception {
-    when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(RuntimeException.class);
-
+  private void sendRequest() throws Exception {
     mockMvc
         .perform(
             multipart("/mis/product")
