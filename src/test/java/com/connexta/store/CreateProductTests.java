@@ -20,7 +20,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -28,7 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -88,22 +87,19 @@ public class CreateProductTests {
                 putObjectRequest ->
                     StringUtils.equals(putObjectRequest.getBucketName(), s3Bucket))))
         .thenThrow(amazonS3ExceptionBuilder.build());
-    sendRequest();
+    assertErrorResponse();
   }
 
   @ParameterizedTest
-  @MethodSource("exceptionsToTest")
-  public void testExceptionsInS3(RuntimeException e) throws Exception {
-    when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(e);
-    sendRequest();
+  @ValueSource(
+      classes = {SdkClientException.class, AmazonServiceException.class, RuntimeException.class})
+  public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
+      throws Exception {
+    when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(throwableType);
+    assertErrorResponse();
   }
 
-  private static Stream<RuntimeException> exceptionsToTest() {
-    return Stream.of(
-        new SdkClientException(""), new AmazonServiceException(""), new RuntimeException());
-  }
-
-  private void sendRequest() throws Exception {
+  private void assertErrorResponse() throws Exception {
     mockMvc
         .perform(
             multipart("/mis/product")
