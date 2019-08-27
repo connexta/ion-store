@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -91,7 +91,7 @@ public class RetrieveProductTests {
         .thenThrow(amazonS3ExceptionBuilder.build());
 
     // TODO return 404 if key doesn't exist
-    sendRequest();
+    assertErrorResponse();
   }
 
   @Test
@@ -109,45 +109,26 @@ public class RetrieveProductTests {
                 getObjectRequest ->
                     StringUtils.equals(getObjectRequest.getBucketName(), s3Bucket))))
         .thenThrow(amazonS3ExceptionBuilder.build());
-    sendRequest();
-  }
-
-  /** @see AmazonS3#getObject(GetObjectRequest) */
-  @Test
-  public void testS3ClientError() throws Exception {
-    Class<SdkClientException> throwableType = SdkClientException.class;
-    when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(throwableType);
-    // TODO return 404 if key doesn't exist
-    sendRequest();
-  }
-
-  /** @see AmazonS3#getObject(GetObjectRequest) */
-  @Test
-  public void testS3ServiceError() throws Exception {
-    Class<AmazonServiceException> throwableType = AmazonServiceException.class;
-    when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(throwableType);
-    sendRequest();
+    assertErrorResponse();
   }
 
   /** @see AmazonS3#getObject(GetObjectRequest) */
   @Test
   public void testS3ConstraintsWerentMet() throws Exception {
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenReturn(null);
-    sendRequest();
+    assertErrorResponse();
   }
 
   @ParameterizedTest
-  @MethodSource("exceptionsToTest")
-  public void testExceptionsInS3(RuntimeException e) throws Exception {
-    prepareService(e);
-    sendRequest();
+  @ValueSource(
+      classes = {SdkClientException.class, AmazonServiceException.class, RuntimeException.class})
+  public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
+      throws Exception {
+    when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(throwableType);
+    assertErrorResponse();
   }
 
-  private void prepareService(RuntimeException e) {
-    when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(e);
-  }
-
-  private void sendRequest() throws Exception {
+  private void assertErrorResponse() throws Exception {
     mockMvc
         .perform(
             MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID)
