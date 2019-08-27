@@ -9,7 +9,7 @@ SET_DOCKER_W=""
 DOCKER_REG=${DOCKER_REGISTRY:-${SET_DOCKER_REG}}
 
 # The name of the preface for the docker images
-DOCKER_IMAGE_NAME="cnxta/ion-store:0.1.0-SNAPSHOT"
+DOCKER_IMAGE_NAME="cnxta/ion-store"
 
 # DOCKER_REGISTRY
 
