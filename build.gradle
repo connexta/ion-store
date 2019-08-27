@@ -24,7 +24,6 @@ plugins {
 }
 
 group = "com.connexta.store"
-version = "0.1.0-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -104,7 +103,7 @@ bootJar {
 
 docker {
     files tasks.bootJar.outputs
-    name "cnxta/ion-store:${project.version}"
+    name "cnxta/ion-store"
     buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
 }
 
