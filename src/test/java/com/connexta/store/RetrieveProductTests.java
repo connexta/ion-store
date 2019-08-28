@@ -48,11 +48,6 @@ public class RetrieveProductTests {
   @Value("${aws.s3.bucket.quarantine}")
   private String s3Bucket;
 
-  private static Stream<RuntimeException> exceptionsToTest() {
-    return Stream.of(
-        new SdkClientException(""), new AmazonServiceException(""), new RuntimeException());
-  }
-
   @AfterEach
   public void after() {
     verifyNoMoreInteractions(ignoreStubs(mockAmazonS3));
