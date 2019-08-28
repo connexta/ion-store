@@ -22,21 +22,23 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import java.nio.charset.StandardCharsets;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CreateProductTests {
@@ -48,7 +50,7 @@ public class CreateProductTests {
   @Value("${aws.s3.bucket.quarantine}")
   private String s3Bucket;
 
-  @After
+  @AfterEach
   public void after() {
     verifyNoMoreInteractions(ignoreStubs(mockAmazonS3));
   }
@@ -68,7 +70,7 @@ public class CreateProductTests {
   }
 
   @Test
-  @Ignore("TODO")
+  @Disabled("TODO")
   public void testCantReadAttachment() {
     // TODO verify 400
   }
@@ -85,78 +87,19 @@ public class CreateProductTests {
                 putObjectRequest ->
                     StringUtils.equals(putObjectRequest.getBucketName(), s3Bucket))))
         .thenThrow(amazonS3ExceptionBuilder.build());
-
-    mockMvc
-        .perform(
-            multipart("/mis/product")
-                .file(
-                    new MockMultipartFile(
-                        "file",
-                        "test_file_name.txt",
-                        "text/plain",
-                        IOUtils.toInputStream(
-                            "All the color had been leached from Winterfell until only grey and white remained",
-                            StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isInternalServerError());
+    assertErrorResponse();
   }
 
-  @Test
-  public void testS3KeyAlreadyExists() {
-    // TODO
+  @ParameterizedTest
+  @ValueSource(
+      classes = {SdkClientException.class, AmazonServiceException.class, RuntimeException.class})
+  public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
+      throws Exception {
+    when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(throwableType);
+    assertErrorResponse();
   }
 
-  /** @see AmazonS3#putObject(PutObjectRequest) */
-  @Test
-  public void testS3ClientError() throws Exception {
-    when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(SdkClientException.class);
-
-    mockMvc
-        .perform(
-            multipart("/mis/product")
-                .file(
-                    new MockMultipartFile(
-                        "file",
-                        "test_file_name.txt",
-                        "text/plain",
-                        IOUtils.toInputStream(
-                            "All the color had been leached from Winterfell until only grey and white remained",
-                            StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isInternalServerError());
-  }
-
-  /** @see AmazonS3#putObject(PutObjectRequest) */
-  @Test
-  public void testS3ServiceError() throws Exception {
-    when(mockAmazonS3.putObject(any(PutObjectRequest.class)))
-        .thenThrow(AmazonServiceException.class);
-
-    mockMvc
-        .perform(
-            multipart("/mis/product")
-                .file(
-                    new MockMultipartFile(
-                        "file",
-                        "test_file_name.txt",
-                        "text/plain",
-                        IOUtils.toInputStream(
-                            "All the color had been leached from Winterfell until only grey and white remained",
-                            StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-        .andExpect(status().isInternalServerError());
-  }
-
-  @Test
-  public void testS3ThrowsRuntimeException() throws Exception {
-    when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(RuntimeException.class);
-
+  private void assertErrorResponse() throws Exception {
     mockMvc
         .perform(
             multipart("/mis/product")
