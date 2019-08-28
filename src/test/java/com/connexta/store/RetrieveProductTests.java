@@ -18,7 +18,6 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
