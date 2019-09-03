@@ -1,73 +1,73 @@
+# Compile Code, Unit Test, Dependency Scan, Static Analysis Scan, Build Image, Vulnerability Scan, Deploy Image to DockerHub
 version: 2.1
 orbs:
+  snyk: snyk/snyk@0.0.8
   anchore: anchore/anchore-engine@1.4.0
 jobs:
-  Full Build:
-    machine: &virtual_machine
-      image: ubuntu-1604:201903-01
-      docker_layer_caching: true
+  build:
+    docker:
+      - image: circleci/openjdk:11-jdk
     steps:
-      - run: &install_java
-          name: Install Java 11
-          command: |
-            sudo add-apt-repository ppa:openjdk-r/ppa
-            sudo apt-get -qq update
-            sudo apt-get -qq install -y openjdk-11-jdk
-      - run: &configure_java
-          name: Change to Java 11
-          command: sudo update-java-alternatives --set java-1.11.0-openjdk-amd64
       - checkout
-      - restore_cache: &restore_cache
-          keys:
-            # Use increasingly general patterns to restore cache
-            - gradle-repo-v1-{{ .Branch }}-
-            - gradle-repo-v1-
+      - run: ./gradlew clean build -x test
+  test:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    steps:
+      - checkout
+      - run: ./gradlew clean build
       - run:
-          name: Gradle Build and Test
-          command: ./gradlew build
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+  dependency-scan:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    steps:
+      - checkout
+      - run: ./gradlew dependencyCheckAnalyze
+  quality-scan:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    parameters:
+      sonar_key:
+        type: string
+      sonar_org:
+        type: string
+      sonar_url:
+        type: string
+      sonar_token:
+        type: string
+    steps:
+      - checkout
       - run:
-          name: Sonar
           command: |
             if [[ ! -z $CIRCLE_PULL_REQUEST ]];
             then
-              ./gradlew build sonarqube --info \
-#              -Dsonar.pullrequest.github.repository=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME \
-              -Dsonar.pullrequest.github.repository=connexta/ion-store \
-              -Dsonar.projectKey=$CIRCLE_PROJECT_REPONAME \
-              -Dsonar.organization=cx \
-              -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=$SONARQUBE_TOKEN \
-              -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} \
-              -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} \
-              -Dsonar.pullrequest.base=master
+              ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
             fi
+  create-image:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
       - run:
-          name: Analyze Dependencies
-          command: ./gradlew dependencyCheckAnalyze
-      - save_cache:
-          paths:
-            - ~/.gradle
-            - ~/.m2
-          key: gradle-repo-v1-{{ .Branch }}
-      - store_test_results:
-          path: build/test-results
-      - store_artifacts:
-          path: build/test-results/test
-          desitination: JUnit
-      - store_artifacts:
-          path: build/reports/dependency-check-report.html
-          destination: OWASP
+          command: 'docker build -t "${IMAGE_REPO_AND_NAME}" .'
+      - run: mkdir -p workspace
       - run:
-          name: Make workspace directory
-          command: mkdir -p workspace
-      - run:
-          name: Create docker images
-          command: "docker save cnxta/$CIRCLE_PROJECT_REPONAME > workspace/docker-images.tar"
+          command: 'docker save ${IMAGE_REPO_AND_NAME} > workspace/temp_archive.tar'
       - persist_to_workspace:
           root: workspace
           paths:
-            - docker-images.tar
-  Anchore:
+            - temp_archive.tar
+  anchore-image-scan:
     executor: anchore/anchore_engine
     steps:
       - setup_remote_docker:
@@ -78,23 +78,96 @@ jobs:
       - run:
           command: 'ls -al /tmp/workspace'
       - run:
-          command: 'docker load -i /tmp/workspace/docker-images.tar'
+          command: 'docker load -i /tmp/workspace/temp_archive.tar'
       - anchore/analyze_local_image:
           dockerfile_path: ./Dockerfile
-          image_name: "cnxta/$CIRCLE_PROJECT_REPONAME"
+          image_name: '${IMAGE_REPO_AND_NAME}'
           policy_bundle_file_path: .circleci/.anchore/policy_bundle.json
-          policy_failure: true
+          policy_failure: false
           timeout: '500'
       - anchore/parse_reports
       - store_artifacts:
           path: anchore-reports
+  snyk-image-scan:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          command: 'ls -al /tmp/workspace'
+      - run:
+          command: 'docker load -i /tmp/workspace/temp_archive.tar'
+      - snyk/scan:
+          docker-image-name: '${IMAGE_REPO_AND_NAME}'
+          fail-on-issues: false
+          severity-threshold: high
+          target-file: Dockerfile
+          token-variable: SNYK_TOKEN
+  snyk-dependency-scan:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    steps:
+      - checkout
+      - snyk/scan:
+          severity-threshold: high
+          token-variable: SNYK_TOKEN
+  deploy:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          command: 'ls -al /tmp/workspace'
+      - run:
+          command: 'docker load -i /tmp/workspace/temp_archive.tar'
+      - run:
+          command: 'docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}'
+      - run:
+          command: 'docker push docker.io/${IMAGE_REPO_AND_NAME}'
+
 workflows:
-  version: 2.1
-  Full Build:
+  fullrun:
     jobs:
-      - Full Build:
-          context: secrets
-# TODO Find a way to suppress vulnerabilities and/or upgrade container dependencies
-#      - Anchore:
-#          requires:
-#            - Full Build
+      - build
+      - test:
+          requires:
+            - build
+      - dependency-scan:
+          requires:
+            - test
+      - snyk-dependency-scan:
+          requires:
+            - test
+      - quality-scan:
+          requires:
+            - test
+          sonar_key: ${SONAR_KEY}
+          sonar_org: ${SONAR_ORG}
+          sonar_url: https://sonarcloud.io
+          sonar_token: ${SONAR_TOKEN}
+      - create-image:
+          requires:
+            - dependency-scan
+            - snyk-dependency-scan
+      - anchore-image-scan:
+          requires:
+            - create-image
+      - snyk-image-scan:
+          requires:
+            - create-image
+      - hold:
+          type: approval
+          requires:
+            - anchore-image-scan
+            - snyk-image-scan
+      - deploy:
+          requires:
+            - hold
