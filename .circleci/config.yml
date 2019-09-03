@@ -47,11 +47,11 @@ jobs:
           command: mkdir -p workspace
       - run:
           name: Create docker images
-          command: 'docker save cnxta/ion-search > workspace/docker-images.tar'
+          command: "docker save cnxta/$CIRCLE_PROJECT_REPONAME > workspace/docker-images.tar"
       - persist_to_workspace:
           root: workspace
           paths:
-            - ion-search.tar
+            - docker-images.tar
   Anchore:
     executor: anchore/anchore_engine
     steps:
@@ -66,7 +66,7 @@ jobs:
           command: 'docker load -i /tmp/workspace/docker-images.tar'
       - anchore/analyze_local_image:
           dockerfile_path: ./Dockerfile
-          image_name: 'cnxta/docker-images'
+          image_name: "cnxta/$CIRCLE_PROJECT_REPONAME"
           policy_bundle_file_path: .circleci/.anchore/policy_bundle.json
           policy_failure: true
           timeout: '500'
