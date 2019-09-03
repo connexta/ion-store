@@ -3,52 +3,56 @@ orbs:
   anchore: anchore/anchore-engine@1.4.0
 jobs:
   Full Build:
-    machine:
+    machine: &virtual_machine
       image: circleci/classic:latest
       docker_layer_caching: true
     steps:
-      - checkout
-      - run:
-          name: Install java 11
+      - run: &install_java
+          name: Install Java 11
           command: |
             sudo add-apt-repository ppa:openjdk-r/ppa
-            sudo apt-get update -q
-            sudo apt install -y openjdk-11-jdk
+            sudo apt-get -qq update
+            sudo apt-get -qq install -y openjdk-11-jdk
+      - run: &configure_java
+          name: Change to Java 11
+          command: sudo update-java-alternatives --set java-1.11.0-openjdk-amd64
+      - checkout
+      - restore_cache: &restore_cache
+          keys:
+            # Use increasingly general patterns to restore cache
+            - gradle-repo-v1-{{ .Branch }}-
+            - gradle-repo-v1-
       - run:
-          name: Set default java 11
-          command:
-            sudo update-java-alternatives --set java-1.11.0-openjdk-amd64
-      - run:
-          name: Building
+          name: Gradle Tasks
           command: |
-            ./gradlew clean build --info
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
+            if [[ ! -z $CIRCLE_PULL_REQUEST ]];
+            then
+              ./gradlew build dependencyCheckAnalyze sonarqube -Dsonar.pullrequest.provider=GitHub -Dsonar.pullrequest.github.repository=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME -Dsonar.projectKey=$CIRCLE_PROJECT_REPONAME -Dsonar.organization=cx -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
+            fi
+      - save_cache:
+          paths:
+            - ~/.gradle
+            - ~/.m2
+          key: gradle-repo-v1-{{ .Branch }}
       - store_test_results:
-          path: ~/test-results
+          path: build/test-results
       - store_artifacts:
-          path: ~/test-results/junit
-      - run: mkdir -p workspace
+          path: build/test-results/test
+          desitination: JUnit
+      - store_artifacts:
+          path: build/reports/dependency-check-report.html
+          destination: OWASP
       - run:
-          command: 'docker save cnxta/ion-store > workspace/ion-store.tar'
+          name: Make workspace directory
+          command: mkdir -p workspace
+      - run:
+          name: Create docker images
+          command: 'docker save cnxta/ion-search > workspace/docker-images.tar'
       - persist_to_workspace:
           root: workspace
           paths:
-            - ion-store.tar
-  OWASP:
-    docker:
-      - image: circleci/openjdk:11-jdk
-    steps:
-      - checkout
-      - run:
-          name: OWASP
-          command: |
-            ./gradlew dependencyCheckAnalyze --info
-  Scan Docker Image:
+            - ion-search.tar
+  Anchore:
     executor: anchore/anchore_engine
     steps:
       - setup_remote_docker:
@@ -59,10 +63,10 @@ jobs:
       - run:
           command: 'ls -al /tmp/workspace'
       - run:
-          command: 'docker load -i /tmp/workspace/ion-store.tar'
+          command: 'docker load -i /tmp/workspace/docker-images.tar'
       - anchore/analyze_local_image:
           dockerfile_path: ./Dockerfile
-          image_name: 'cnxta/ion-store'
+          image_name: 'cnxta/docker-images'
           policy_bundle_file_path: .circleci/.anchore/policy_bundle.json
           policy_failure: true
           timeout: '500'
@@ -71,11 +75,11 @@ jobs:
           path: anchore-reports
 workflows:
   version: 2.1
-  default:
+  Full Build:
     jobs:
-      - Full Build
-      - OWASP
+      - Full Build:
+          context: secrets
 # TODO Find a way to suppress vulnerabilities and/or upgrade container dependencies
-#      - Scan Docker Image:
+#      - Anchore:
 #          requires:
 #            - Full Build
