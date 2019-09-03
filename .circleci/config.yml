@@ -4,7 +4,7 @@ orbs:
 jobs:
   Full Build:
     machine: &virtual_machine
-      image: circleci/classic:latest
+      image: ubuntu-1604:201903-01
       docker_layer_caching: true
     steps:
       - run: &install_java
