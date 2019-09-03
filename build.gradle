@@ -88,6 +88,7 @@ configurations.all {
 dependencyCheck {
     failBuildOnCVSS = 4
     failOnError = true
+    cveValidForHours = 24
 
     analyzers {
         ossIndexEnabled = false
