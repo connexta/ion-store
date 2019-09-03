@@ -5,15 +5,26 @@ orbs:
   anchore: anchore/anchore-engine@1.4.0
 jobs:
   build:
-    docker:
-      - image: circleci/openjdk:11-jdk
+    machine: &virtual_machine
+      image: circleci/classic:latest
+      docker_layer_caching: true
     steps:
+      - run: &install_java
+          name: Install Java 11
+          command: |
+            sudo add-apt-repository ppa:openjdk-r/ppa
+            sudo apt-get -qq update
+            sudo apt-get -qq install -y openjdk-11-jdk
+      - run: &configure_java
+          name: Change to Java 11
+          command: sudo update-java-alternatives --set java-1.11.0-openjdk-amd64
       - checkout
       - run: ./gradlew clean build -x test
   test:
-    docker:
-      - image: circleci/openjdk:11-jdk
+    machine: *virtual_machine
     steps:
+      - run: *install_java
+      - run: *configure_java
       - checkout
       - run: ./gradlew clean build
       - run:
@@ -49,7 +60,7 @@ jobs:
           command: |
             if [[ ! -z $CIRCLE_PULL_REQUEST ]];
             then
-              ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
+              ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
             fi
   create-image:
     docker:
