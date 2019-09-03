@@ -2,6 +2,7 @@
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=connexta/ion-store)](https://dependabot.com)
 [![Known Vulnerabilities](https://snyk.io/test/github/connexta/ion-store/badge.svg)](https://snyk.io/test/github/connexta/ion-store)
 [![CircleCI](https://circleci.com/gh/connexta/ion-store/tree/master.svg?style=svg)](https://circleci.com/gh/connexta/ion-store/tree/master)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ion-store&metric=alert_status)](https://sonarcloud.io/dashboard?id=ion-store)
 
 ## Prerequisites
 * Java 11
