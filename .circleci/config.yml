@@ -29,6 +29,7 @@ jobs:
             then
               ./gradlew build dependencyCheckAnalyze sonarqube -Dsonar.pullrequest.provider=GitHub -Dsonar.pullrequest.github.repository=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME -Dsonar.projectKey=$CIRCLE_PROJECT_REPONAME -Dsonar.organization=cx -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONARQUBE_TOKEN -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
             fi
+            env
       - save_cache:
           paths:
             - ~/.gradle
