@@ -8,6 +8,8 @@ jobs:
       - image: circleci/openjdk:11-jdk
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Building
           command: |
@@ -121,7 +123,7 @@ workflows:
       - sonar:
           requires:
             - owasp
-          sonar_key: ${SONAR_KEY}
+          sonar_key: ${CIRCLE_PROJECT_REPONAME}
           sonar_org: ${SONAR_ORG}
           sonar_url: https://sonarcloud.io
           sonar_token: ${SONAR_TOKEN}
@@ -141,7 +143,7 @@ workflows:
       - sonar:
           requires:
             - owasp
-          sonar_key: ${SONAR_KEY}
+          sonar_key: ${CIRCLE_PROJECT_REPONAME}
           sonar_org: ${SONAR_ORG}
           sonar_url: https://sonarcloud.io
           sonar_token: ${SONARQUBE_TOKEN}
