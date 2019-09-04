@@ -110,12 +110,13 @@ workflows:
             branches:
               ignore:
                 - master
-      - owasp:
-          requires:
-            - incremental_build
+#      - owasp:
+#          requires:
+#            - incremental_build
       - sonar:
-          requires:
-            - owasp
+          context: secrets
+#          requires:
+#            - owasp
           sonar_key: ${CIRCLE_PROJECT_REPONAME}
           sonar_org: ${SONAR_ORG}
           sonar_url: https://sonarcloud.io
@@ -134,6 +135,7 @@ workflows:
           requires:
             - build
       - sonar:
+          context: secrets
           requires:
             - owasp
           sonar_key: ${CIRCLE_PROJECT_REPONAME}
