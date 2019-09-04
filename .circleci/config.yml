@@ -67,7 +67,7 @@ jobs:
       - checkout
       - run:
           name: Sonar check
-          command: ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
+          command: ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master -Dsonar.java.binaries=**/build/classes --info
   release_tag:
     docker: *image
     steps:
@@ -103,7 +103,7 @@ jobs:
             fi
 workflows:
   version: 2.1
-  pr:
+  PR-Build:
     jobs:
       - incremental_build:
           filters:
@@ -121,7 +121,7 @@ workflows:
           sonar_org: $SONAR_ORG
           sonar_url: https://sonarcloud.io
           sonar_token: $SONARQUBE_TOKEN
-  nightly:
+  Nightly:
     triggers:
       - schedule:
           cron: "0 0 * * *"
