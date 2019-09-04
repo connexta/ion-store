@@ -18,6 +18,10 @@ jobs:
           name: Building
           command: |
             ./gradlew build --info
+      - persist_to_workspace:
+          root: /tmp/build
+          paths:
+            - /classes
       - run:
           name: Save test results
           command: |
@@ -28,8 +32,6 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
-      - store_artifacts:
-          path:
   build:
     executor: job-executor
     steps:
