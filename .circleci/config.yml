@@ -9,6 +9,15 @@ executors:
 jobs:
   incremental_build:
     executor: job-executor
+    parameters:
+      sonar_key:
+        type: string
+      sonar_org:
+        type: string
+      sonar_url:
+        type: string
+      sonar_token:
+        type: string
     steps:
       - checkout
       - setup_remote_docker:
@@ -17,6 +26,9 @@ jobs:
           name: Building
           command: |
             ./gradlew build --info
+      - run:
+          name: Sonar
+          command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -33,24 +45,12 @@ jobs:
           path: ~/test-results/junit
   build:
     executor: job-executor
-    parameters:
-      sonar_key:
-        type: string
-      sonar_org:
-        type: string
-      sonar_url:
-        type: string
-      sonar_token:
-        type: string
     steps:
       - checkout
       - run:
           name: Building
           command: |
             ./gradlew clean build
-      - run:
-          name: Sonar
-          command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
       - persist_to_workspace:
           root: ~/project
           paths:
