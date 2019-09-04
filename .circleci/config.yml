@@ -69,7 +69,7 @@ jobs:
             then
               if [ $RELEASE = true ]
               then
-              ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
+                ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
               fi
             fi
   release_tag:
@@ -107,29 +107,27 @@ jobs:
             fi
 workflows:
   version: 2.1
-  default:
-    triggers:
-      filters:
-        branches:
-          ignore:
-            - master
+  pr:
     jobs:
-      - incremental_build
+      - incremental_build:
+          filters:
+            branches:
+              ignore:
+                - master
       - owasp:
           requires:
             - incremental_build
       - sonar:
           requires:
             - owasp
-      - release_tag:
-          requires:
-            - sonar
-  master:
+  nightly:
     triggers:
-      filters:
-        branches:
-          only:
-            - master
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
       - build
       - owasp:
@@ -138,6 +136,7 @@ workflows:
       - sonar:
           requires:
             - owasp
-      - release_tag:
-          requires:
-            - sonar
+# Uncomment when I figure out what I'm doing
+#      - release_tag:
+#          requires:
+#            - sonar
