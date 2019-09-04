@@ -1,85 +1,158 @@
-version: 2.1
-orbs:
-  anchore: anchore/anchore-engine@1.4.0
-jobs:
-  Full Build:
-    machine: &virtual_machine
-      image: circleci/classic:latest
-      docker_layer_caching: true
-    steps:
-      - run: &install_java
-          name: Install Java 11
-          command: |
-            sudo add-apt-repository ppa:openjdk-r/ppa
-            sudo apt-get -qq update
-            sudo apt-get -qq install -y openjdk-11-jdk
-      - run: &configure_java
-          name: Change to Java 11
-          command: sudo update-java-alternatives --set java-1.11.0-openjdk-amd64
-      - checkout
-      - restore_cache: &restore_cache
-          keys:
-            # Use increasingly general patterns to restore cache
-            - gradle-repo-v1-{{ .Branch }}-
-            - gradle-repo-v1-
-      - run:
-          name: Gradle Tasks
-          command: |
-            if [[ ! -z $CIRCLE_PULL_REQUEST ]];
-            then
-              ./gradlew build dependencyCheckAnalyze sonarqube -Dsonar.pullrequest.provider=GitHub -Dsonar.pullrequest.github.repository=connexta/ion-search -Dsonar.projectKey=$CIRCLE_PROJECT_REPONAME -Dsonar.organization=cx -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
-            fi
-      - save_cache:
-          paths:
-            - ~/.gradle
-            - ~/.m2
-          key: gradle-repo-v1-{{ .Branch }}
-      - store_test_results:
-          path: build/test-results
-      - store_artifacts:
-          path: build/test-results/test
-          desitination: JUnit
-      - store_artifacts:
-          path: build/reports/dependency-check-report.html
-          destination: OWASP
-      - run:
-          name: Make workspace directory
-          command: mkdir -p workspace
-      - run:
-          name: Create docker images
-          command: docker save cnxta/$CIRCLE_PROJECT_REPONAME > workspace/$CIRCLE_PROJECT_REPONAME.tar
-      - persist_to_workspace:
-          root: workspace
-          paths:
-            - $CIRCLE_PROJECT_REPONAME.tar
-  Anchore:
-    executor: anchore/anchore_engine
-    steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          command: 'ls -al /tmp/workspace'
-      - run:
-          command: 'docker load -i /tmp/workspace/$CIRCLE_PROJECT_REPONAME.tar'
-      - anchore/analyze_local_image:
-          dockerfile_path: ./Dockerfile
-          image_name: 'cnxta/$CIRCLE_PROJECT_REPONAME'
-          policy_bundle_file_path: .circleci/.anchore/policy_bundle.json
-          policy_failure: true
-          timeout: '500'
-      - anchore/parse_reports
-      - store_artifacts:
-          path: anchore-reports
-workflows:
+  #Base CircleCI template for Gradle projects.
+  #Defined below are steps for building, OWasp, and Sonar
+
   version: 2.1
-  Full Build:
-    jobs:
-      - Full Build:
-          context: secrets
-# TODO Find a way to suppress vulnerabilities and/or upgrade container dependencies
-#      - Anchore:
-#          requires:
-#            - Full Build
+  jobs:
+    incremental_build:
+      docker: &image
+        - image: circleci/openjdk:11-jdk
+      steps:
+        #This sets some environment variables. Some could be moved into a CircleCI context.
+        - run: &env
+            name: Setting environment
+            command: |
+              echo "export RELEASE=0" >> $BASH_ENV
+              echo "export RELEASE_VERSION=NA" >> $BASH_ENV
+              echo "export RELEASE_TAG=NA" >> $BASH_ENV
+              echo "export NEXT_VERSION=NA" >> $BASH_ENV
+              echo "export ION_GPG_KEYRING=$ION_RELEASE_KEY" >> $BASH_ENV
+              echo "export DISABLE_DOWNLOAD_PROGRESS_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" >> $BASH_ENV
+              echo "export LINUX_MVN_RANDOM=-Djava.security.egd=file:/dev/./urandom" >> $BASH_ENV
+              echo "export COVERAGE_EXCLUSIONS=**/test/**/*,**/itests/**/*,**/*Test*,**/sdk/**/*,**/*.js,**/node_modules/**/*,**/jaxb/**/*,**/wsdl/**/*,**/nces/sws/**/*,**/*.adoc,**/*.txt,**/*.xml" >> $BASH_ENV
+              echo "export GITHUB_USERNAME=connexta" >> $BASH_ENV
+              echo "export GITHUB_REPONAME=multi-int-store" >> $BASH_ENV
+              echo "export GITHUB_KEY=multi-int-store-github-key" >> $BASH_ENV
+              echo "export ORG_GRADLE_PROJECT_dependencyCheckUrlModified='http://10.101.190.7:10179/nvdcve-1.0-modified.json.gz'" >> $BASH_ENV
+              echo "export ORG_GRADLE_PROJECT_dependencyCheckUrlBase='http://10.101.190.7:10179/nvdcve-1.0-%d.json.gz'" >> $BASH_ENV
+              source $BASH_ENV
+        - checkout
+        - run:
+            name: Building
+            command: |
+              ./gradlew build --info
+        - run:
+            name: Save test results
+            command: |
+              mkdir -p ~/test-results/junit/
+              find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+            when: always
+        - store_test_results:
+            path: ~/test-results
+        - store_artifacts:
+            path: ~/test-results/junit
+    build:
+      docker: *image
+      steps:
+        - run: *env
+        - checkout
+        - run:
+            name: Building
+            command: |
+              ./gradlew clean build
+        - run:
+            name: Save test results
+            command: |
+              mkdir -p ~/test-results/junit/
+              find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+            when: always
+        - store_test_results:
+            path: ~/test-results
+        - store_artifacts:
+            path: ~/test-results/junit
+    #Runs OWASP on build
+    owasp:
+      docker: *image
+      steps:
+        - run: *env
+        - checkout
+        - run:
+            name: Owasp Tests
+            command: |
+              ./gradlew dependencyCheckAnalyze --info
+    #Runs SonarQube on build
+    sonar:
+      docker: *image
+      steps:
+        - run: *env
+        - checkout
+        - run:
+            name: Sonar check
+            command: |
+              if [ $CIRCLE_BRANCH = master ]
+              then
+                if [ $RELEASE = true ]
+                then
+                  ./gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=cx -Dsonar.projectKey=multi-int-store
+                fi
+              fi
+    release_tag:
+      docker: *image
+      steps:
+        - run: *env
+        - checkout
+        - run:
+            name: Release Tag
+            command: |
+              if [ $RELEASE = true ]
+              then
+                git checkout $RELEASE_COMMIT
+                git remote add ssh-origin git@github.com:connexta/$CIRCLE_PROJECT_REPONAME.git
+                echo ssh -i $GITHUB_KEY -l git -o StrictHostKeyChecking=no \\"\\$@\\" > run_ssh.sh
+                chmod +x run_ssh.sh
+                git push ssh-origin HEAD:$CIRCLE_BRANCH && git push ssh-origin $RELEASE_TAG
+              fi
+    deploy:
+      docker: *image
+      steps:
+        - run: *env
+        - checkout
+        - run:
+            name: Deploy
+            command: |
+              if [ $RELEASE = true ]
+              then
+                git checkout $RELEASE_TAG
+              fi
+              ./gradlew javadoc:aggregate -B -DskipTests -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS
+              if [ $RELEASE = true]
+              then
+                ./gradlew deploy -B -DskipTests -DretryFailedDeploymentCount=10 -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS -Dgpg.secretKeyring=$ION_GPG_KEYRING -Dgpg.publicKeyring=$ION_GPG_KEYRING -Dgpg.passphraseServerId=\"ion-signing\"
+              else
+                ./gradlew deploy -B -DskipTests -DretryFailedDeploymentCount=10 -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS
+              fi
+  workflows:
+    version: 2.1
+    default:
+      triggers:
+        filters:
+          branches:
+            ignore:
+              - master
+      jobs:
+        - incremental_build
+        - owasp:
+            requires:
+              - incremental_build
+        - sonar:
+            requires:
+              - owasp
+        - release_tag:
+            requires:
+              - sonar
+    master:
+      triggers:
+        filters:
+          branches:
+            only:
+              - master
+      jobs:
+        - build
+        - owasp:
+            requires:
+              - build
+        - sonar:
+            requires:
+              - owasp
+        - release_tag:
+            requires:
+              - sonar
