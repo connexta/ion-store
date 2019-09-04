@@ -34,20 +34,19 @@ jobs:
     executor: job-executor
     steps:
       - checkout
-      - run: mkdir -p workspace
       - run:
           name: Building
           command: |
             ./gradlew clean build
       - persist_to_workspace:
-          root: workspace
+          root: /tmp/build
           paths:
-            - ./build/classes
+            - /classes
       - run:
           name: Save test results
           command: |
             mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+            find . -type f -regex ".*/build/test-results/test/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
       - store_test_results:
           path: ~/test-results
