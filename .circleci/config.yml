@@ -2,10 +2,14 @@
 #Defined below are steps for building, OWasp, and Sonar
 
 version: 2.1
+executors:
+  job-executor:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    working_directory: /tmp
 jobs:
   incremental_build:
-    docker: &image
-      - image: circleci/openjdk:11-jdk
+    executor: job-executor
     steps:
       - checkout
       - setup_remote_docker:
@@ -24,14 +28,21 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
+      - store_artifacts:
+          path:
   build:
-    docker: *image
+    executor: job-executor
     steps:
       - checkout
+      - run: mkdir -p workspace
       - run:
           name: Building
           command: |
             ./gradlew clean build
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - ./build/classes
       - run:
           name: Save test results
           command: |
@@ -44,7 +55,7 @@ jobs:
           path: ~/test-results/junit
   #Runs OWASP on build
   owasp:
-    docker: *image
+    executor: job-executor
     steps:
       - checkout
       - run:
@@ -53,7 +64,7 @@ jobs:
             ./gradlew dependencyCheckAnalyze --info
   #Runs SonarQube on build
   sonar:
-    docker: *image
+    executor: job-executor
     parameters:
       sonar_key:
         type: string
@@ -64,12 +75,14 @@ jobs:
       sonar_token:
         type: string
     steps:
+      - attach_workspace:
+          at: /tmp/workspace
       - checkout
       - run:
           name: Sonar check
-          command: ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master -Dsonar.java.binaries=**/build/classes --info
+          command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master -Dsonar.java.binaries=/tmp/workspace/build/classes --info
   release_tag:
-    docker: *image
+    executor: job-executor
     steps:
       - checkout
       - run:
@@ -84,7 +97,7 @@ jobs:
               git push ssh-origin HEAD:$CIRCLE_BRANCH && git push ssh-origin $RELEASE_TAG
             fi
   deploy:
-    docker: *image
+    executor: job-executor
     steps:
       - checkout
       - run:
