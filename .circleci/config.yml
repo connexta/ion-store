@@ -117,10 +117,10 @@ workflows:
           context: secrets
 #          requires:
 #            - owasp
-          sonar_key: ${CIRCLE_PROJECT_REPONAME}
-          sonar_org: ${SONAR_ORG}
+          sonar_key: $CIRCLE_PROJECT_REPONAME
+          sonar_org: $SONAR_ORG
           sonar_url: https://sonarcloud.io
-          sonar_token: ${SONAR_TOKEN}
+          sonar_token: $SONARQUBE_TOKEN
   nightly:
     triggers:
       - schedule:
