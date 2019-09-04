@@ -117,10 +117,10 @@ workflows:
           context: secrets
           requires:
             - incremental_build
-          sonar_key: $CIRCLE_PROJECT_REPONAME
-          sonar_org: $SONAR_ORG
+          sonar_key: ${CIRCLE_PROJECT_REPONAME}
+          sonar_org: ${SONAR_ORG}
           sonar_url: https://sonarcloud.io
-          sonar_token: $SONARQUBE_TOKEN
+          sonar_token: ${SONAR_TOKEN}
   Nightly:
     triggers:
       - schedule:
@@ -141,7 +141,7 @@ workflows:
           sonar_key: ${CIRCLE_PROJECT_REPONAME}
           sonar_org: ${SONAR_ORG}
           sonar_url: https://sonarcloud.io
-          sonar_token: ${SONARQUBE_TOKEN}
+          sonar_token: ${SONAR_TOKEN}
 # Uncomment when I figure out what I'm doing
 #      - release_tag:
 #          requires:
