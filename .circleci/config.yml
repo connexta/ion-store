@@ -50,29 +50,28 @@
               ./gradlew dependencyCheckAnalyze --info
     #Runs SonarQube on build
     sonar:
-    machine:
-      - image: circleci/openjdk:11-jdk
-      parameters:
-        sonar_key:
-          type: string
-        sonar_org:
-          type: string
-        sonar_url:
-          type: string
-        sonar_token:
-          type: string
-      steps:
-        - checkout
-        - run:
-            name: Sonar check
-            command: |
-              if [ $CIRCLE_BRANCH = master ]
-              then
-                if [ $RELEASE = true ]
+      machine: *virtual_machine
+        parameters:
+          sonar_key:
+            type: string
+          sonar_org:
+            type: string
+          sonar_url:
+            type: string
+          sonar_token:
+            type: string
+        steps:
+          - checkout
+          - run:
+              name: Sonar check
+              command: |
+                if [ $CIRCLE_BRANCH = master ]
                 then
-                ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
+                  if [ $RELEASE = true ]
+                  then
+                  ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
+                  fi
                 fi
-              fi
     release_tag:
       machine: *virtual_machine
       steps:
