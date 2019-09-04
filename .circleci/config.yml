@@ -120,6 +120,10 @@ workflows:
       - sonar:
           requires:
             - owasp
+          sonar_key: ${SONAR_KEY}
+          sonar_org: ${SONAR_ORG}
+          sonar_url: https://sonarcloud.io
+          sonar_token: ${SONAR_TOKEN}
   nightly:
     triggers:
       - schedule:
@@ -136,6 +140,10 @@ workflows:
       - sonar:
           requires:
             - owasp
+          sonar_key: ${SONAR_KEY}
+          sonar_org: ${SONAR_ORG}
+          sonar_url: https://sonarcloud.io
+          sonar_token: ${SONARQUBE_TOKEN}
 # Uncomment when I figure out what I'm doing
 #      - release_tag:
 #          requires:
