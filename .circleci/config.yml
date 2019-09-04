@@ -33,12 +33,24 @@ jobs:
           path: ~/test-results/junit
   build:
     executor: job-executor
+    parameters:
+      sonar_key:
+        type: string
+      sonar_org:
+        type: string
+      sonar_url:
+        type: string
+      sonar_token:
+        type: string
     steps:
       - checkout
       - run:
           name: Building
           command: |
             ./gradlew clean build
+      - run:
+          name: Sonar
+          command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -80,7 +92,7 @@ jobs:
       - checkout
       - run:
           name: Sonar check
-          command: ./gradlew assemble sonarqube -x docker -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
+          command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
   release_tag:
     executor: job-executor
     steps:
@@ -123,17 +135,22 @@ workflows:
             branches:
               ignore:
                 - master
-#      - owasp:
-#          requires:
-#            - incremental_build
-      - sonar:
           context: secrets
-          requires:
-            - incremental_build
           sonar_key: ${CIRCLE_PROJECT_REPONAME}
           sonar_org: ${SONAR_ORG}
           sonar_url: https://sonarcloud.io
           sonar_token: ${SONAR_TOKEN}
+#      - owasp:
+#          requires:
+#            - incremental_build
+#      - sonar:
+#          context: secrets
+#          requires:
+#            - incremental_build
+#          sonar_key: ${CIRCLE_PROJECT_REPONAME}
+#          sonar_org: ${SONAR_ORG}
+#          sonar_url: https://sonarcloud.io
+#          sonar_token: ${SONAR_TOKEN}
   Nightly:
     triggers:
       - schedule:
