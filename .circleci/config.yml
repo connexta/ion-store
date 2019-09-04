@@ -115,8 +115,8 @@ workflows:
 #            - incremental_build
       - sonar:
           context: secrets
-#          requires:
-#            - owasp
+          requires:
+            - incremental_build
           sonar_key: $CIRCLE_PROJECT_REPONAME
           sonar_org: $SONAR_ORG
           sonar_url: https://sonarcloud.io
