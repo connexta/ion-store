@@ -6,7 +6,6 @@ executors:
   job-executor:
     docker:
       - image: circleci/openjdk:11-jdk
-    working_directory: /tmp
 jobs:
   incremental_build:
     executor: job-executor
@@ -19,9 +18,9 @@ jobs:
           command: |
             ./gradlew build --info
       - persist_to_workspace:
-          root: /tmp/build
+          root: /build
           paths:
-            - /classes
+            - classes
       - run:
           name: Save test results
           command: |
@@ -41,7 +40,7 @@ jobs:
           command: |
             ./gradlew clean build
       - persist_to_workspace:
-          root: /tmp/build
+          root: /build
           paths:
             - /classes
       - run:
@@ -81,7 +80,7 @@ jobs:
       - checkout
       - run:
           name: Sonar check
-          command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master -Dsonar.java.binaries=/tmp/workspace/build/classes --info
+          command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master -Dsonar.java.binaries=/workspace/build/classes --info
   release_tag:
     executor: job-executor
     steps:
