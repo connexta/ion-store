@@ -1,143 +1,143 @@
-  #Base CircleCI template for Gradle projects.
-  #Defined below are steps for building, OWasp, and Sonar
+#Base CircleCI template for Gradle projects.
+#Defined below are steps for building, OWasp, and Sonar
 
+version: 2.1
+jobs:
+  incremental_build:
+    docker: &image
+      - image: circleci/openjdk:11-jdk
+    steps:
+      - run:
+          name: Building
+          command: |
+            ./gradlew build --info
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+  build:
+    docker: *image
+    steps:
+      - checkout
+      - run:
+          name: Building
+          command: |
+            ./gradlew clean build
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+  #Runs OWASP on build
+  owasp:
+    docker: *image
+    steps:
+      - checkout
+      - run:
+          name: Owasp Tests
+          command: |
+            ./gradlew dependencyCheckAnalyze --info
+  #Runs SonarQube on build
+  sonar:
+    docker: *image
+    parameters:
+      sonar_key:
+        type: string
+      sonar_org:
+        type: string
+      sonar_url:
+        type: string
+      sonar_token:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Sonar check
+          command: |
+            if [ $CIRCLE_BRANCH = master ]
+            then
+              if [ $RELEASE = true ]
+              then
+              ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
+              fi
+            fi
+  release_tag:
+    docker: *image
+    steps:
+      - checkout
+      - run:
+          name: Release Tag
+          command: |
+            if [ $RELEASE = true ]
+            then
+              git checkout $RELEASE_COMMIT
+              git remote add ssh-origin git@github.com:connexta/$CIRCLE_PROJECT_REPONAME.git
+              echo ssh -i $GITHUB_KEY -l git -o StrictHostKeyChecking=no \\"\\$@\\" > run_ssh.sh
+              chmod +x run_ssh.sh
+              git push ssh-origin HEAD:$CIRCLE_BRANCH && git push ssh-origin $RELEASE_TAG
+            fi
+  deploy:
+    docker: *image
+    steps:
+      - checkout
+      - run:
+          name: Deploy
+          command: |
+            if [ $RELEASE = true ]
+            then
+              git checkout $RELEASE_TAG
+            fi
+            ./gradlew javadoc:aggregate -B -DskipTests -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS
+            if [ $RELEASE = true]
+            then
+              ./gradlew deploy -B -DskipTests -DretryFailedDeploymentCount=10 -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS -Dgpg.secretKeyring=$ION_GPG_KEYRING -Dgpg.publicKeyring=$ION_GPG_KEYRING -Dgpg.passphraseServerId=\"ion-signing\"
+            else
+              ./gradlew deploy -B -DskipTests -DretryFailedDeploymentCount=10 -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS
+            fi
+workflows:
   version: 2.1
-  jobs:
-    incremental_build:
-      machine: &virtual_machine
-        - image: circleci/openjdk:11-jdk
-      steps:
-        - run:
-            name: Building
-            command: |
-              ./gradlew build --info
-        - run:
-            name: Save test results
-            command: |
-              mkdir -p ~/test-results/junit/
-              find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-            when: always
-        - store_test_results:
-            path: ~/test-results
-        - store_artifacts:
-            path: ~/test-results/junit
-    build:
-      machine: *virtual_machine
-      steps:
-        - checkout
-        - run:
-            name: Building
-            command: |
-              ./gradlew clean build
-        - run:
-            name: Save test results
-            command: |
-              mkdir -p ~/test-results/junit/
-              find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-            when: always
-        - store_test_results:
-            path: ~/test-results
-        - store_artifacts:
-            path: ~/test-results/junit
-    #Runs OWASP on build
-    owasp:
-      machine: *virtual_machine
-      steps:
-        - checkout
-        - run:
-            name: Owasp Tests
-            command: |
-              ./gradlew dependencyCheckAnalyze --info
-    #Runs SonarQube on build
-    sonar:
-      machine: *virtual_machine
-      parameters:
-        sonar_key:
-          type: string
-        sonar_org:
-          type: string
-        sonar_url:
-          type: string
-        sonar_token:
-          type: string
-      steps:
-        - checkout
-        - run:
-            name: Sonar check
-            command: |
-              if [ $CIRCLE_BRANCH = master ]
-              then
-                if [ $RELEASE = true ]
-                then
-                ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
-                fi
-              fi
-    release_tag:
-      machine: *virtual_machine
-      steps:
-        - checkout
-        - run:
-            name: Release Tag
-            command: |
-              if [ $RELEASE = true ]
-              then
-                git checkout $RELEASE_COMMIT
-                git remote add ssh-origin git@github.com:connexta/$CIRCLE_PROJECT_REPONAME.git
-                echo ssh -i $GITHUB_KEY -l git -o StrictHostKeyChecking=no \\"\\$@\\" > run_ssh.sh
-                chmod +x run_ssh.sh
-                git push ssh-origin HEAD:$CIRCLE_BRANCH && git push ssh-origin $RELEASE_TAG
-              fi
-    deploy:
-      machine: *virtual_machine
-      steps:
-        - checkout
-        - run:
-            name: Deploy
-            command: |
-              if [ $RELEASE = true ]
-              then
-                git checkout $RELEASE_TAG
-              fi
-              ./gradlew javadoc:aggregate -B -DskipTests -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS
-              if [ $RELEASE = true]
-              then
-                ./gradlew deploy -B -DskipTests -DretryFailedDeploymentCount=10 -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS -Dgpg.secretKeyring=$ION_GPG_KEYRING -Dgpg.publicKeyring=$ION_GPG_KEYRING -Dgpg.passphraseServerId=\"ion-signing\"
-              else
-                ./gradlew deploy -B -DskipTests -DretryFailedDeploymentCount=10 -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS
-              fi
-  workflows:
-    version: 2.1
-    default:
-      triggers:
-        filters:
-          branches:
-            ignore:
-              - master
-      jobs:
-        - incremental_build
-        - owasp:
-            requires:
-              - incremental_build
-        - sonar:
-            requires:
-              - owasp
-        - release_tag:
-            requires:
-              - sonar
-    master:
-      triggers:
-        filters:
-          branches:
-            only:
-              - master
-      jobs:
-        - build
-        - owasp:
-            requires:
-              - build
-        - sonar:
-            requires:
-              - owasp
-        - release_tag:
-            requires:
-              - sonar
+  default:
+    triggers:
+      filters:
+        branches:
+          ignore:
+            - master
+    jobs:
+      - incremental_build
+      - owasp:
+          requires:
+            - incremental_build
+      - sonar:
+          requires:
+            - owasp
+      - release_tag:
+          requires:
+            - sonar
+  master:
+    triggers:
+      filters:
+        branches:
+          only:
+            - master
+    jobs:
+      - build
+      - owasp:
+          requires:
+            - build
+      - sonar:
+          requires:
+            - owasp
+      - release_tag:
+          requires:
+            - sonar
