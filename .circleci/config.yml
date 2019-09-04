@@ -4,28 +4,9 @@
   version: 2.1
   jobs:
     incremental_build:
-      docker: &image
+      machine: &virtual_machine
         - image: circleci/openjdk:11-jdk
       steps:
-        #This sets some environment variables. Some could be moved into a CircleCI context.
-        - run: &env
-            name: Setting environment
-            command: |
-              echo "export RELEASE=0" >> $BASH_ENV
-              echo "export RELEASE_VERSION=NA" >> $BASH_ENV
-              echo "export RELEASE_TAG=NA" >> $BASH_ENV
-              echo "export NEXT_VERSION=NA" >> $BASH_ENV
-              echo "export ION_GPG_KEYRING=$ION_RELEASE_KEY" >> $BASH_ENV
-              echo "export DISABLE_DOWNLOAD_PROGRESS_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" >> $BASH_ENV
-              echo "export LINUX_MVN_RANDOM=-Djava.security.egd=file:/dev/./urandom" >> $BASH_ENV
-              echo "export COVERAGE_EXCLUSIONS=**/test/**/*,**/itests/**/*,**/*Test*,**/sdk/**/*,**/*.js,**/node_modules/**/*,**/jaxb/**/*,**/wsdl/**/*,**/nces/sws/**/*,**/*.adoc,**/*.txt,**/*.xml" >> $BASH_ENV
-              echo "export GITHUB_USERNAME=connexta" >> $BASH_ENV
-              echo "export GITHUB_REPONAME=multi-int-store" >> $BASH_ENV
-              echo "export GITHUB_KEY=multi-int-store-github-key" >> $BASH_ENV
-              echo "export ORG_GRADLE_PROJECT_dependencyCheckUrlModified='http://10.101.190.7:10179/nvdcve-1.0-modified.json.gz'" >> $BASH_ENV
-              echo "export ORG_GRADLE_PROJECT_dependencyCheckUrlBase='http://10.101.190.7:10179/nvdcve-1.0-%d.json.gz'" >> $BASH_ENV
-              source $BASH_ENV
-        - checkout
         - run:
             name: Building
             command: |
@@ -41,9 +22,8 @@
         - store_artifacts:
             path: ~/test-results/junit
     build:
-      docker: *image
+      machine: *virtual_machine
       steps:
-        - run: *env
         - checkout
         - run:
             name: Building
@@ -61,9 +41,8 @@
             path: ~/test-results/junit
     #Runs OWASP on build
     owasp:
-      docker: *image
+      machine: *virtual_machine
       steps:
-        - run: *env
         - checkout
         - run:
             name: Owasp Tests
@@ -71,9 +50,18 @@
               ./gradlew dependencyCheckAnalyze --info
     #Runs SonarQube on build
     sonar:
-      docker: *image
+    machine:
+      - image: circleci/openjdk:11-jdk
+      parameters:
+        sonar_key:
+          type: string
+        sonar_org:
+          type: string
+        sonar_url:
+          type: string
+        sonar_token:
+          type: string
       steps:
-        - run: *env
         - checkout
         - run:
             name: Sonar check
@@ -82,13 +70,12 @@
               then
                 if [ $RELEASE = true ]
                 then
-                  ./gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=cx -Dsonar.projectKey=multi-int-store
+                ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
                 fi
               fi
     release_tag:
-      docker: *image
+      machine: *virtual_machine
       steps:
-        - run: *env
         - checkout
         - run:
             name: Release Tag
@@ -102,9 +89,8 @@
                 git push ssh-origin HEAD:$CIRCLE_BRANCH && git push ssh-origin $RELEASE_TAG
               fi
     deploy:
-      docker: *image
+      machine: *virtual_machine
       steps:
-        - run: *env
         - checkout
         - run:
             name: Deploy
