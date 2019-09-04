@@ -67,14 +67,7 @@ jobs:
       - checkout
       - run:
           name: Sonar check
-          command: |
-            if [ $CIRCLE_BRANCH = master ]
-            then
-              if [ $RELEASE = true ]
-              then
-                ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
-              fi
-            fi
+          command: ./gradlew sonarqube -x test -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master --info
   release_tag:
     docker: *image
     steps:
