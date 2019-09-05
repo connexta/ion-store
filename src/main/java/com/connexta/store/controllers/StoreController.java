@@ -79,7 +79,7 @@ public class StoreController implements StoreApi {
     final URI location;
     try {
       location = storeService.createProduct(fileSize, mediaType, fileName, inputStream);
-    } catch (StoreException | URISyntaxException e) {
+    } catch (StoreException | URISyntaxException | InterruptedException e) {
       log.warn(
           "Unable to complete storeProduct request for a file with mediaType={} and fileName={}",
           mediaType,

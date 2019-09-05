@@ -7,7 +7,7 @@ executors:
     docker:
       - image: circleci/openjdk:11-jdk
 jobs:
-  incremental_build:
+  build:
     executor: job-executor
     steps:
       - checkout
@@ -25,29 +25,7 @@ jobs:
           name: Save test results
           command: |
             mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
-      - store_artifacts:
-          path: ~/test-results/junit
-  build:
-    executor: job-executor
-    steps:
-      - checkout
-      - run:
-          name: Building
-          command: |
-            ./gradlew clean build
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - build/classes
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/build/test-results/test/.*xml" -exec cp {} ~/test-results/junit/ \;
+            find . -type f -regex ".*/builds/reports/tests/test/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
       - store_test_results:
           path: ~/test-results
@@ -81,67 +59,9 @@ jobs:
       - run:
           name: Sonar check
           command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master -Dsonar.java.binaries=/tmp/workspace/build/classes --info
-  release_tag:
-    executor: job-executor
-    steps:
-      - checkout
-      - run:
-          name: Release Tag
-          command: |
-            if [ $RELEASE = true ]
-            then
-              git checkout $RELEASE_COMMIT
-              git remote add ssh-origin git@github.com:connexta/$CIRCLE_PROJECT_REPONAME.git
-              echo ssh -i $GITHUB_KEY -l git -o StrictHostKeyChecking=no \\"\\$@\\" > run_ssh.sh
-              chmod +x run_ssh.sh
-              git push ssh-origin HEAD:$CIRCLE_BRANCH && git push ssh-origin $RELEASE_TAG
-            fi
-  deploy:
-    executor: job-executor
-    steps:
-      - checkout
-      - run:
-          name: Deploy
-          command: |
-            if [ $RELEASE = true ]
-            then
-              git checkout $RELEASE_TAG
-            fi
-            ./gradlew javadoc:aggregate -B -DskipTests -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS
-            if [ $RELEASE = true]
-            then
-              ./gradlew deploy -B -DskipTests -DretryFailedDeploymentCount=10 -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS -Dgpg.secretKeyring=$ION_GPG_KEYRING -Dgpg.publicKeyring=$ION_GPG_KEYRING -Dgpg.passphraseServerId=\"ion-signing\"
-            else
-              ./gradlew deploy -B -DskipTests -DretryFailedDeploymentCount=10 -nsu $DISABLE_DOWNLOAD_PROGRESS_OPTS
-            fi
 workflows:
   version: 2.1
   PR-Build:
-    jobs:
-      - incremental_build:
-          filters:
-            branches:
-              ignore:
-                - master
-#      - owasp:
-#          requires:
-#            - incremental_build
-      - sonar:
-          context: secrets
-          requires:
-            - incremental_build
-          sonar_key: ${CIRCLE_PROJECT_REPONAME}
-          sonar_org: ${SONAR_ORG}
-          sonar_url: https://sonarcloud.io
-          sonar_token: ${SONAR_TOKEN}
-  Nightly:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - master
     jobs:
       - build
       - owasp:
@@ -155,7 +75,3 @@ workflows:
           sonar_org: ${SONAR_ORG}
           sonar_url: https://sonarcloud.io
           sonar_token: ${SONAR_TOKEN}
-# Uncomment when I figure out what I'm doing
-#      - release_tag:
-#          requires:
-#            - sonar

@@ -26,7 +26,7 @@ public interface StoreService {
       @NotBlank final String mediaType,
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream)
-      throws StoreException, URISyntaxException;
+      throws StoreException, URISyntaxException, InterruptedException;
 
   /**
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link

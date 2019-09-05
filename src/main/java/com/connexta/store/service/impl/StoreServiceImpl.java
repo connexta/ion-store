@@ -45,7 +45,9 @@ public class StoreServiceImpl implements StoreService {
       @NotBlank String mediaType,
       @NotBlank String fileName,
       @NotNull InputStream inputStream)
-      throws StoreException, URISyntaxException {
+      throws StoreException, URISyntaxException, InterruptedException {
+    Thread sleepyGuy = new Thread();
+    sleepyGuy.sleep(1000);
     final String key = UUID.randomUUID().toString().replace("-", "");
     storageAdaptor.store(fileSize, mediaType, fileName, inputStream, key);
     return new URI(retrieveEndpoint + key);
