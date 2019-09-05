@@ -55,22 +55,24 @@ jobs:
     steps:
       - attach_workspace:
           at: /tmp/workspace
+      - setup_remote_docker:
+          docker_layer_caching: true
       - checkout
       - run:
           name: Sonar check
-          command: ./gradlew sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master -Dsonar.java.binaries=/tmp/workspace/build/classes --info
+          command: ./gradlew build sonarqube -Dsonar.projectKey=<<parameters.sonar_key>> -Dsonar.organization=<<parameters.sonar_org>> -Dsonar.host.url=<<parameters.sonar_url>> -Dsonar.login=<<parameters.sonar_token>> -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} -Dsonar.pullrequest.base=master
 workflows:
   version: 2.1
   PR-Build:
     jobs:
-      - build
-      - owasp:
-          requires:
-            - build
+#      - build
+#      - owasp:
+#          requires:
+#            - build
       - sonar:
           context: secrets
-          requires:
-            - owasp
+#          requires:
+#            - owasp
           sonar_key: ${CIRCLE_PROJECT_REPONAME}
           sonar_org: ${SONAR_ORG}
           sonar_url: https://sonarcloud.io
