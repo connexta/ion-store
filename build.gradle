@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor "org.projectlombok:lombok:1.18.8"
+    annotationProcessor "org.projectlombok:lombok:1.18.10"
     compileOnly "org.projectlombok:lombok:1.18.8"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
     implementation "com.connexta.store:store-api-rest-spring-stubs:0.1.0"
