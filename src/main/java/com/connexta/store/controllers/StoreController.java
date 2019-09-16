@@ -8,8 +8,13 @@ package com.connexta.store.controllers;
 
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.rest.models.ErrorMessage;
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -29,7 +34,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
@@ -128,9 +135,43 @@ public class StoreController implements StoreApi {
     return ResponseEntity.ok().build();
   }
 
-  @Override
+  @ApiOperation(
+      value = "Get a Product.",
+      nickname = "retrieveProduct",
+      notes = "Clients send a Product ID to retrieve the Product as a file.",
+      response = Resource.class,
+      tags = {"store"})
+  @ApiResponses(
+      value = {
+        @ApiResponse(code = 200, message = "Get Product", response = Resource.class),
+        @ApiResponse(
+            code = 401,
+            message = "The client could not be authenticated. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 400,
+            message =
+                "The client message could not be understood by the server due to invalid format or syntax. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 403,
+            message = "The client does not have permission. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 501,
+            message = "The requested API version is not supported and therefore not implemented. ",
+            response = ErrorMessage.class)
+      })
+  @RequestMapping(
+      value = "/product/{productId}",
+      produces = {"application/octet-stream", "application/json"},
+      method = RequestMethod.GET)
   public ResponseEntity<Resource> retrieveProduct(
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId) {
+      @Pattern(regexp = "^[0-9a-zA-Z]+$")
+          @Size(min = 32, max = 32)
+          @ApiParam(value = "The ID of the Product. ", required = true)
+          @PathVariable("productId")
+          final String productId) {
     InputStream inputStream = null;
     try {
       // TODO return 404 if key doesn't exist
