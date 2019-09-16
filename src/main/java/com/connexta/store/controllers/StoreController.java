@@ -160,10 +160,6 @@ public class StoreController implements StoreApi {
         @ApiResponse(
             code = 501,
             message = "The requested API version is not supported and therefore not implemented. ",
-            response = ErrorMessage.class),
-        @ApiResponse(
-            code = 200,
-            message = "Any other possible errors not currently known. ",
             response = ErrorMessage.class)
       })
   @RequestMapping(
