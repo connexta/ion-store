@@ -60,25 +60,23 @@ For more information about spotless checks see
 
     Example configs/s3_config.yml:
     ```yaml
-    aws:
-      s3:
-        endpointUrl: http://minio:9000
-        region: local
-        bucket:
-          quarantine: ingest-quarantine
+    s3:
+      endpointUrl: http://minio:9000
+      region: local
+      bucket: ingest-quarantine
     ```
 
     Example configs/store_config.yml:
     ```yaml
     endpointUrl:
-      retrieve: http://localhost:9042/mis/product/
+      retrieve: http://localhost:9041/mis/product/
     ```
 
     The service is capable of storing data in an S3-compatible data store.
     The configuration to access S3 is found as a list of commands under the store service in the `docker-compose.yml` file.
     Here you can change the endpoint URL, the S3 bucket name, and the credentials the service will use to connect to S3.
-    The `docker-compose.yml` file uses docker secrets for the AWS Access Key and the AWS Secret Key.
-    The key values are stored in files called `aws_s3_access.sec` and `aws_s3_secret.sec`.
+    The `docker-compose.yml` file uses docker secrets for the access key and secret key.
+    The key values are stored in files called `s3_access.sec` and `s3_secret.sec`.
     These files must be in the same directory as the `docker-compose.yml` and are not version-controlled.
 
 2. A Docker network named `cdr` is needed to run via docker-compose.

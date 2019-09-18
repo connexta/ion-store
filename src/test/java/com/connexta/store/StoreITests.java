@@ -82,7 +82,7 @@ public class StoreITests {
   @Value("${endpointUrl.retrieve}")
   private String endpointUrlRetrieve;
 
-  @Value("${aws.s3.bucket.quarantine}")
+  @Value("${s3.bucket}")
   private String s3Bucket;
 
   @BeforeEach

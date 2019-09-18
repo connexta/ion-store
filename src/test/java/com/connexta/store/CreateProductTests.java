@@ -44,7 +44,7 @@ public class CreateProductTests {
 
   @Inject private MockMvc mockMvc;
 
-  @Value("${aws.s3.bucket.quarantine}")
+  @Value("${s3.bucket}")
   private String s3Bucket;
 
   @AfterEach

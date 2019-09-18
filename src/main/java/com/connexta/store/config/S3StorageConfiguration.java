@@ -44,18 +44,17 @@ public class S3StorageConfiguration {
 
   @Bean
   public StorageAdaptor s3StorageAdaptor(
-      @NotNull final AmazonS3 amazonS3,
-      @Value("${aws.s3.bucket.quarantine}") @NotBlank final String bucket) {
+      @NotNull final AmazonS3 amazonS3, @Value("${s3.bucket}") @NotBlank final String bucket) {
     return new S3StorageAdaptor(amazonS3, bucket);
   }
 
   @Bean
   @Profile("production")
   public AmazonS3Configuration amazonS3Configuration(
-      @Value("${aws.s3.endpointUrl}") @NotBlank final String endpoint,
-      @Value("${aws.s3.region}") @NotBlank final String region,
-      @Value("${aws.s3.secret.file}") @NotBlank final String secretKeyFile,
-      @Value("${aws.s3.access.file}") @NotBlank final String accessKeyFile)
+      @Value("${s3.endpointUrl}") @NotBlank final String endpoint,
+      @Value("${s3.region}") @NotBlank final String region,
+      @Value("${s3.secret.file}") @NotBlank final String secretKeyFile,
+      @Value("${s3.access.file}") @NotBlank final String accessKeyFile)
       throws IOException {
     return new AmazonS3Configuration(
         endpoint,

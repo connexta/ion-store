@@ -1,0 +1,8 @@
+version: '3.7'
+
+configs:
+  # Directories are relative to the master compose file
+  s3_config:
+    file: deployments/local-minio/configs/s3_config.yml
+  store_config:
+    file: deployments/local-minio/configs/store_config.yml

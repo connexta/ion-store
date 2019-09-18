@@ -15,14 +15,12 @@ services:
     networks:
       - cdr
     command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
-
 secrets:
   # Directories are relative to the master compose file
-  aws_s3_secret:
+  s3_secret:
     file: deployments/local-minio/secrets/minio_secret.notsec
-  aws_s3_access:
+  s3_access:
     file: deployments/local-minio/secrets/minio_access.notsec
-
 configs:
   # Directories are relative to the master compose file
   s3_config:
