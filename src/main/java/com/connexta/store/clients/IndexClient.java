@@ -58,7 +58,7 @@ public class IndexClient {
     httpHeaders.set("Accept-Version", "0.1.0");
 
     try {
-      restTemplate.put(searchEndpoint + productId + "/cst", new HttpEntity<>(body, httpHeaders));
+      restTemplate.put(searchEndpoint + productId, new HttpEntity<>(body, httpHeaders));
     } catch (Exception e) {
       throw new StoreException("Error indexing product id=" + productId, e);
     }
