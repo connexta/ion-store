@@ -2,7 +2,7 @@ server:
   port: 8080
 endpointUrl:
   retrieve: http://localhost:${server.port}/mis/product/
-  index: http://search:9041/mis/index/
+  index: http://search:8080/index/
 aws:
   s3:
     bucket:
