@@ -1,5 +1,11 @@
 version: '3.7'
 
+secrets:
+  # Directories are relative to the master compose file
+  s3_secret:
+    file: deployments/local-minio/secrets/minio_secret.notsec
+  s3_access:
+    file: deployments/local-minio/secrets/minio_access.notsec
 configs:
   # Directories are relative to the master compose file
   s3_config:
