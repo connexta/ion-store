@@ -2,8 +2,6 @@ server:
   port: 8080
 endpointUrl:
   retrieve: http://localhost:${server.port}/mis/product/
-  index: http://search:9041/mis/product/
-aws:
-  s3:
-    bucket:
-      quarantine: quarantine
+  index: http://search:8080/index/
+s3:
+  bucket: ingest-quarantine

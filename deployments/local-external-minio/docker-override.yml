@@ -1,20 +1,5 @@
 version: '3.7'
 
-services:
-  store:
-    depends_on:
-      - minio
-  minio:
-    image: minio/minio
-    entrypoint: sh
-    ports:
-      - "9000:9000"
-    environment:
-      - MINIO_ACCESS_KEY=MINIOEXAMPLEACCESSKEY
-      - MINIO_SECRET_KEY=MINIOEXAMPLESECRETKEY
-    networks:
-      - cdr
-    command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
 secrets:
   # Directories are relative to the master compose file
   s3_secret:

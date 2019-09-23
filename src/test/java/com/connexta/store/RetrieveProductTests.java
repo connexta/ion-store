@@ -21,19 +21,16 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import javax.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class RetrieveProductTests {
@@ -44,7 +41,7 @@ public class RetrieveProductTests {
 
   @Inject private MockMvc mockMvc;
 
-  @Value("${aws.s3.bucket.quarantine}")
+  @Value("${s3.bucket}")
   private String s3Bucket;
 
   @AfterEach

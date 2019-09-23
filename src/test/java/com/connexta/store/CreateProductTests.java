@@ -25,7 +25,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,11 +33,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CreateProductTests {
@@ -47,7 +44,7 @@ public class CreateProductTests {
 
   @Inject private MockMvc mockMvc;
 
-  @Value("${aws.s3.bucket.quarantine}")
+  @Value("${s3.bucket}")
   private String s3Bucket;
 
   @AfterEach
