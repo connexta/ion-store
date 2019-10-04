@@ -44,7 +44,7 @@ dependencies {
     testCompile "org.mockito:mockito-core:3.1.0"
     testCompile "org.testcontainers:junit-jupiter:1.12.2"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.5.2"
-    testImplementation("org.springframework.boot:spring-boot-starter-test:2.1.8.RELEASE") {
+    testImplementation("org.springframework.boot:spring-boot-starter-test:2.1.9.RELEASE") {
         exclude group: "junit", module: "junit" // excludes JUnit 4
     }
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.5.2"
