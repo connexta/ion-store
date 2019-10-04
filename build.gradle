@@ -37,7 +37,7 @@ dependencies {
     implementation "io.springfox:springfox-swagger2:2.9.2"
     implementation "io.springfox:springfox-swagger-ui:2.9.2"
     implementation "javax.inject:javax.inject:1"
-    implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.8.RELEASE"
+    implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.9.RELEASE"
     implementation "org.springframework.boot:spring-boot-starter-web:2.1.8.RELEASE"
     implementation "org.springframework.data:spring-data-solr:4.1.0.RELEASE"
     testCompile "org.junit.jupiter:junit-jupiter-params:5.5.2"
