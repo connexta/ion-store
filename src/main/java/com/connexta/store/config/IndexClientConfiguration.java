@@ -30,7 +30,7 @@ public class IndexClientConfiguration {
   public IndexClient indexClient(
       @NotNull @Named("nonBufferingRestTemplate") final RestTemplate restTemplate,
       @NotBlank @Value("${endpointUrl.index}") final String indexEndpoint,
-      @NotBlank @Value("${endpoints.index.version}") String indexApiVersion) {
+      @NotBlank @Value("${endpoints.index.version}") final String indexApiVersion) {
     return new IndexClient(restTemplate, indexEndpoint, indexApiVersion);
   }
 }

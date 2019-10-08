@@ -16,6 +16,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.connexta.store.config.AmazonS3Configuration;
+import com.connexta.store.controllers.StoreController;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -88,7 +89,8 @@ public class StoreITests {
   @BeforeEach
   public void before() {
     restTemplate =
-        new CustomTestRestTemplate(applicationContext).addRequestHeader("Accept-Version", "0.1.0");
+        new CustomTestRestTemplate(applicationContext)
+            .addRequestHeader(StoreController.ACCEPT_VERSION_HEADER_NAME, "0.1.0");
     amazonS3.createBucket(s3Bucket);
   }
 
