@@ -17,7 +17,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class SearchClientConfiguration {
+public class IndexClientConfiguration {
 
   @Bean("nonBufferingRestTemplate")
   public RestTemplate nonBufferingRestTemplate() {
@@ -27,9 +27,10 @@ public class SearchClientConfiguration {
   }
 
   @Bean
-  public IndexClient searchClient(
+  public IndexClient indexClient(
       @NotNull @Named("nonBufferingRestTemplate") final RestTemplate restTemplate,
-      @NotBlank @Value("${endpointUrl.index}") final String indexEndpoint) {
-    return new IndexClient(restTemplate, indexEndpoint);
+      @NotBlank @Value("${endpointUrl.index}") final String indexEndpoint,
+      @NotBlank @Value("${endpoints.index.version}") final String indexApiVersion) {
+    return new IndexClient(restTemplate, indexEndpoint, indexApiVersion);
   }
 }

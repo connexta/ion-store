@@ -121,9 +121,7 @@ public class RetrieveProductTests {
 
   private void assertErrorResponse() throws Exception {
     mockMvc
-        .perform(
-            MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID)
-                .header("Accept-Version", "'0.1.0"))
+        .perform(MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID))
         .andExpect(status().isInternalServerError());
   }
 }

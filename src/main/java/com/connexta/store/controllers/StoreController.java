@@ -47,6 +47,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RequestMapping("/mis")
 public class StoreController implements StoreApi {
 
+  public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
+
   @NotNull private final StoreService storeService;
 
   public StoreController(@NotNull final StoreService storeService) {
@@ -98,6 +100,7 @@ public class StoreController implements StoreApi {
     return ResponseEntity.created(location).build();
   }
 
+  /** TODO Add tests for this endpoint. */
   @Override
   public ResponseEntity<Void> addMetadata(
       final String acceptVersion,

@@ -19,6 +19,7 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.connexta.store.controllers.StoreController;
 import java.nio.charset.StandardCharsets;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
@@ -60,7 +61,7 @@ public class CreateProductTests {
     mockMvc
         .perform(
             multipart("/mis/product")
-                .header("Accept-Version", "1.2.1")
+                .header(StoreController.ACCEPT_VERSION_HEADER_NAME, "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isBadRequest());
@@ -108,7 +109,7 @@ public class CreateProductTests {
                         IOUtils.toInputStream(
                             "All the color had been leached from Winterfell until only grey and white remained",
                             StandardCharsets.UTF_8)))
-                .header("Accept-Version", "1.2.1")
+                .header(StoreController.ACCEPT_VERSION_HEADER_NAME, "1.2.1")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isInternalServerError());

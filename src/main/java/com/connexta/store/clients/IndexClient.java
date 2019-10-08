@@ -14,6 +14,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,16 +22,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+@AllArgsConstructor
 public class IndexClient {
 
   @NotNull private final RestTemplate restTemplate;
-  @NotBlank private final String searchEndpoint;
-
-  public IndexClient(
-      @NotNull final RestTemplate restTemplate, @NotBlank final String searchEndpoint) {
-    this.restTemplate = restTemplate;
-    this.searchEndpoint = searchEndpoint;
-  }
+  @NotBlank private final String indexEndpoint;
+  @NotBlank private final String indexApiVersion;
 
   public void index(
       @NotNull final InputStream cstInputStream,
@@ -54,11 +51,10 @@ public class IndexClient {
           }
         });
     final HttpHeaders httpHeaders = new HttpHeaders();
-    // TODO inject IndexApi version
-    httpHeaders.set("Accept-Version", "0.1.0");
+    httpHeaders.set("Accept-Version", indexApiVersion);
 
     try {
-      restTemplate.put(searchEndpoint + productId, new HttpEntity<>(body, httpHeaders));
+      restTemplate.put(indexEndpoint + productId, new HttpEntity<>(body, httpHeaders));
     } catch (Exception e) {
       throw new StoreException("Error indexing product id=" + productId, e);
     }
