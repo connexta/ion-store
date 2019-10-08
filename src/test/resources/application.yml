@@ -3,5 +3,8 @@ server:
 endpointUrl:
   retrieve: http://localhost:${server.port}/mis/product/
   index: http://search:8080/index/
+endpoints:
+  index:
+    version: testIndexApiVersion
 s3:
   bucket: ingest-quarantine
