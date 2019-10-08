@@ -17,10 +17,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class StorageManagerConfiguration {
+public class StoreServiceConfiguration {
 
   @Bean
-  public StoreService productStorageManager(
+  public StoreService storeService(
       @NotBlank @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
       @NotNull final StorageAdaptor storageAdapter,
       @NotNull final IndexClient indexClient) {

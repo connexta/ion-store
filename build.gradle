@@ -12,6 +12,7 @@ buildscript {
         lombokVersion = "1.18.10"
         springBootVersion = "2.1.9.RELEASE"
         springfoxSwaggerVersion = "2.9.2"
+        storeApiVersion = "0.2.0"
     }
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
@@ -41,7 +42,7 @@ dependencies {
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "com.connexta.search:index-api-rest-spring-stubs:${indexApiVersion}"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
-    implementation "com.connexta.store:store-api-rest-spring-stubs:0.2.0"
+    implementation "com.connexta.store:store-api-rest-spring-stubs:${storeApiVersion}"
     implementation "io.springfox:springfox-swagger2:${springfoxSwaggerVersion}"
     implementation "io.springfox:springfox-swagger-ui:${springfoxSwaggerVersion}"
     implementation "javax.inject:javax.inject:1"
@@ -105,7 +106,7 @@ dependencyCheck {
 }
 
 processResources {
-    expand([indexApiVersion: "${indexApiVersion}"])
+    expand([indexApiVersion: "${indexApiVersion}", storeApiVersion: "${storeApiVersion}"])
 }
 
 bootJar {

@@ -21,9 +21,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.common.StringUtils;
 import org.springframework.core.io.InputStreamResource;
@@ -43,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Slf4j
+@AllArgsConstructor
 @RestController
 @RequestMapping("/mis")
 public class StoreController implements StoreApi {
@@ -51,9 +54,7 @@ public class StoreController implements StoreApi {
 
   @NotNull private final StoreService storeService;
 
-  public StoreController(@NotNull final StoreService storeService) {
-    this.storeService = storeService;
-  }
+  @NotBlank private final String storeApiVersion;
 
   /**
    * TODO Use {@link org.springframework.web.server.ResponseStatusException} instead of catching
@@ -62,7 +63,15 @@ public class StoreController implements StoreApi {
   @Override
   public ResponseEntity<Void> storeProduct(
       final String acceptVersion, @Valid final MultipartFile file) {
-    // TODO validate Accept-Version
+    final String expectedAcceptVersion = storeApiVersion;
+    if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
+      log.warn(
+          "Excepted Accept-Version to be \"{}\" but was \"{}\". Only \"{}\" is currently supported.",
+          expectedAcceptVersion,
+          acceptVersion,
+          expectedAcceptVersion);
+      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
 
     final Long fileSize = file.getSize();
     // TODO validate that fileSize is (0 GB, 10 GB]

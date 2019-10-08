@@ -80,6 +80,9 @@ public class StoreITests {
   @Autowired private ApplicationContext applicationContext;
   @Inject private AmazonS3 amazonS3;
 
+  @Value("${endpoints.store.version}")
+  private String storeApiVersion;
+
   @Value("${endpointUrl.retrieve}")
   private String endpointUrlRetrieve;
 
@@ -90,7 +93,7 @@ public class StoreITests {
   public void before() {
     restTemplate =
         new CustomTestRestTemplate(applicationContext)
-            .addRequestHeader(StoreController.ACCEPT_VERSION_HEADER_NAME, "0.1.0");
+            .addRequestHeader(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion);
     amazonS3.createBucket(s3Bucket);
   }
 
