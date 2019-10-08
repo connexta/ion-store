@@ -7,7 +7,10 @@
 /* Build Script */
 buildscript {
     ext {
+        junitJupiterVersion = "5.5.2"
+        lombokVersion = "1.18.10"
         springBootVersion = "2.1.9.RELEASE"
+        springfoxSwaggerVersion = "2.9.2"
     }
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
@@ -33,24 +36,24 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor "org.projectlombok:lombok:1.18.10"
-    compileOnly "org.projectlombok:lombok:1.18.8"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
     implementation "com.connexta.store:store-api-rest-spring-stubs:0.2.0"
-    implementation "io.springfox:springfox-swagger2:2.9.2"
-    implementation "io.springfox:springfox-swagger-ui:2.9.2"
+    implementation "io.springfox:springfox-swagger2:${springfoxSwaggerVersion}"
+    implementation "io.springfox:springfox-swagger-ui:${springfoxSwaggerVersion}"
     implementation "javax.inject:javax.inject:1"
     implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
     implementation "org.springframework.data:spring-data-solr:4.1.0.RELEASE"
-    testCompile "org.junit.jupiter:junit-jupiter-params:5.5.2"
+    testCompile "org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}"
     testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
     testCompile "org.testcontainers:junit-jupiter:1.12.2"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.5.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
     testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}") {
         exclude group: "junit", module: "junit" // excludes JUnit 4
     }
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.5.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
 }
 
 sourceCompatibility = 1.11
