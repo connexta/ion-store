@@ -66,7 +66,7 @@ public class StoreController implements StoreApi {
     final String expectedAcceptVersion = storeApiVersion;
     if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
       log.warn(
-          "Excepted Accept-Version to be \"{}\" but was \"{}\". Only \"{}\" is currently supported.",
+          "Expected Accept-Version to be \"{}\" but was \"{}\". Only \"{}\" is currently supported.",
           expectedAcceptVersion,
           acceptVersion,
           expectedAcceptVersion);
