@@ -6,5 +6,7 @@ endpointUrl:
 endpoints:
   index:
     version: testIndexApiVersion
+  store:
+    version: testStoreApiVersion
 s3:
   bucket: ingest-quarantine

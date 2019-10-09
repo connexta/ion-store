@@ -45,6 +45,9 @@ public class CreateProductTests {
 
   @Inject private MockMvc mockMvc;
 
+  @Value("${endpoints.store.version}")
+  private String storeApiVersion;
+
   @Value("${s3.bucket}")
   private String s3Bucket;
 
@@ -57,14 +60,35 @@ public class CreateProductTests {
   public void testContextLoads() {}
 
   @Test
-  public void testBadRequest() throws Exception {
+  public void testMissingFile() throws Exception {
     mockMvc
         .perform(
             multipart("/mis/product")
-                .header(StoreController.ACCEPT_VERSION_HEADER_NAME, "1.2.1")
+                .header(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void testBadAcceptVersion() throws Exception {
+    mockMvc
+        .perform(
+            multipart("/mis/product")
+                .file(
+                    new MockMultipartFile(
+                        "file",
+                        "test_file_name.txt",
+                        "text/plain",
+                        IOUtils.toInputStream(
+                            "All the color had been leached from Winterfell until only grey and white remained",
+                            StandardCharsets.UTF_8)))
+                .header(
+                    StoreController.ACCEPT_VERSION_HEADER_NAME,
+                    "this accept version is not supported")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+        .andExpect(status().isNotImplemented());
   }
 
   @Test
@@ -109,7 +133,7 @@ public class CreateProductTests {
                         IOUtils.toInputStream(
                             "All the color had been leached from Winterfell until only grey and white remained",
                             StandardCharsets.UTF_8)))
-                .header(StoreController.ACCEPT_VERSION_HEADER_NAME, "1.2.1")
+                .header(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isInternalServerError());

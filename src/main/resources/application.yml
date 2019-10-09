@@ -24,3 +24,5 @@ endpointUrl:
 endpoints:
   index:
     version: ${indexApiVersion}
+  store:
+    version: ${storeApiVersion}
