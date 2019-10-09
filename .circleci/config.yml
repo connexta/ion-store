@@ -1,11 +1,8 @@
 version: 2.1
-orbs:
-  anchore: anchore/anchore-engine@1.4.0
 jobs:
   Full Build:
     machine:
       image: circleci/classic:latest
-      docker_layer_caching: true
     steps:
       - checkout
       - run:
@@ -48,34 +45,11 @@ jobs:
           name: OWASP
           command: |
             ./gradlew dependencyCheckAnalyze --info
-  Scan Docker Image:
-    executor: anchore/anchore_engine
-    steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          command: 'ls -al /tmp/workspace'
-      - run:
-          command: 'docker load -i /tmp/workspace/ion-store.tar'
-      - anchore/analyze_local_image:
-          dockerfile_path: ./Dockerfile
-          image_name: 'cnxta/ion-store'
-          policy_bundle_file_path: .circleci/.anchore/policy_bundle.json
-          policy_failure: true
-          timeout: '500'
-      - anchore/parse_reports
-      - store_artifacts:
-          path: anchore-reports
 workflows:
   version: 2.1
   default:
     jobs:
       - Full Build
-      - OWASP
-# TODO Find a way to suppress vulnerabilities and/or upgrade container dependencies
-#      - Scan Docker Image:
-#          requires:
-#            - Full Build
+      - OWASP:
+          requires:
+            - Full Build
