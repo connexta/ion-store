@@ -7,7 +7,7 @@
 package com.connexta.store.controllers;
 
 import com.connexta.store.adaptors.RetrieveResponse;
-import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.rest.models.ErrorMessage;
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;

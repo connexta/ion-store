@@ -6,7 +6,7 @@
  */
 package com.connexta.store.adaptors;
 
-import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.exceptions.StoreException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;

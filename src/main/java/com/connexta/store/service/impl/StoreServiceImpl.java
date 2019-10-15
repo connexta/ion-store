@@ -9,7 +9,7 @@ package com.connexta.store.service.impl;
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexClient;
-import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;

@@ -14,16 +14,17 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
-import com.connexta.store.common.exceptions.StoreException;
-import java.io.IOException;
-import java.io.InputStream;
+import com.connexta.store.exceptions.StoreException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.util.StringUtils;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Slf4j
 public class S3StorageAdaptor implements StorageAdaptor {
@@ -84,7 +85,11 @@ public class S3StorageAdaptor implements StorageAdaptor {
     InputStream productInputStream = null;
     try {
       try {
-        s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
+        if (amazonS3.doesObjectExist(bucket, key)) {
+          s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
+        } else {
+          throw new StoreException(String.format("Product for key {%s} does not exist", key));
+        }
       } catch (SdkClientException e) {
         throw new StoreException("Unable to retrieve product with key " + key, e);
       }

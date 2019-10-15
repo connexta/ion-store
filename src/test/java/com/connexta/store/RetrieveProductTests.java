@@ -6,19 +6,11 @@
  */
 package com.connexta.store;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.ignoreStubs;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import javax.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,7 +21,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
+
+import javax.inject.Inject;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.ignoreStubs;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -74,15 +74,13 @@ public class RetrieveProductTests {
     amazonS3ExceptionBuilder.addAdditionalDetail("BucketName", s3Bucket);
     amazonS3ExceptionBuilder.addAdditionalDetail("Resource", "/" + s3Bucket + "/" + key);
     amazonS3ExceptionBuilder.addAdditionalDetail("Key", key);
-    when(mockAmazonS3.getObject(
-            argThat(
-                getObjectRequest ->
-                    StringUtils.equals(getObjectRequest.getBucketName(), s3Bucket)
-                        && StringUtils.equals(getObjectRequest.getKey(), key))))
-        .thenThrow(amazonS3ExceptionBuilder.build());
+    when(mockAmazonS3.doesObjectExist(s3Bucket, key)).thenReturn(false);
 
-    // TODO return 404 if key doesn't exist
-    assertErrorResponse();
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID)
+                .header("Accept-Version", "'0.1.0"))
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -95,17 +93,14 @@ public class RetrieveProductTests {
     amazonS3ExceptionBuilder.addAdditionalDetail("BucketName", s3Bucket);
     amazonS3ExceptionBuilder.addAdditionalDetail("Resource", "/" + s3Bucket + "/" + key);
     amazonS3ExceptionBuilder.addAdditionalDetail("Key", key);
-    when(mockAmazonS3.getObject(
-            argThat(
-                getObjectRequest ->
-                    StringUtils.equals(getObjectRequest.getBucketName(), s3Bucket))))
-        .thenThrow(amazonS3ExceptionBuilder.build());
+    when(mockAmazonS3.doesObjectExist(s3Bucket, key)).thenThrow(amazonS3ExceptionBuilder.build());
     assertErrorResponse();
   }
 
   /** @see AmazonS3#getObject(GetObjectRequest) */
   @Test
   public void testS3ConstraintsWerentMet() throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(true);
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenReturn(null);
     assertErrorResponse();
   }
@@ -115,6 +110,7 @@ public class RetrieveProductTests {
       classes = {SdkClientException.class, AmazonServiceException.class, RuntimeException.class})
   public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
       throws Exception {
+    when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(true);
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(throwableType);
     assertErrorResponse();
   }

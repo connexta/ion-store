@@ -7,7 +7,7 @@
 package com.connexta.store.service.api;
 
 import com.connexta.store.adaptors.RetrieveResponse;
-import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.exceptions.StoreException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
