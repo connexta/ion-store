@@ -30,9 +30,9 @@ class SpotlessConfig {
         }
     }
 
-    static Closure getGroovy(File license) {
+    static Closure getGradle(File license) {
         return {
-            target "**/*.gradle", "**/*.groovy"
+            target "**/*.gradle"
 
             licenseHeaderFile(license, "/\\* Build Script \\*/|/\\* Default Package \\*/")
             trimTrailingWhitespace()
@@ -41,6 +41,15 @@ class SpotlessConfig {
 
             //  Replace single quotes with double tickets
             replace "Consistent quotations", "${(char) 39}", "\""
+        }
+    }
+
+    static Closure getGroovy(File license) {
+        return {
+            target "**/*.groovy"
+            trimTrailingWhitespace()
+            indentWithSpaces(4)
+            endWithNewline()
         }
     }
 }

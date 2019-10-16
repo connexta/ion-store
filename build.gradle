@@ -134,7 +134,7 @@ task listDependencies(type: DependencyReportTask)
 
 task deploy(type: Exec) {
     dependsOn build
-    commandLine "./deploy.bash"
+    commandLine "groovy deploy.groovy"
 }
 
 assemble.finalizedBy("docker")
