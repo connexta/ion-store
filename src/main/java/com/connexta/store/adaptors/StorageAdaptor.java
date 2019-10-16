@@ -6,6 +6,7 @@
  */
 package com.connexta.store.adaptors;
 
+import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,5 +38,5 @@ public interface StorageAdaptor {
    * @throws StoreException
    */
   @NotNull
-  RetrieveResponse retrieve(@NotBlank final String key) throws StoreException;
+  RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException;
 }

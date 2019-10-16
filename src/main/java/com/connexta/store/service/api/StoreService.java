@@ -7,6 +7,8 @@
 package com.connexta.store.service.api;
 
 import com.connexta.store.adaptors.RetrieveResponse;
+import com.connexta.store.exceptions.IndexMetadataException;
+import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import java.io.InputStream;
 import java.net.URI;
@@ -33,11 +35,11 @@ public interface StoreService {
    * RetrieveResponse}.
    */
   @NotNull
-  RetrieveResponse retrieveProduct(@NotBlank final String id) throws StoreException;
+  RetrieveResponse retrieveProduct(@NotBlank final String id) throws RetrieveException;
 
   void indexProduct(
       @NotNull final InputStream cstInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId)
-      throws StoreException;
+      throws IndexMetadataException;
 }

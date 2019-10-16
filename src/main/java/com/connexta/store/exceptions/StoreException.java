@@ -6,13 +6,21 @@
  */
 package com.connexta.store.exceptions;
 
-public class StoreException extends Exception {
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
-  public StoreException(String message, Throwable cause) {
-    super(message, cause);
+import org.springframework.http.HttpStatus;
+
+public class StoreException extends DetailedResponseStatusException {
+
+  public StoreException(HttpStatus status, String reason) {
+    super(status, reason);
   }
 
-  public StoreException(String message) {
-    super(message);
+  public StoreException(HttpStatus status, String reason, Throwable cause) {
+    super(status, reason, cause);
+  }
+
+  public StoreException(String reason, Throwable cause) {
+    super(INTERNAL_SERVER_ERROR, reason, cause);
   }
 }

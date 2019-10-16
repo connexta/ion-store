@@ -14,17 +14,18 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
+import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.util.StringUtils;
-
+import java.io.IOException;
+import java.io.InputStream;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
-import java.io.InputStream;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 public class S3StorageAdaptor implements StorageAdaptor {
@@ -78,7 +79,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
    */
   @Override
   @NotNull
-  public RetrieveResponse retrieve(@NotBlank final String key) throws StoreException {
+  public RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException {
     log.info("Retrieving product in bucket \"{}\" with key \"{}\"", bucket, key);
 
     S3Object s3Object;
@@ -88,16 +89,17 @@ public class S3StorageAdaptor implements StorageAdaptor {
         if (amazonS3.doesObjectExist(bucket, key)) {
           s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
         } else {
-          throw new StoreException(String.format("Product for key {%s} does not exist", key));
+          throw new RetrieveException(
+              HttpStatus.NOT_FOUND, String.format("Product for key {%s} does not exist", key));
         }
       } catch (SdkClientException e) {
-        throw new StoreException("Unable to retrieve product with key " + key, e);
+        throw new RetrieveException("Unable to retrieve product with key " + key, e);
       }
 
       final String fileName =
           s3Object.getObjectMetadata().getUserMetaDataOf(FILE_NAME_METADATA_KEY);
       if (StringUtils.isEmpty(fileName)) {
-        throw new StoreException(
+        throw new RetrieveException(
             String.format(
                 "Expected S3 object to have a non-null metadata value for %s",
                 FILE_NAME_METADATA_KEY));
@@ -116,7 +118,6 @@ public class S3StorageAdaptor implements StorageAdaptor {
           log.warn("Unable to close InputStream when retrieving key \"{}\".", key, e);
         }
       }
-
       throw t;
     }
   }
