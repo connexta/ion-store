@@ -96,7 +96,7 @@ public class StoreController implements StoreApi {
     final URI location;
     try {
       location = storeService.createProduct(fileSize, mediaType, fileName, inputStream);
-    } catch (StoreException | URISyntaxException e) {
+    } catch (URISyntaxException e) {
       throw new StoreException(
           String.format(
               "Unable to complete storeProduct request for a file with mediaType=%s and fileName=%s",
@@ -134,16 +134,7 @@ public class StoreController implements StoreApi {
           String.format("Unable to read file for PUT CST request for id=%s", productId),
           e);
     }
-
-    try {
-      storeService.indexProduct(inputStream, fileSize, productId);
-    } catch (final StoreException e) {
-      throw new IndexMetadataException(
-          HttpStatus.BAD_REQUEST,
-          String.format(
-              "Unable to complete index request for metadataType=cst and productId=%s", productId),
-          e);
-    }
+    storeService.indexProduct(inputStream, fileSize, productId);
     return ok().build();
   }
 
@@ -185,16 +176,29 @@ public class StoreController implements StoreApi {
           @PathVariable("productId")
           final String productId) {
     InputStream inputStream = null;
-    final RetrieveResponse retrieveResponse = storeService.retrieveProduct(productId);
-    log.info("Successfully retrieved id={}", productId);
+    try {
+      final RetrieveResponse retrieveResponse = storeService.retrieveProduct(productId);
+      log.info("Successfully retrieved id={}", productId);
 
-    final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.setContentDisposition(
-        ContentDisposition.builder("attachment").filename(retrieveResponse.getFileName()).build());
-    inputStream = retrieveResponse.getInputStream();
-    return ResponseEntity.ok()
-        .contentType(retrieveResponse.getMediaType())
-        .headers(httpHeaders)
-        .body(new InputStreamResource(inputStream));
+      final HttpHeaders httpHeaders = new HttpHeaders();
+      httpHeaders.setContentDisposition(
+          ContentDisposition.builder("attachment")
+              .filename(retrieveResponse.getFileName())
+              .build());
+      inputStream = retrieveResponse.getInputStream();
+      return ResponseEntity.ok()
+          .contentType(retrieveResponse.getMediaType())
+          .headers(httpHeaders)
+          .body(new InputStreamResource(inputStream));
+    } catch (Throwable t) {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
+        }
+      }
+      throw t;
+    }
   }
 }

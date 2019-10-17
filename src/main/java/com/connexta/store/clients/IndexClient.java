@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -57,7 +58,9 @@ public class IndexClient {
       restTemplate.put(indexEndpoint + productId, new HttpEntity<>(body, httpHeaders));
     } catch (Exception e) {
       throw new IndexMetadataException(
-          String.format("Errors indexing product with id {%s}", productId), e);
+          HttpStatus.BAD_REQUEST,
+          String.format("Error indexing product with id {%s}", productId),
+          e);
     }
   }
 }

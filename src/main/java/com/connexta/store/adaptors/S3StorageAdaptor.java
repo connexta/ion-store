@@ -14,6 +14,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
+import com.connexta.store.exceptions.ProductNotFoundException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import java.io.IOException;
@@ -23,7 +24,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 
@@ -121,8 +121,8 @@ public class S3StorageAdaptor implements StorageAdaptor {
       if (amazonS3.doesObjectExist(bucket, key)) {
         s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
       } else {
-        throw new RetrieveException(
-            HttpStatus.NOT_FOUND, String.format("Product for key {%s} does not exist", key));
+        throw new ProductNotFoundException(
+            String.format("Product for key {%s} does not exist", key));
       }
     } catch (SdkClientException e) {
       throw new RetrieveException("Unable to retrieve product with key " + key, e);
