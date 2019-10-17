@@ -6,9 +6,10 @@
  */
 package com.connexta.store.controllers;
 
+import static org.springframework.http.ResponseEntity.ok;
+
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.exceptions.IndexMetadataException;
-import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.exceptions.UnsupportedMetadataException;
 import com.connexta.store.rest.models.ErrorMessage;
@@ -143,7 +144,7 @@ public class StoreController implements StoreApi {
               "Unable to complete index request for metadataType=cst and productId=%s", productId),
           e);
     }
-    return ResponseEntity.ok().build();
+    return ok().build();
   }
 
   @ApiOperation(
@@ -184,38 +185,16 @@ public class StoreController implements StoreApi {
           @PathVariable("productId")
           final String productId) {
     InputStream inputStream = null;
-    try {
-      final RetrieveResponse retrieveResponse = storeService.retrieveProduct(productId);
-      log.info("Successfully retrieved id={}", productId);
+    final RetrieveResponse retrieveResponse = storeService.retrieveProduct(productId);
+    log.info("Successfully retrieved id={}", productId);
 
-      final HttpHeaders httpHeaders = new HttpHeaders();
-      httpHeaders.setContentDisposition(
-          ContentDisposition.builder("attachment")
-              .filename(retrieveResponse.getFileName())
-              .build());
-      inputStream = retrieveResponse.getInputStream();
-      return ResponseEntity.ok()
-          .contentType(retrieveResponse.getMediaType())
-          .headers(httpHeaders)
-          .body(new InputStreamResource(inputStream));
-    } catch (RuntimeException e) {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException ioe) {
-          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, ioe);
-        }
-      }
-      throw new RetrieveException(String.format("Unable to retrieve {%s}", productId), e);
-    } catch (Throwable t) {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
-        }
-      }
-      throw t;
-    }
+    final HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.setContentDisposition(
+        ContentDisposition.builder("attachment").filename(retrieveResponse.getFileName()).build());
+    inputStream = retrieveResponse.getInputStream();
+    return ResponseEntity.ok()
+        .contentType(retrieveResponse.getMediaType())
+        .headers(httpHeaders)
+        .body(new InputStreamResource(inputStream));
   }
 }

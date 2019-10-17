@@ -105,8 +105,7 @@ public class RetrieveProductTests {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      classes = {SdkClientException.class, AmazonServiceException.class, RuntimeException.class})
+  @ValueSource(classes = {SdkClientException.class, AmazonServiceException.class})
   public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
       throws Exception {
     when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(true);

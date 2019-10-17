@@ -6,6 +6,7 @@
  */
 package com.connexta.store.advice;
 
+import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
@@ -26,12 +27,21 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
   protected ResponseEntity<Object> handleStoreException(
       @NotNull final StoreException e, @NotNull final WebRequest request) {
     final String message = e.getMessage();
-    final HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-    log.warn("Request is invalid: {}. Returning {}.", message, httpStatus, e);
+    final HttpStatus httpStatus = e.getStatus();
+    log.warn("Exception while storing: {}. Returning {}.", message, httpStatus, e);
     return handleExceptionInternal(e, message, new HttpHeaders(), httpStatus, request);
   }
 
-  @ExceptionHandler(ConstraintViolationException.class)
+  @ExceptionHandler(RetrieveException.class)
+  protected ResponseEntity<Object> handleRetrieveException(
+      @NotNull final RetrieveException e, @NotNull final WebRequest request) {
+    final String message = e.getMessage();
+    final HttpStatus httpStatus = e.getStatus();
+    log.warn("Exception while retrieving: {}. Returning {}.", message, httpStatus, e);
+    return handleExceptionInternal(e, message, new HttpHeaders(), httpStatus, request);
+  }
+
+  @ExceptionHandler({ConstraintViolationException.class, RuntimeException.class})
   protected ResponseEntity<Object> handleConstraintViolation(
       @NotNull final ConstraintViolationException e, @NotNull final WebRequest request) {
     final String message = e.getMessage();

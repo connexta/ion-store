@@ -85,17 +85,10 @@ public class S3StorageAdaptor implements StorageAdaptor {
     S3Object s3Object;
     InputStream productInputStream = null;
     try {
-      try {
-        if (amazonS3.doesObjectExist(bucket, key)) {
-          s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
-        } else {
-          throw new RetrieveException(
-              HttpStatus.NOT_FOUND, String.format("Product for key {%s} does not exist", key));
-        }
-      } catch (SdkClientException e) {
-        throw new RetrieveException("Unable to retrieve product with key " + key, e);
+      s3Object = getS3Object(bucket, key);
+      if (s3Object == null) {
+        throw new RetrieveException("Unable to retrieve product with key " + key);
       }
-
       final String fileName =
           s3Object.getObjectMetadata().getUserMetaDataOf(FILE_NAME_METADATA_KEY);
       if (StringUtils.isEmpty(fileName)) {
@@ -120,5 +113,20 @@ public class S3StorageAdaptor implements StorageAdaptor {
       }
       throw t;
     }
+  }
+
+  private S3Object getS3Object(String bucket, String key) throws RetrieveException {
+    S3Object s3Object = null;
+    try {
+      if (amazonS3.doesObjectExist(bucket, key)) {
+        s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
+      } else {
+        throw new RetrieveException(
+            HttpStatus.NOT_FOUND, String.format("Product for key {%s} does not exist", key));
+      }
+    } catch (SdkClientException e) {
+      throw new RetrieveException("Unable to retrieve product with key " + key, e);
+    }
+    return s3Object;
   }
 }
