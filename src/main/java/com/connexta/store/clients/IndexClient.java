@@ -57,7 +57,7 @@ public class IndexClient {
       restTemplate.put(indexEndpoint + productId, new HttpEntity<>(body, httpHeaders));
     } catch (Exception e) {
       throw new IndexMetadataException(
-          String.format("Error indexing product with id %s", productId), e);
+          String.format("Error indexing product with id %s: %s", productId, e.getMessage()), e);
     }
   }
 }

@@ -132,7 +132,8 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
       s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
     } catch (final SdkClientException e) {
-      throw new RetrieveException(String.format("Unable to retrieve product with key %s", key), e);
+      throw new RetrieveException(
+          String.format("Unable to retrieve product with key %s: %s", key, e.getMessage()), e);
     }
 
     if (null == s3Object) {
