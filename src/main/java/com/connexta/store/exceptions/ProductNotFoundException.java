@@ -9,7 +9,7 @@ package com.connexta.store.exceptions;
 import org.springframework.http.HttpStatus;
 
 public class ProductNotFoundException extends RetrieveException {
-  public ProductNotFoundException(String reason) {
-    super(HttpStatus.NOT_FOUND, reason);
+  public ProductNotFoundException(String key) {
+    super(HttpStatus.NOT_FOUND, String.format("Key %s does not exist", key));
   }
 }

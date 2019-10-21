@@ -23,4 +23,8 @@ public class StoreException extends DetailedResponseStatusException {
   public StoreException(String reason, Throwable cause) {
     super(INTERNAL_SERVER_ERROR, reason, cause);
   }
+
+  public StoreException(String reason) {
+    super(INTERNAL_SERVER_ERROR, reason);
+  }
 }

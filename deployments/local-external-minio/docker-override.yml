@@ -1,5 +1,8 @@
 version: '3.7'
 
+services:
+  store:
+    image: cnxta/ion-store
 secrets:
   # Directories are relative to the master compose file
   s3_secret:

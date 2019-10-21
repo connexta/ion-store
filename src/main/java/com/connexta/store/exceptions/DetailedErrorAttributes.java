@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.context.request.WebRequest;
 
@@ -20,7 +19,6 @@ import org.springframework.web.context.request.WebRequest;
  * Enhanced version of Spring's {@link DefaultErrorAttributes} capable of adding details information
  * from known exceptions.
  */
-@Component
 public class DetailedErrorAttributes extends DefaultErrorAttributes {
   @Override
   public Map<String, Object> getErrorAttributes(WebRequest request, boolean includeStackTrace) {

@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   store:
+    image: cnxta/ion-store
     depends_on:
       - minio
   minio:

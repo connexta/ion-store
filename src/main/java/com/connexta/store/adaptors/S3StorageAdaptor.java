@@ -58,6 +58,11 @@ public class S3StorageAdaptor implements StorageAdaptor {
     objectMetadata.addUserMetadata(FILE_NAME_METADATA_KEY, fileName);
 
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, bucket, key);
+
+    if (!amazonS3.doesBucketExistV2(bucket)) {
+      throw new StoreException(String.format("Bucket %s does not exist", bucket));
+    }
+
     try {
       final Upload upload = transferManager.upload(bucket, key, inputStream, objectMetadata);
       log.info(String.format("Transfer state: %s", upload.getState()));
@@ -85,10 +90,8 @@ public class S3StorageAdaptor implements StorageAdaptor {
     S3Object s3Object;
     InputStream productInputStream = null;
     try {
-      s3Object = getS3Object(bucket, key);
-      if (s3Object == null) {
-        throw new RetrieveException("Unable to retrieve product with key " + key);
-      }
+      s3Object = getS3Object(key);
+
       final String fileName =
           s3Object.getObjectMetadata().getUserMetaDataOf(FILE_NAME_METADATA_KEY);
       if (StringUtils.isEmpty(fileName)) {
@@ -115,18 +118,20 @@ public class S3StorageAdaptor implements StorageAdaptor {
     }
   }
 
-  private S3Object getS3Object(String bucket, String key) throws RetrieveException {
-    S3Object s3Object = null;
+  @NotNull
+  private S3Object getS3Object(final String key) throws RetrieveException {
     try {
-      if (amazonS3.doesObjectExist(bucket, key)) {
-        s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
-      } else {
-        throw new ProductNotFoundException(
-            String.format("Product for key {%s} does not exist", key));
+      if (!amazonS3.doesBucketExistV2(bucket)) {
+        throw new RetrieveException(String.format("Bucket %s does not exist", bucket));
       }
-    } catch (SdkClientException e) {
-      throw new RetrieveException("Unable to retrieve product with key " + key, e);
+
+      if (!amazonS3.doesObjectExist(bucket, key)) {
+        throw new ProductNotFoundException(key);
+      }
+
+      return amazonS3.getObject(new GetObjectRequest(bucket, key));
+    } catch (final SdkClientException e) {
+      throw new RetrieveException(String.format("Unable to retrieve product with key %s", key), e);
     }
-    return s3Object;
   }
 }
