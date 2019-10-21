@@ -14,9 +14,9 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
+import com.connexta.store.exceptions.CreateProductException;
 import com.connexta.store.exceptions.ProductNotFoundException;
 import com.connexta.store.exceptions.RetrieveException;
-import com.connexta.store.exceptions.StoreException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -49,7 +49,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream,
       @NotBlank final String key)
-      throws StoreException {
+      throws CreateProductException {
     // TODO check if id already exists
 
     final ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -60,7 +60,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, bucket, key);
 
     if (!amazonS3.doesBucketExistV2(bucket)) {
-      throw new StoreException(String.format("Bucket %s does not exist", bucket));
+      throw new CreateProductException(String.format("Bucket %s does not exist", bucket));
     }
 
     try {
@@ -69,7 +69,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       upload.waitForCompletion();
       log.info(String.format("Transfer state: %s", upload.getState()));
     } catch (RuntimeException | InterruptedException e) {
-      throw new StoreException(
+      throw new CreateProductException(
           String.format(
               "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, bucket, key),
           e);

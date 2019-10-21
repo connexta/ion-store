@@ -8,7 +8,8 @@ package com.connexta.store.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class UnsupportedMetadataException extends StoreException {
+public class UnsupportedMetadataException extends CreateProductException {
+
   public UnsupportedMetadataException(HttpStatus status, String reason) {
     super(status, reason);
   }

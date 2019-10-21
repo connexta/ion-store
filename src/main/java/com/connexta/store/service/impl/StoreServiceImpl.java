@@ -9,9 +9,9 @@ package com.connexta.store.service.impl;
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexClient;
+import com.connexta.store.exceptions.CreateProductException;
 import com.connexta.store.exceptions.IndexMetadataException;
 import com.connexta.store.exceptions.RetrieveException;
-import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
@@ -47,7 +47,7 @@ public class StoreServiceImpl implements StoreService {
       @NotBlank String mediaType,
       @NotBlank String fileName,
       @NotNull InputStream inputStream)
-      throws StoreException, URISyntaxException {
+      throws CreateProductException, URISyntaxException {
     final String key = UUID.randomUUID().toString().replace("-", "");
     storageAdaptor.store(fileSize, mediaType, fileName, inputStream, key);
     return new URI(retrieveEndpoint + key);

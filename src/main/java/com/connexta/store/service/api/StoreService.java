@@ -7,9 +7,9 @@
 package com.connexta.store.service.api;
 
 import com.connexta.store.adaptors.RetrieveResponse;
+import com.connexta.store.exceptions.CreateProductException;
 import com.connexta.store.exceptions.IndexMetadataException;
 import com.connexta.store.exceptions.RetrieveException;
-import com.connexta.store.exceptions.StoreException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,7 +28,7 @@ public interface StoreService {
       @NotBlank final String mediaType,
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream)
-      throws StoreException, URISyntaxException;
+      throws CreateProductException, URISyntaxException;
 
   /**
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link

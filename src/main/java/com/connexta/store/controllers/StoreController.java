@@ -9,8 +9,8 @@ package com.connexta.store.controllers;
 import static org.springframework.http.ResponseEntity.ok;
 
 import com.connexta.store.adaptors.RetrieveResponse;
+import com.connexta.store.exceptions.CreateProductException;
 import com.connexta.store.exceptions.IndexMetadataException;
-import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.exceptions.UnsupportedMetadataException;
 import com.connexta.store.rest.models.ErrorMessage;
 import com.connexta.store.rest.spring.StoreApi;
@@ -85,8 +85,7 @@ public class StoreController implements StoreApi {
     try {
       inputStream = file.getInputStream();
     } catch (IOException e) {
-      throw new StoreException(
-          HttpStatus.BAD_REQUEST,
+      throw new CreateProductException(
           String.format(
               "Unable to read file for storeProduct request with a file with mediaType=%s and fileName=%s",
               mediaType, fileName),
@@ -97,7 +96,7 @@ public class StoreController implements StoreApi {
     try {
       location = storeService.createProduct(fileSize, mediaType, fileName, inputStream);
     } catch (URISyntaxException e) {
-      throw new StoreException(
+      throw new CreateProductException(
           String.format(
               "Unable to complete storeProduct request for a file with mediaType=%s and fileName=%s",
               mediaType, fileName),
@@ -130,9 +129,7 @@ public class StoreController implements StoreApi {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       throw new IndexMetadataException(
-          HttpStatus.BAD_REQUEST,
-          String.format("Unable to read file for PUT CST request for id=%s", productId),
-          e);
+          String.format("Unable to read file for PUT CST request for id=%s", productId), e);
     }
     storeService.indexProduct(inputStream, fileSize, productId);
     return ok().build();

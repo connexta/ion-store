@@ -9,12 +9,13 @@ package com.connexta.store.exceptions;
 import org.springframework.http.HttpStatus;
 
 public class RetrieveException extends DetailedResponseStatusException {
-  public RetrieveException(String reason, Throwable cause) {
-    super(HttpStatus.INTERNAL_SERVER_ERROR, reason, cause);
+
+  protected RetrieveException(HttpStatus status, String reason) {
+    super(status, reason);
   }
 
-  public RetrieveException(HttpStatus status, String reason) {
-    super(status, reason);
+  public RetrieveException(String reason, Throwable cause) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, reason, cause);
   }
 
   public RetrieveException(String reason) {

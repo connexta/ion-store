@@ -10,21 +10,17 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 import org.springframework.http.HttpStatus;
 
-public class StoreException extends DetailedResponseStatusException {
+public class CreateProductException extends DetailedResponseStatusException {
 
-  public StoreException(HttpStatus status, String reason) {
+  protected CreateProductException(HttpStatus status, String reason) {
     super(status, reason);
   }
 
-  public StoreException(HttpStatus status, String reason, Throwable cause) {
-    super(status, reason, cause);
-  }
-
-  public StoreException(String reason, Throwable cause) {
+  public CreateProductException(String reason, Throwable cause) {
     super(INTERNAL_SERVER_ERROR, reason, cause);
   }
 
-  public StoreException(String reason) {
+  public CreateProductException(String reason) {
     super(INTERNAL_SERVER_ERROR, reason);
   }
 }
