@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import javax.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
@@ -59,6 +58,13 @@ public class RetrieveProductTests {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  public void testS3BucketDoesNotExist() throws Exception {
+    final String key = PRODUCT_ID;
+    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(false);
+    assertErrorResponse();
+  }
+
   /**
    * @see StoreITests#testRetrieveProductIdNotFound()
    * @see StoreITests#testRetrieveProductWhenS3IsEmpty()
@@ -66,13 +72,7 @@ public class RetrieveProductTests {
   @Test
   public void testS3KeyDoesNotExist() throws Exception {
     final String key = PRODUCT_ID;
-    final AmazonS3ExceptionBuilder amazonS3ExceptionBuilder = new AmazonS3ExceptionBuilder();
-    amazonS3ExceptionBuilder.setErrorCode("NoSuchKey");
-    amazonS3ExceptionBuilder.setErrorMessage("The specified key does not exist.");
-    amazonS3ExceptionBuilder.setStatusCode(404);
-    amazonS3ExceptionBuilder.addAdditionalDetail("BucketName", s3Bucket);
-    amazonS3ExceptionBuilder.addAdditionalDetail("Resource", "/" + s3Bucket + "/" + key);
-    amazonS3ExceptionBuilder.addAdditionalDetail("Key", key);
+    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
     when(mockAmazonS3.doesObjectExist(s3Bucket, key)).thenReturn(false);
 
     mockMvc
@@ -82,23 +82,10 @@ public class RetrieveProductTests {
         .andExpect(status().isNotFound());
   }
 
-  @Test
-  public void testS3BucketDoesNotExist() throws Exception {
-    final String key = PRODUCT_ID;
-    final AmazonS3ExceptionBuilder amazonS3ExceptionBuilder = new AmazonS3ExceptionBuilder();
-    amazonS3ExceptionBuilder.setErrorCode("NoSuchBucket");
-    amazonS3ExceptionBuilder.setErrorMessage("The specified bucket does not exist");
-    amazonS3ExceptionBuilder.setStatusCode(404);
-    amazonS3ExceptionBuilder.addAdditionalDetail("BucketName", s3Bucket);
-    amazonS3ExceptionBuilder.addAdditionalDetail("Resource", "/" + s3Bucket + "/" + key);
-    amazonS3ExceptionBuilder.addAdditionalDetail("Key", key);
-    when(mockAmazonS3.doesObjectExist(s3Bucket, key)).thenThrow(amazonS3ExceptionBuilder.build());
-    assertErrorResponse();
-  }
-
   /** @see AmazonS3#getObject(GetObjectRequest) */
   @Test
   public void testS3ConstraintsWerentMet() throws Exception {
+    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
     when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(true);
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenReturn(null);
     assertErrorResponse();
@@ -108,6 +95,7 @@ public class RetrieveProductTests {
   @ValueSource(classes = {SdkClientException.class, AmazonServiceException.class})
   public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
       throws Exception {
+    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
     when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(true);
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(throwableType);
     assertErrorResponse();

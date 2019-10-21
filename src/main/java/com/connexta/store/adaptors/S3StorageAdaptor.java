@@ -120,6 +120,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
   @NotNull
   private S3Object getS3Object(final String key) throws RetrieveException {
+    final S3Object s3Object;
     try {
       if (!amazonS3.doesBucketExistV2(bucket)) {
         throw new RetrieveException(String.format("Bucket %s does not exist", bucket));
@@ -129,9 +130,18 @@ public class S3StorageAdaptor implements StorageAdaptor {
         throw new ProductNotFoundException(key);
       }
 
-      return amazonS3.getObject(new GetObjectRequest(bucket, key));
+      s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
     } catch (final SdkClientException e) {
       throw new RetrieveException(String.format("Unable to retrieve product with key %s", key), e);
     }
+
+    if (null == s3Object) {
+      throw new RetrieveException(
+          String.format(
+              "Unable to retrieve product with key %s: constraints were specified but not met",
+              key));
+    }
+
+    return s3Object;
   }
 }
