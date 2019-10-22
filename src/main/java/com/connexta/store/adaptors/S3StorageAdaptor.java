@@ -14,7 +14,9 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
-import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.exceptions.CreateProductException;
+import com.connexta.store.exceptions.ProductNotFoundException;
+import com.connexta.store.exceptions.RetrieveException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -47,7 +49,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream,
       @NotBlank final String key)
-      throws StoreException {
+      throws CreateProductException {
     // TODO check if id already exists
 
     final ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -56,13 +58,18 @@ public class S3StorageAdaptor implements StorageAdaptor {
     objectMetadata.addUserMetadata(FILE_NAME_METADATA_KEY, fileName);
 
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, bucket, key);
+
+    if (!amazonS3.doesBucketExistV2(bucket)) {
+      throw new CreateProductException(String.format("Bucket %s does not exist", bucket));
+    }
+
     try {
       final Upload upload = transferManager.upload(bucket, key, inputStream, objectMetadata);
       log.info(String.format("Transfer state: %s", upload.getState()));
       upload.waitForCompletion();
       log.info(String.format("Transfer state: %s", upload.getState()));
     } catch (RuntimeException | InterruptedException e) {
-      throw new StoreException(
+      throw new CreateProductException(
           String.format(
               "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, bucket, key),
           e);
@@ -77,22 +84,18 @@ public class S3StorageAdaptor implements StorageAdaptor {
    */
   @Override
   @NotNull
-  public RetrieveResponse retrieve(@NotBlank final String key) throws StoreException {
+  public RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException {
     log.info("Retrieving product in bucket \"{}\" with key \"{}\"", bucket, key);
 
     S3Object s3Object;
     InputStream productInputStream = null;
     try {
-      try {
-        s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
-      } catch (SdkClientException e) {
-        throw new StoreException("Unable to retrieve product with key " + key, e);
-      }
+      s3Object = getS3Object(key);
 
       final String fileName =
           s3Object.getObjectMetadata().getUserMetaDataOf(FILE_NAME_METADATA_KEY);
       if (StringUtils.isEmpty(fileName)) {
-        throw new StoreException(
+        throw new RetrieveException(
             String.format(
                 "Expected S3 object to have a non-null metadata value for %s",
                 FILE_NAME_METADATA_KEY));
@@ -111,8 +114,35 @@ public class S3StorageAdaptor implements StorageAdaptor {
           log.warn("Unable to close InputStream when retrieving key \"{}\".", key, e);
         }
       }
-
       throw t;
     }
+  }
+
+  @NotNull
+  private S3Object getS3Object(final String key) throws RetrieveException {
+    final S3Object s3Object;
+    try {
+      if (!amazonS3.doesBucketExistV2(bucket)) {
+        throw new RetrieveException(String.format("Bucket %s does not exist", bucket));
+      }
+
+      if (!amazonS3.doesObjectExist(bucket, key)) {
+        throw new ProductNotFoundException(key);
+      }
+
+      s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
+    } catch (final SdkClientException e) {
+      throw new RetrieveException(
+          String.format("Unable to retrieve product with key %s: %s", key, e.getMessage()), e);
+    }
+
+    if (null == s3Object) {
+      throw new RetrieveException(
+          String.format(
+              "Unable to retrieve product with key %s: constraints were specified but not met",
+              key));
+    }
+
+    return s3Object;
   }
 }

@@ -6,6 +6,7 @@
  */
 package com.connexta.store.config;
 
+import com.connexta.store.exceptions.DetailedErrorAttributes;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,5 +41,10 @@ public class ApplicationConfiguration {
     filter.setAfterMessagePrefix("Inbound Request: ");
     filter.setMaxPayloadLength(5120);
     return filter;
+  }
+
+  @Bean
+  public DetailedErrorAttributes detailedErrorAttributes() {
+    return new DetailedErrorAttributes();
   }
 }

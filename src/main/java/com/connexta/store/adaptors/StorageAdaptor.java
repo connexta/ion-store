@@ -6,7 +6,8 @@
  */
 package com.connexta.store.adaptors;
 
-import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.exceptions.CreateProductException;
+import com.connexta.store.exceptions.RetrieveException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -20,7 +21,7 @@ public interface StorageAdaptor {
    * Stores the {@code file} in a blob store using the given {@code key}.
    *
    * @throws IOException if the file can't be read
-   * @throws StoreException if there is an error when attempting to store
+   * @throws CreateProductException if there is an error when attempting to store
    */
   void store(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
@@ -28,14 +29,14 @@ public interface StorageAdaptor {
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream,
       @NotBlank final String key)
-      throws StoreException;
+      throws CreateProductException;
 
   /**
    * Retrieves the data in a blob store using the given key.
    *
    * @param key the key used to reference the stored object
-   * @throws StoreException
+   * @throws CreateProductException
    */
   @NotNull
-  RetrieveResponse retrieve(@NotBlank final String key) throws StoreException;
+  RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException;
 }

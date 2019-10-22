@@ -7,7 +7,6 @@
 package com.connexta.store;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.ignoreStubs;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -17,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.connexta.store.controllers.StoreController;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +33,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -99,16 +96,7 @@ public class CreateProductTests {
 
   @Test
   public void testS3BucketDoesNotExist() throws Exception {
-    final AmazonS3ExceptionBuilder amazonS3ExceptionBuilder = new AmazonS3ExceptionBuilder();
-    amazonS3ExceptionBuilder.setErrorCode("NoSuchBucket");
-    amazonS3ExceptionBuilder.setErrorMessage("The specified bucket does not exist");
-    amazonS3ExceptionBuilder.setStatusCode(404);
-    amazonS3ExceptionBuilder.addAdditionalDetail("BucketName", s3Bucket);
-    when(mockAmazonS3.putObject(
-            argThat(
-                putObjectRequest ->
-                    StringUtils.equals(putObjectRequest.getBucketName(), s3Bucket))))
-        .thenThrow(amazonS3ExceptionBuilder.build());
+    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(false);
     assertErrorResponse();
   }
 
@@ -117,6 +105,7 @@ public class CreateProductTests {
       classes = {SdkClientException.class, AmazonServiceException.class, RuntimeException.class})
   public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
       throws Exception {
+    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
     when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(throwableType);
     assertErrorResponse();
   }

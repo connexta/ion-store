@@ -277,10 +277,9 @@ public class StoreITests {
     uriBuilder.setPath(uriBuilder.getPath() + "/" + PRODUCT_ID);
 
     // verify
-    // TODO return 404 if key doesn't exist
     assertThat(
         restTemplate.getForEntity(uriBuilder.build(), Resource.class).getStatusCode(),
-        is(HttpStatus.INTERNAL_SERVER_ERROR));
+        is(HttpStatus.NOT_FOUND));
   }
 
   /**
@@ -291,10 +290,9 @@ public class StoreITests {
   public void testRetrieveProductWhenS3IsEmpty() throws Exception {
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
     uriBuilder.setPath(uriBuilder.getPath() + "/" + PRODUCT_ID);
-    // TODO return 404 if key doesn't exist
     assertThat(
         restTemplate.getForEntity(uriBuilder.build(), Resource.class).getStatusCode(),
-        is(HttpStatus.INTERNAL_SERVER_ERROR));
+        is(HttpStatus.NOT_FOUND));
   }
 
   @NotNull

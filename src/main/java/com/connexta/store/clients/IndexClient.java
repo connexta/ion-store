@@ -6,7 +6,7 @@
  */
 package com.connexta.store.clients;
 
-import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.exceptions.IndexMetadataException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -33,7 +33,7 @@ public class IndexClient {
       @NotNull final InputStream cstInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId)
-      throws StoreException {
+      throws IndexMetadataException {
     // TODO Use IndexApi classes to create request
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
     body.add(
@@ -56,7 +56,8 @@ public class IndexClient {
     try {
       restTemplate.put(indexEndpoint + productId, new HttpEntity<>(body, httpHeaders));
     } catch (Exception e) {
-      throw new StoreException("Error indexing product id=" + productId, e);
+      throw new IndexMetadataException(
+          String.format("Error indexing product with id %s: %s", productId, e.getMessage()), e);
     }
   }
 }

@@ -9,7 +9,9 @@ package com.connexta.store.service.impl;
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexClient;
-import com.connexta.store.common.exceptions.StoreException;
+import com.connexta.store.exceptions.CreateProductException;
+import com.connexta.store.exceptions.IndexMetadataException;
+import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
@@ -45,14 +47,14 @@ public class StoreServiceImpl implements StoreService {
       @NotBlank String mediaType,
       @NotBlank String fileName,
       @NotNull InputStream inputStream)
-      throws StoreException, URISyntaxException {
+      throws CreateProductException, URISyntaxException {
     final String key = UUID.randomUUID().toString().replace("-", "");
     storageAdaptor.store(fileSize, mediaType, fileName, inputStream, key);
     return new URI(retrieveEndpoint + key);
   }
 
   @Override
-  public @NotNull RetrieveResponse retrieveProduct(@NotBlank String id) throws StoreException {
+  public @NotNull RetrieveResponse retrieveProduct(@NotBlank String id) throws RetrieveException {
     return storageAdaptor.retrieve(id);
   }
 
@@ -61,7 +63,7 @@ public class StoreServiceImpl implements StoreService {
       @NotNull final InputStream cstInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId)
-      throws StoreException {
+      throws IndexMetadataException {
     // TODO check that the product exists
     indexClient.index(cstInputStream, fileSize, productId);
   }
