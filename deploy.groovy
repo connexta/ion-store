@@ -1,69 +1,257 @@
 //Groovy scripts throw lots of WARNING messages, but it is fine
 //https://issues.apache.org/jira/browse/GROOVY-8339
 
-def DOCKER_REG = System.getenv("DOCKER_REGISTRY")
-if (!DOCKER_REG) {
-    println "DOCKER_REGISTRY environment variable not found!"
-    System.exit(1)
+import groovy.transform.Field
+
+//The name of the base docker image
+@Field
+def DOCKER_IMAGE_NAME = 'cnxta/ion-store'
+@Field
+def STACK = 'store-stack'
+@Field
+def NETWORK = 'cdr'
+@Field
+def ENVIRONMENT = [:]
+
+if(needHelp(args)) {
+    usage()
 }
 
-//The name of the preface for the docker images
-def DOCKER_IMAGE_NAME = "cnxta/ion-store"
-//The stack you want the docker compose file named
-def STACK="store-stack"
+@Field
+def dryRun = isDryRun(args)
 
-//The path to the Docker Wrapper
-//IMPORTANT!
-//>>> The base docker script has to be in the same location as this file
-
-// docker_wrapper or set_docker_w if docker_wrapper isn't set
-def DOCKER_W = System.getenv("DOCKER_WRAPPER")
-if (!DOCKER_W) {
-    println "DOCKER_WRAPPER environment variable not found!"
-    System.exit(1)
+if(dryRun) {
+    header('DRY RUN ONLY')
 }
 
-//Tests that variables are correct for the docker compose and docker wrapper
-def checkVars(docker_w) {
-    def dir = System.properties['user.dir']
-    def composeFile = new File(dir,"docker-compose.yml")
-    def wrapperFile = new File(docker_w)
-    if (!composeFile.exists()){
-        println "Please run in the same directory as a docker-compose.yml"
+def registry = getDockerRegistry()
+def dockerCommand = getDockerCommand()
+
+if (isLocalDeployment(registry, dockerCommand)) {
+    header('Deployment type: local')
+    localDeployment(dockerCommand)
+} else {
+    header('Deployment type: non-local')
+    nonLocalDeployment(registry, dockerCommand)
+}
+
+def localDeployment(dockerCommand) {
+    ENVIRONMENT.IMAGE_PREFIX = ''
+    verifyEnvironmentVariablesExist()
+    verifyDockerComposeFileExist()
+    createNetwork(dockerCommand)
+    startMinio(dockerCommand)
+    deploy(ENVIRONMENT.S3_PROVIDER, dockerCommand)
+    listServices(dockerCommand)
+}
+
+def nonLocalDeployment(registry, dockerCommand) {
+    ENVIRONMENT.IMAGE_PREFIX = registry + '/'
+    verifyDockerCommand(dockerCommand)
+    verifyEnvironmentVariablesExist()
+    verifyDockerComposeFileExist()
+    createNetwork(dockerCommand)
+    tag(registry, dockerCommand)
+    push(registry, dockerCommand)
+    pull(registry, dockerCommand)
+    deploy(ENVIRONMENT.S3_PROVIDER, dockerCommand)
+    listServices(dockerCommand)
+}
+
+def isDryRun(args) {
+    return args.length == 1 && args[0] != null && args[0].equals('--dryRun')
+}
+
+def needHelp(args) {
+    return args.length == 1 && args[0] != null && args[0].equals('--help')
+}
+
+def usage() {
+    println('\nUsage:')
+    println('\n  Options: --help | --dryRun')
+    println('\n\$> groovy deploy.groovy [options]')
+    System.exit(0)
+}
+
+def getDockerRegistry() {
+    return System.getenv('DOCKER_REGISTRY')
+}
+
+def getDockerCommand() {
+    return System.getenv('DOCKER_WRAPPER') != null ? System.getenv('DOCKER_WRAPPER') : 'docker'
+}
+
+def verifyDockerCommand(command) {
+    def dockerCommand = new File(command)
+    if (!dockerCommand.exists()) {
+        println dockerCommand + ' does not exist.'
         System.exit(1)
-    } else if (!wrapperFile.exists()){
-        println docker_w + " does not exist"
-        System.exit(1)
-    } else if (!wrapperFile.canExecute()){
-        println docker_w + " is not executable"
+    } else if (!dockerCommand.canExecute()) {
+        println dockerCommand + ' is not executable.'
         System.exit(1)
     }
 }
 
-def run(commands) {
-    println "Running: " + commands
-    def proc = commands.execute()
-    proc.waitForProcessOutput(System.out, System.err)
+def isLocalDeployment(registry, dockerCommand) {
+    return registry == null || registry.trim().isEmpty() || dockerCommand == null || dockerCommand.trim().isEmpty()
+}
+
+def verifyDockerComposeFileExist() {
+    def currentDirectory = System.properties['user.dir']
+    def composeFile = new File(currentDirectory, 'docker-compose.yml')
+    if (!composeFile.exists()) {
+        println 'Please run in the same directory as a docker-compose.yml'
+        System.exit(1)
+    }
+}
+
+def tag(registry, dockerCommand) {
+    def tags = DOCKER_IMAGE_NAME + ' ' + registry + '/' + DOCKER_IMAGE_NAME
+    header('Tagging docker image with tags: ' + tags)
+    run(dockerCommand + ' tag ' + tags)
+}
+
+def push(registry, dockerCommand) {
+    header('Pushing docker image to ' + registry)
+    run(dockerCommand + ' push ' + registry + '/' + DOCKER_IMAGE_NAME)
+}
+
+def pull(registry, dockerCommand) {
+    header('Pulling the docker image on ' + registry)
+    run(dockerCommand + ' pull ' + registry + '/' + DOCKER_IMAGE_NAME)
+}
+
+def deploy(s3Provider, dockerCommand) {
+    header('Deploying stack ' + STACK + ' with S3 provider ' + s3Provider)
+    if('amazon-s3'.equals(s3Provider)) {
+        run(dockerCommand + ' stack deploy -c docker-compose.yml ' + STACK)
+    }
+}
+
+def listServices(dockerCommand) {
+    header('Services in stack ' + STACK)
+    run(dockerCommand + ' stack services ' + STACK)
+}
+
+def createNetwork(dockerCommand) {
+    def foundNetwork = doesNetworkExist(dockerCommand)
+    if(!foundNetwork) {
+        header('Creating network ' + NETWORK)
+        run(dockerCommand + ' network create --driver=overlay --attachable ' + NETWORK)
+    } else {
+        println 'Found network ' + NETWORK
+    }
+}
+
+def doesNetworkExist(dockerCommand) {
+    header('Checking for network: ' + NETWORK)
+    def command = dockerCommand + ' network ls'
+    def process = command.execute()
+    def found = false;
+    process.in.eachLine {
+        line ->
+           def alteredLine = line.replaceAll('\\s+', ':')
+           def networkName = alteredLine.tokenize(':')[1]
+           if(NETWORK.equals(networkName)) {
+               found = true
+           }
+        }
+
+    if(!found) {
+        println 'Network ' + NETWORK + ' not found'
+    }
+
+    return found;
+}
+
+def startMinio(dockerCommand) {
+    header('Starting minio')
+    if(!isMinioAlreadyDeployedAndRunning(dockerCommand)) {
+        run(dockerCommand + ' stack deploy -c docker-compose.yml  -c deployments/local-minio/docker-override.yml ' + STACK)
+    } else {
+        println 'minio is already running'
+        run(dockerCommand + ' stack deploy -c docker-compose.yml  -c deployments/local-external-minio/docker-override.yml ' + STACK)
+    }
+}
+
+def isMinioAlreadyDeployedAndRunning(dockerCommand) {
+    def command = dockerCommand + ' container ls'
+    def running = false
+    def end = System.currentTimeMillis() + 30000
+
+    while(!running && System.currentTimeMillis() < end) {
+        def process = command.execute()
+        process.in.eachLine {
+            line ->
+                def alteredLine = line.replaceAll('\\s+', '#')
+                def imageName = alteredLine.tokenize('#')[1]
+                if(imageName.equals('minio/minio:latest')) {
+                    running = true
+                }
+        }
+
+        if(!running) {
+            println 'waiting for minio...'
+            sleep(2000)
+        }
+    }
+    return running;
+}
+
+def EnvironmentVariablesToList() {
+    return ENVIRONMENT.entrySet().stream().map({e -> e.getKey() + '=' + e.getValue()}).toList()
+}
+
+def run(command) {
+    if(dryRun) {
+        println('Environment Variables: '  + EnvironmentVariablesToList().toArray(new String[0]))
+        println 'Dry Run Command: ' + command
+        println(command)
+    } else {
+        println('Environment Variables: ' + EnvironmentVariablesToList().toArray(new String[0]))
+        println 'Running: ' + command
+        def proc = Runtime.getRuntime().exec(command, EnvironmentVariablesToList().toArray(new String[0]))
+        proc.waitForProcessOutput(System.out, System.err)
+    }
 }
 
 def header(message) {
-    println ""
-    println "# # # # # # # # # # # # # #"
-    println " " + message
-    println ""
+    println ''
+    println '# # # # # # # # # # # # # #'
+    println ' ' + message
+    println ''
 }
 
-checkVars(DOCKER_W)
-header("Tagging and pushing the docker image to " + DOCKER_REG)
-run("docker tag " + DOCKER_IMAGE_NAME + " " + DOCKER_REG + "/" + DOCKER_IMAGE_NAME)
-run("docker push " + DOCKER_REG + "/" + DOCKER_IMAGE_NAME)
+def isSupportedS3Provider(s3Provider) {
+    return s3Provider.equals('amazon-s3') || s3Provider.equals('local-minio')
+}
 
-header("Pulling the docker image on " + DOCKER_REG)
-run(DOCKER_W + " pull " + DOCKER_REG + "/" + DOCKER_IMAGE_NAME)
+def verifyEnvironmentVariablesExist() {
+    def retrieveHost = System.getenv('RETRIEVE_HOST')
+    if(retrieveHost == null || retrieveHost.trim().isEmpty()) {
+        println 'RETRIEVE_HOST environment variable must be set'
+        System.exit(1)
+    }
+    ENVIRONMENT.RETRIEVE_HOST = retrieveHost
 
-header("Deploying the application on " + STACK)
-run(DOCKER_W + " stack rm " + STACK)
+    def s3Provider = System.getenv('S3_PROVIDER')
+    if(s3Provider == null || s3Provider.trim().isEmpty() || !isSupportedS3Provider(s3Provider)) {
+        println 'S3_PROVIDER environment variable must be set to one of the following: amazon-s3, local-minio'
+        System.exit(1)
+    }
+    ENVIRONMENT.S3_PROVIDER = s3Provider
 
-run(DOCKER_W + " stack deploy -c docker-compose.yml " + STACK)
+    def s3ProviderUrl = System.getenv('S3_PROVIDER_URL')
+    if(s3ProviderUrl == null || s3ProviderUrl.trim().isEmpty()) {
+        println 'S3_PROVIDER_URL environment variable must be set'
+        System.exit(1)
+    }
+    ENVIRONMENT.S3_PROVIDER_URL = s3ProviderUrl
 
-run(DOCKER_W + " stack services " + STACK)
+    def s3Region = System.getenv('S3_REGION')
+    if(s3Region == null || s3Region.trim().isEmpty()) {
+        println 'S3_REGION environment variable must be set'
+        System.exit(1)
+    }
+    ENVIRONMENT.S3_REGION = s3Region
+}

@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   store:
-    image: ${DOCKER_REGISTRY:-docker.io}/cnxta/ion-store
+    image: ${IMAGE_PREFIX}cnxta/ion-store
     ports:
       - target: 8080
         published: 9041
@@ -9,6 +9,10 @@ services:
       - target: 10051
         published: 10051
         protocol: tcp
+    environment:
+      RETRIEVE_HOST: ${RETRIEVE_HOST}
+      S3_PROVIDER_URL: ${S3_PROVIDER_URL}
+      S3_REGION: ${S3_REGION}
     networks:
       - cdr
     deploy:
@@ -19,16 +23,9 @@ services:
         target: /secrets/store/s3_secret.sec
       - source: s3_access
         target: /secrets/store/s3_access.sec
-    configs:
-      - source: s3_config
-        target: /configs/s3_config.yml
-      - source: store_config
-        target: /configs/store_config.yml
     command:
       - "--s3.secret.file=/secrets/store/s3_secret.sec"
       - "--s3.access.file=/secrets/store/s3_access.sec"
-      - "--spring.config.additional-location=file:/configs/s3_config.yml"
-      - "--spring.config.additional-location=file:/configs/store_config.yml"
 networks:
   cdr:
     external: true
@@ -37,8 +34,3 @@ secrets:
     file: s3_secret.sec
   s3_access:
     file: s3_access.sec
-configs:
-  s3_config:
-    file: ./configs/s3_config.yml
-  store_config:
-    file: ./configs/store_config.yml

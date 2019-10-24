@@ -3,15 +3,18 @@ version: '3.7'
 services:
   store:
     image: cnxta/ion-store
+    environment:
+      RETRIEVE_HOST: ${RETRIEVE_HOST}
+      S3_PROVIDER_URL: ${S3_PROVIDER_URL}
+      S3_REGION: ${S3_REGION}
+    secrets:
+      - source: s3_secret
+        target: /secrets/store/s3_secret.sec
+      - source: s3_access
+        target: /secrets/store/s3_access.sec
 secrets:
   # Directories are relative to the master compose file
   s3_secret:
     file: deployments/local-minio/secrets/minio_secret.notsec
   s3_access:
     file: deployments/local-minio/secrets/minio_access.notsec
-configs:
-  # Directories are relative to the master compose file
-  s3_config:
-    file: deployments/local-minio/configs/s3_config.yml
-  store_config:
-    file: deployments/local-minio/configs/store_config.yml

@@ -20,6 +20,12 @@ spring:
 # The index endpoint should be deployed in the same network, so we don't need a config.yml file for it.
 endpointUrl:
   index: http://search:8080/index/
+  retrieve: http://\${RETRIEVE_HOST}:9041/mis/product/
+
+s3:
+  endpointUrl: \${S3_PROVIDER_URL}
+  region: \${S3_REGION}
+  bucket: ingest-quarantine
 
 endpoints:
   index:

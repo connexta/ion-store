@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:11.0.3-slim-stretch
 LABEL maintainer=connexta
 LABEL com.connexta.application.name=store
 ARG JAR_FILE
