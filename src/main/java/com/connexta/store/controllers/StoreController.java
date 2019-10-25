@@ -64,12 +64,10 @@ public class StoreController implements StoreApi {
       final String acceptVersion, @Valid final MultipartFile file) {
     final String expectedAcceptVersion = storeApiVersion;
     if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
-      log.warn(
-          "Expected Accept-Version to be \"{}\" but was \"{}\". Only \"{}\" is currently supported.",
-          expectedAcceptVersion,
-          acceptVersion,
-          expectedAcceptVersion);
-      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+      throw new UnsupportedOperationException(
+          String.format(
+              "Expected Accept-Version to be \"%s\" but was \"%s\". Only \"%s\" is currently supported.",
+              expectedAcceptVersion, acceptVersion, expectedAcceptVersion));
     }
 
     final Long fileSize = file.getSize();
@@ -106,14 +104,21 @@ public class StoreController implements StoreApi {
     return ResponseEntity.created(location).build();
   }
 
-  /** TODO Add tests for this endpoint. */
   @Override
   public ResponseEntity<Void> addMetadata(
       final String acceptVersion,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId,
       @Pattern(regexp = "^[0-9a-zA-Z\\-]+$") @Size(min = 1, max = 32) final String metadataType,
       @Valid final MultipartFile file) {
-    // TODO validate params
+    final String expectedAcceptVersion = storeApiVersion;
+    if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
+      throw new UnsupportedOperationException(
+          String.format(
+              "Expected Accept-Version to be \"%s\" but was \"%s\". Only \"%s\" is currently supported.",
+              expectedAcceptVersion, acceptVersion, expectedAcceptVersion));
+    }
+
+    // TODO Validate other params.
 
     if (!StringUtils.equals(metadataType, "cst")) {
       throw new UnsupportedMetadataException(
