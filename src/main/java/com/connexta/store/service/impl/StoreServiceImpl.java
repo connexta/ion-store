@@ -23,23 +23,16 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@AllArgsConstructor
 public class StoreServiceImpl implements StoreService {
 
   @NotBlank private final String retrieveEndpoint;
   @NotNull private final StorageAdaptor storageAdaptor;
   @NotNull private final IndexDatasetClient indexDatasetClient;
-
-  public StoreServiceImpl(
-      @NotBlank final String retrieveEndpoint,
-      @NotNull final StorageAdaptor storageAdaptor,
-      @NotNull final IndexDatasetClient indexDatasetClient) {
-    this.retrieveEndpoint = retrieveEndpoint;
-    this.storageAdaptor = storageAdaptor;
-    this.indexDatasetClient = indexDatasetClient;
-  }
 
   @Override
   public @NotNull URI createDataset(
@@ -61,12 +54,13 @@ public class StoreServiceImpl implements StoreService {
   }
 
   @Override
-  public void indexDataset(
-      @NotNull final InputStream cstInputStream,
+  public void addMetadata(
+      @NotNull final InputStream irmInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws IndexMetadataException {
     // TODO check that the dataset exists
-    indexDatasetClient.indexDataset(cstInputStream, fileSize, datasetId);
+    // TODO store IRM
+    indexDatasetClient.indexDataset(irmInputStream, fileSize, datasetId);
   }
 }

@@ -34,7 +34,7 @@ public class IndexDatasetClientImpl implements IndexDatasetClient {
 
   @Override
   public void indexDataset(
-      @NotNull final InputStream cstInputStream,
+      @NotNull final InputStream irmInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws IndexMetadataException {
@@ -42,7 +42,7 @@ public class IndexDatasetClientImpl implements IndexDatasetClient {
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
     body.add(
         "file",
-        new InputStreamResource(cstInputStream) {
+        new InputStreamResource(irmInputStream) {
 
           @Override
           public long contentLength() {
@@ -51,7 +51,7 @@ public class IndexDatasetClientImpl implements IndexDatasetClient {
 
           @Override
           public String getFilename() {
-            return StoreController.SUPPORTED_METADATA_TYPE + ".json";
+            return StoreController.SUPPORTED_METADATA_TYPE + ".xml";
           }
         });
     final HttpHeaders httpHeaders = new HttpHeaders();

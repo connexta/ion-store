@@ -7,7 +7,7 @@
 /* Build Script */
 buildscript {
     ext {
-        indexApiVersion = "0.2.0"
+        indexApiVersion = "0.3.0"
         junitJupiterVersion = "5.5.2"
         lombokVersion = "1.18.10"
         springBootVersion = "2.2.0.RELEASE"

@@ -47,7 +47,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StoreController implements StoreApi {
 
   public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
-  public static final String SUPPORTED_METADATA_TYPE = "cst";
+  public static final String SUPPORTED_METADATA_TYPE = "irm";
 
   @NotNull private final StoreService storeService;
 
@@ -136,7 +136,7 @@ public class StoreController implements StoreApi {
               metadataType, datasetId),
           e);
     }
-    storeService.indexDataset(inputStream, fileSize, datasetId);
+    storeService.addMetadata(inputStream, fileSize, datasetId);
     return ok().build();
   }
 
