@@ -67,8 +67,8 @@ public class StoreController implements StoreApi {
     if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
       throw new UnsupportedOperationException(
           String.format(
-              "Expected Accept-Version to be \"%s\" but was \"%s\". Only \"%s\" is currently supported.",
-              expectedAcceptVersion, acceptVersion, expectedAcceptVersion));
+              "%s was \"%s\", but only \"%s\" is currently supported.",
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
     }
 
     final Long fileSize = file.getSize();
@@ -115,8 +115,8 @@ public class StoreController implements StoreApi {
     if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
       throw new UnsupportedOperationException(
           String.format(
-              "Expected Accept-Version to be \"%s\" but was \"%s\". Only \"%s\" is currently supported.",
-              expectedAcceptVersion, acceptVersion, expectedAcceptVersion));
+              "%s was \"%s\", but only \"%s\" is currently supported.",
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
     }
 
     // TODO Validate other params.
@@ -136,7 +136,7 @@ public class StoreController implements StoreApi {
     } catch (IOException e) {
       throw new IndexMetadataException(
           String.format(
-              "Unable to read file for addMetadata request for metadataType=$s, id=%s",
+              "Unable to read file for addMetadata request for metadataType=%s, id=%s",
               metadataType, productId),
           e);
     }
