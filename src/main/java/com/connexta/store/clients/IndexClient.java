@@ -25,6 +25,8 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class IndexClient {
 
+  public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
+
   @NotNull private final RestTemplate restTemplate;
   @NotBlank private final String indexEndpoint;
   @NotBlank private final String indexApiVersion;
@@ -51,7 +53,7 @@ public class IndexClient {
           }
         });
     final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set("Accept-Version", indexApiVersion);
+    httpHeaders.set(ACCEPT_VERSION_HEADER_NAME, indexApiVersion);
 
     try {
       restTemplate.put(indexEndpoint + productId, new HttpEntity<>(body, httpHeaders));

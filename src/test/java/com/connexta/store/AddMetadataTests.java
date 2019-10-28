@@ -8,6 +8,7 @@ package com.connexta.store;
 
 import static org.mockito.Mockito.ignoreStubs;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -15,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.connexta.store.clients.IndexClient;
 import com.connexta.store.controllers.StoreController;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
@@ -54,6 +56,9 @@ public class AddMetadataTests {
 
   @Value("${endpoints.store.version}")
   private String storeApiVersion;
+
+  @Value("${endpoints.index.version}")
+  private String indexApiVersion;
 
   @Value("${endpointUrl.index}")
   private String endpointUrlIndex;
@@ -156,6 +161,7 @@ public class AddMetadataTests {
     indexMockRestServiceServer
         .expect(requestTo(endpointUrlIndex + datasetId))
         .andExpect(method(HttpMethod.PUT))
+        .andExpect(header(IndexClient.ACCEPT_VERSION_HEADER_NAME, indexApiVersion))
         .andRespond(withSuccess());
 
     mockMvc
