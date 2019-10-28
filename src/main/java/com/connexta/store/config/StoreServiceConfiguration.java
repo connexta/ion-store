@@ -7,7 +7,7 @@
 package com.connexta.store.config;
 
 import com.connexta.store.adaptors.StorageAdaptor;
-import com.connexta.store.clients.IndexClient;
+import com.connexta.store.clients.IndexDatasetClient;
 import com.connexta.store.service.api.StoreService;
 import com.connexta.store.service.impl.StoreServiceImpl;
 import javax.validation.constraints.NotBlank;
@@ -23,7 +23,7 @@ public class StoreServiceConfiguration {
   public StoreService storeService(
       @NotBlank @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
       @NotNull final StorageAdaptor storageAdapter,
-      @NotNull final IndexClient indexClient) {
-    return new StoreServiceImpl(retrieveEndpoint, storageAdapter, indexClient);
+      @NotNull final IndexDatasetClient indexDatasetClient) {
+    return new StoreServiceImpl(retrieveEndpoint, storageAdapter, indexDatasetClient);
   }
 }

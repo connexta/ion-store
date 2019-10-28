@@ -8,10 +8,10 @@ package com.connexta.store.service.impl;
 
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.adaptors.StorageAdaptor;
-import com.connexta.store.clients.IndexClient;
-import com.connexta.store.exceptions.CreateProductException;
+import com.connexta.store.clients.IndexDatasetClient;
+import com.connexta.store.exceptions.CreateDatasetException;
 import com.connexta.store.exceptions.IndexMetadataException;
-import com.connexta.store.exceptions.RetrieveException;
+import com.connexta.store.exceptions.RetrieveFileException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
@@ -30,41 +30,43 @@ public class StoreServiceImpl implements StoreService {
 
   @NotBlank private final String retrieveEndpoint;
   @NotNull private final StorageAdaptor storageAdaptor;
-  @NotNull private final IndexClient indexClient;
+  @NotNull private final IndexDatasetClient indexDatasetClient;
 
   public StoreServiceImpl(
       @NotBlank final String retrieveEndpoint,
       @NotNull final StorageAdaptor storageAdaptor,
-      @NotNull final IndexClient indexClient) {
+      @NotNull final IndexDatasetClient indexDatasetClient) {
     this.retrieveEndpoint = retrieveEndpoint;
     this.storageAdaptor = storageAdaptor;
-    this.indexClient = indexClient;
+    this.indexDatasetClient = indexDatasetClient;
   }
 
   @Override
-  public @NotNull URI createProduct(
+  public @NotNull URI createDataset(
       @NotNull @Min(1L) @Max(10737418240L) Long fileSize,
       @NotBlank String mediaType,
       @NotBlank String fileName,
-      @NotNull InputStream inputStream)
-      throws CreateProductException, URISyntaxException {
+      @NotNull InputStream fileInputStream)
+      throws CreateDatasetException, URISyntaxException {
     final String key = UUID.randomUUID().toString().replace("-", "");
-    storageAdaptor.store(fileSize, mediaType, fileName, inputStream, key);
+    storageAdaptor.store(fileSize, mediaType, fileName, fileInputStream, key);
     return new URI(retrieveEndpoint + key);
   }
 
   @Override
-  public @NotNull RetrieveResponse retrieveProduct(@NotBlank String id) throws RetrieveException {
-    return storageAdaptor.retrieve(id);
+  public @NotNull RetrieveResponse retrieveFile(
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
+      throws RetrieveFileException {
+    return storageAdaptor.retrieve(datasetId);
   }
 
   @Override
-  public void indexProduct(
+  public void indexDataset(
       @NotNull final InputStream cstInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId)
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws IndexMetadataException {
-    // TODO check that the product exists
-    indexClient.index(cstInputStream, fileSize, productId);
+    // TODO check that the dataset exists
+    indexDatasetClient.indexDataset(cstInputStream, fileSize, datasetId);
   }
 }

@@ -1,7 +1,7 @@
 server:
   port: 8080
 endpointUrl:
-  retrieve: http://localhost:${server.port}/mis/product/
+  retrieve: http://localhost:${server.port}/dataset/
   index: http://search:8080/index/
 endpoints:
   index:

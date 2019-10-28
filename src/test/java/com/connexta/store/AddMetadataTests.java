@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.connexta.store.clients.IndexClient;
+import com.connexta.store.clients.IndexDatasetClientImpl;
 import com.connexta.store.controllers.StoreController;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
@@ -89,7 +89,7 @@ public class AddMetadataTests {
     mockMvc
         .perform(
             multipart(
-                    "/mis/product/341d6c1ce5e0403a99fe86edaed66eea/"
+                    "/dataset/341d6c1ce5e0403a99fe86edaed66eea/"
                         + StoreController.SUPPORTED_METADATA_TYPE)
                 .header(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion)
                 .accept(MediaType.APPLICATION_JSON)
@@ -107,7 +107,7 @@ public class AddMetadataTests {
     mockMvc
         .perform(
             multipart(
-                    "/mis/product/341d6c1ce5e0403a99fe86edaed66eea/"
+                    "/dataset/341d6c1ce5e0403a99fe86edaed66eea/"
                         + StoreController.SUPPORTED_METADATA_TYPE)
                 .file(
                     new MockMultipartFile(
@@ -142,7 +142,7 @@ public class AddMetadataTests {
       throws Exception {
     mockMvc
         .perform(
-            multipart("/mis/product/341d6c1ce5e0403a99fe86edaed66eea/" + metadataType)
+            multipart("/dataset/341d6c1ce5e0403a99fe86edaed66eea/" + metadataType)
                 .file(
                     new MockMultipartFile(
                         "file",
@@ -174,7 +174,7 @@ public class AddMetadataTests {
     indexMockRestServiceServer
         .expect(requestTo(endpointUrlIndex + datasetId))
         .andExpect(method(HttpMethod.PUT))
-        .andExpect(header(IndexClient.ACCEPT_VERSION_HEADER_NAME, indexApiVersion))
+        .andExpect(header(IndexDatasetClientImpl.ACCEPT_VERSION_HEADER_NAME, indexApiVersion))
         .andExpect(
             content()
                 .string(
@@ -191,7 +191,7 @@ public class AddMetadataTests {
 
     mockMvc
         .perform(
-            multipart("/mis/product/" + datasetId + "/" + StoreController.SUPPORTED_METADATA_TYPE)
+            multipart("/dataset/" + datasetId + "/" + StoreController.SUPPORTED_METADATA_TYPE)
                 .file(
                     new MockMultipartFile(
                         partName,

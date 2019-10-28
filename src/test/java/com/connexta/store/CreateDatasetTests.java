@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class CreateProductTests {
+public class CreateDatasetTests {
 
   @MockBean private AmazonS3 mockAmazonS3;
 
@@ -60,7 +60,7 @@ public class CreateProductTests {
   public void testMissingFile() throws Exception {
     mockMvc
         .perform(
-            multipart("/mis/product")
+            multipart("/dataset")
                 .header(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -71,7 +71,7 @@ public class CreateProductTests {
   public void testBadAcceptVersion() throws Exception {
     mockMvc
         .perform(
-            multipart("/mis/product")
+            multipart("/dataset")
                 .file(
                     new MockMultipartFile(
                         "file",
@@ -113,7 +113,7 @@ public class CreateProductTests {
   private void assertErrorResponse() throws Exception {
     mockMvc
         .perform(
-            multipart("/mis/product")
+            multipart("/dataset")
                 .file(
                     new MockMultipartFile(
                         "file",

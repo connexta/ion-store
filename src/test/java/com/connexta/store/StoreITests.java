@@ -59,7 +59,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class StoreITests {
 
-  private static final String PRODUCT_ID = "341d6c1ce5e0403a99fe86edaed66eea";
+  private static final String DATASET_ID = "341d6c1ce5e0403a99fe86edaed66eea";
   private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
   private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
   private static final int MINIO_PORT = 9000;
@@ -109,7 +109,7 @@ public class StoreITests {
   public void testContextLoads() {}
 
   @Test
-  public void testStoreProductWhenS3IsEmpty() throws Exception {
+  public void testCreateDatasetWhenS3IsEmpty() throws Exception {
     // given
     final InputStream inputStream =
         IOUtils.toInputStream(
@@ -134,7 +134,7 @@ public class StoreITests {
 
     // when
     final ResponseEntity<Resource> response =
-        restTemplate.postForEntity("/mis/product/", body, Resource.class);
+        restTemplate.postForEntity("/dataset/", body, Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -143,10 +143,10 @@ public class StoreITests {
   }
 
   @Test
-  public void testStoreProductWhenS3IsntEmpty() throws Exception {
+  public void testCreateDatasetWhenS3IsntEmpty() throws Exception {
     // given
     final InputStream firstInputStream =
-        IOUtils.toInputStream("first product contents", StandardCharsets.UTF_8);
+        IOUtils.toInputStream("first file contents", StandardCharsets.UTF_8);
     final long firstFileSize = (long) firstInputStream.available();
     final String fileName = "test_file_name.txt";
     final MultiValueMap<String, Object> firstBody = new LinkedMultiValueMap<>();
@@ -164,11 +164,11 @@ public class StoreITests {
             return fileName;
           }
         });
-    final URI firstLocation = restTemplate.postForLocation("/mis/product/", firstBody);
+    final URI firstLocation = restTemplate.postForLocation("/dataset/", firstBody);
 
-    // and store another product
+    // and create another dataset
     final InputStream inputStream =
-        IOUtils.toInputStream("another product contents", StandardCharsets.UTF_8);
+        IOUtils.toInputStream("another file contents", StandardCharsets.UTF_8);
     final long fileSize = (long) inputStream.available();
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
     body.add(
@@ -188,7 +188,7 @@ public class StoreITests {
 
     // when
     final ResponseEntity<Resource> response =
-        restTemplate.postForEntity("/mis/product/", body, Resource.class);
+        restTemplate.postForEntity("/dataset/", body, Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -198,7 +198,7 @@ public class StoreITests {
   }
 
   @Test
-  public void testRetrieveProduct() throws Exception {
+  public void testRetrieveFile() throws Exception {
     // given
     final Charset encoding = StandardCharsets.UTF_8;
     final String contents =
@@ -223,38 +223,37 @@ public class StoreITests {
           }
         });
 
-    final URI location = restTemplate.postForLocation("/mis/product/", body);
+    final URI location = restTemplate.postForLocation("/dataset/", body);
 
     // when
     final ResponseEntity<Resource> response = restTemplate.getForEntity(location, Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
-    final Resource getProductResponseResource = response.getBody();
-    assertThat(getProductResponseResource.getFilename(), is(fileName));
-    assertThat(getProductResponseResource.contentLength(), is(fileSize));
-    assertThat(getProductResponseResource.isReadable(), is(true));
-    final HttpHeaders getProductResponseHeaders = response.getHeaders();
+    final Resource retrievedFile = response.getBody();
+    assertThat(retrievedFile.getFilename(), is(fileName));
+    assertThat(retrievedFile.contentLength(), is(fileSize));
+    assertThat(retrievedFile.isReadable(), is(true));
+    final HttpHeaders responseHeaders = response.getHeaders();
     assertThat(
-        getProductResponseHeaders.getContentDisposition().toString(),
+        responseHeaders.getContentDisposition().toString(),
         is(String.format("attachment; filename=\"%s\"", fileName)));
-    assertThat(getProductResponseHeaders.getContentType(), is(MediaType.valueOf(mediaType)));
-    assertThat(
-        IOUtils.toString(getProductResponseResource.getInputStream(), encoding), is(contents));
+    assertThat(responseHeaders.getContentType(), is(MediaType.valueOf(mediaType)));
+    assertThat(IOUtils.toString(retrievedFile.getInputStream(), encoding), is(contents));
   }
 
   /**
-   * @see #testRetrieveProductWhenS3IsEmpty()
-   * @see RetrieveProductTests#testS3KeyDoesNotExist()
+   * @see #testRetrieveFileWhenS3IsEmpty()
+   * @see RetrieveFileTests#testS3KeyDoesNotExist()
    */
   @Test
-  public void testRetrieveProductIdNotFound() throws Exception {
+  public void testRetrieveFileNotFound() throws Exception {
     // given
     final InputStream inputStream =
         IOUtils.toInputStream(
             "All the color had been leached from Winterfell until only grey and white remained",
             StandardCharsets.UTF_8);
-    final long fileSize = (long) inputStream.available();
+    final long fileSize = inputStream.available();
     final MultiValueMap<String, Object> multipartBodyBuilder = new LinkedMultiValueMap<>();
     multipartBodyBuilder.add(
         "file",
@@ -271,10 +270,10 @@ public class StoreITests {
           }
         });
 
-    restTemplate.postForEntity("/mis/product/", multipartBodyBuilder, Resource.class);
+    restTemplate.postForEntity("/dataset/", multipartBodyBuilder, Resource.class);
 
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
-    uriBuilder.setPath(uriBuilder.getPath() + "/" + PRODUCT_ID);
+    uriBuilder.setPath(uriBuilder.getPath() + "/" + DATASET_ID);
 
     // verify
     assertThat(
@@ -283,13 +282,13 @@ public class StoreITests {
   }
 
   /**
-   * @see #testRetrieveProductIdNotFound()
-   * @see RetrieveProductTests#testS3KeyDoesNotExist()
+   * @see #testRetrieveFileNotFound()
+   * @see RetrieveFileTests#testS3KeyDoesNotExist()
    */
   @Test
-  public void testRetrieveProductWhenS3IsEmpty() throws Exception {
+  public void testRetrieveFileWhenS3IsEmpty() throws Exception {
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
-    uriBuilder.setPath(uriBuilder.getPath() + "/" + PRODUCT_ID);
+    uriBuilder.setPath(uriBuilder.getPath() + "/" + DATASET_ID);
     assertThat(
         restTemplate.getForEntity(uriBuilder.build(), Resource.class).getStatusCode(),
         is(HttpStatus.NOT_FOUND));
