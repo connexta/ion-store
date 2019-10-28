@@ -6,8 +6,10 @@
  */
 package com.connexta.store;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.ignoreStubs;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -23,6 +25,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
+import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -34,6 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -158,14 +162,31 @@ public class AddMetadataTests {
         .andExpect(status().is(expectedStatus.value()));
   }
 
+  /** TODO Improve how the file in the index request is verified. */
   @Test
   public void testAddMetadata() throws Exception {
     final String datasetId = "341d6c1ce5e0403a99fe86edaed66eea";
+    final String partName = "file";
+    final String cst =
+        "{\"ext.extracted.text\" : \"All the color had been leached from Winterfell until only grey and white remained\"}";
+    final String contentType = "application/json";
 
     indexMockRestServiceServer
         .expect(requestTo(endpointUrlIndex + datasetId))
         .andExpect(method(HttpMethod.PUT))
         .andExpect(header(IndexClient.ACCEPT_VERSION_HEADER_NAME, indexApiVersion))
+        .andExpect(
+            content()
+                .string(
+                    allOf(
+                        StringContains.containsString(
+                            String.format("%s: %s", HttpHeaders.CONTENT_DISPOSITION, "form-data")),
+                        StringContains.containsString(String.format("%s=\"%s\"", "name", partName)),
+                        StringContains.containsString(
+                            String.format("%s: %s", HttpHeaders.CONTENT_TYPE, contentType)),
+                        StringContains.containsString(
+                            String.format("%s: %d", HttpHeaders.CONTENT_LENGTH, cst.length())),
+                        StringContains.containsString(cst))))
         .andRespond(withSuccess());
 
     mockMvc
@@ -173,12 +194,10 @@ public class AddMetadataTests {
             multipart("/mis/product/" + datasetId + "/" + StoreController.SUPPORTED_METADATA_TYPE)
                 .file(
                     new MockMultipartFile(
-                        "file",
+                        partName,
                         "this originalFilename is ignored",
-                        "application/json",
-                        IOUtils.toInputStream(
-                            "{\"ext.extracted.text\" : \"All the color had been leached from Winterfell until only grey and white remained\"}",
-                            StandardCharsets.UTF_8)))
+                        contentType,
+                        IOUtils.toInputStream(cst, StandardCharsets.UTF_8)))
                 .header(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
