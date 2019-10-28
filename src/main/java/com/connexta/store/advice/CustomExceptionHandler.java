@@ -31,6 +31,19 @@ public class CustomExceptionHandler {
       final ConstraintViolationException e, final WebRequest request) {
     final HttpStatus status = HttpStatus.BAD_REQUEST;
     log.warn("Request is invalid. Returning {}.", status, e);
+    return getErrorResponse(request, status);
+  }
+
+  @ExceptionHandler(UnsupportedOperationException.class)
+  public final ResponseEntity<Object> handleUnsupportedOperationException(
+      final UnsupportedOperationException e, final WebRequest request) {
+    final HttpStatus status = HttpStatus.NOT_IMPLEMENTED;
+    log.warn("Request is not supported. Returning {}.", status, e);
+    return getErrorResponse(request, status);
+  }
+
+  private ResponseEntity<Object> getErrorResponse(
+      @NotNull final WebRequest request, @NotNull final HttpStatus status) {
     final Map<String, Object> errorAttributes =
         detailedErrorAttributes.getErrorAttributes(request, false);
     errorAttributes.put("status", status.value());

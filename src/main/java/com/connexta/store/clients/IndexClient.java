@@ -6,6 +6,7 @@
  */
 package com.connexta.store.clients;
 
+import com.connexta.store.controllers.StoreController;
 import com.connexta.store.exceptions.IndexMetadataException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -24,6 +25,8 @@ import org.springframework.web.client.RestTemplate;
 
 @AllArgsConstructor
 public class IndexClient {
+
+  public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
 
   @NotNull private final RestTemplate restTemplate;
   @NotBlank private final String indexEndpoint;
@@ -47,11 +50,11 @@ public class IndexClient {
 
           @Override
           public String getFilename() {
-            return "cst.json";
+            return StoreController.SUPPORTED_METADATA_TYPE + ".json";
           }
         });
     final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set("Accept-Version", indexApiVersion);
+    httpHeaders.set(ACCEPT_VERSION_HEADER_NAME, indexApiVersion);
 
     try {
       restTemplate.put(indexEndpoint + productId, new HttpEntity<>(body, httpHeaders));

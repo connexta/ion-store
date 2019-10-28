@@ -50,6 +50,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StoreController implements StoreApi {
 
   public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
+  public static final String SUPPORTED_METADATA_TYPE = "cst";
 
   @NotNull private final StoreService storeService;
 
@@ -64,12 +65,10 @@ public class StoreController implements StoreApi {
       final String acceptVersion, @Valid final MultipartFile file) {
     final String expectedAcceptVersion = storeApiVersion;
     if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
-      log.warn(
-          "Expected Accept-Version to be \"{}\" but was \"{}\". Only \"{}\" is currently supported.",
-          expectedAcceptVersion,
-          acceptVersion,
-          expectedAcceptVersion);
-      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+      throw new UnsupportedOperationException(
+          String.format(
+              "%s was \"%s\", but only \"%s\" is currently supported.",
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
     }
 
     final Long fileSize = file.getSize();
@@ -106,16 +105,23 @@ public class StoreController implements StoreApi {
     return ResponseEntity.created(location).build();
   }
 
-  /** TODO Add tests for this endpoint. */
   @Override
   public ResponseEntity<Void> addMetadata(
       final String acceptVersion,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId,
       @Pattern(regexp = "^[0-9a-zA-Z\\-]+$") @Size(min = 1, max = 32) final String metadataType,
       @Valid final MultipartFile file) {
-    // TODO validate params
+    final String expectedAcceptVersion = storeApiVersion;
+    if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
+      throw new UnsupportedOperationException(
+          String.format(
+              "%s was \"%s\", but only \"%s\" is currently supported.",
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
+    }
 
-    if (!StringUtils.equals(metadataType, "cst")) {
+    // TODO Validate other params.
+
+    if (!StringUtils.equals(metadataType, SUPPORTED_METADATA_TYPE)) {
       throw new UnsupportedMetadataException(
           HttpStatus.NOT_IMPLEMENTED,
           String.format("Metadata type %s is not yet supported", metadataType));
@@ -129,7 +135,10 @@ public class StoreController implements StoreApi {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       throw new IndexMetadataException(
-          String.format("Unable to read file for PUT CST request for id=%s", productId), e);
+          String.format(
+              "Unable to read file for addMetadata request for metadataType=%s, id=%s",
+              metadataType, productId),
+          e);
     }
     storeService.indexProduct(inputStream, fileSize, productId);
     return ok().build();
