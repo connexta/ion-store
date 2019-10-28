@@ -84,7 +84,9 @@ public class AddMetadataTests {
   public void testMissingFile() throws Exception {
     mockMvc
         .perform(
-            multipart("/mis/product/341d6c1ce5e0403a99fe86edaed66eea/cst")
+            multipart(
+                    "/mis/product/341d6c1ce5e0403a99fe86edaed66eea/"
+                        + StoreController.SUPPORTED_METADATA_TYPE)
                 .header(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -100,7 +102,9 @@ public class AddMetadataTests {
   public void testBadAcceptVersion() throws Exception {
     mockMvc
         .perform(
-            multipart("/mis/product/341d6c1ce5e0403a99fe86edaed66eea/cst")
+            multipart(
+                    "/mis/product/341d6c1ce5e0403a99fe86edaed66eea/"
+                        + StoreController.SUPPORTED_METADATA_TYPE)
                 .file(
                     new MockMultipartFile(
                         "file",
@@ -166,7 +170,7 @@ public class AddMetadataTests {
 
     mockMvc
         .perform(
-            multipart("/mis/product/" + datasetId + "/cst")
+            multipart("/mis/product/" + datasetId + "/" + StoreController.SUPPORTED_METADATA_TYPE)
                 .file(
                     new MockMultipartFile(
                         "file",

@@ -50,6 +50,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StoreController implements StoreApi {
 
   public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
+  public static final String SUPPORTED_METADATA_TYPE = "cst";
 
   @NotNull private final StoreService storeService;
 
@@ -120,7 +121,7 @@ public class StoreController implements StoreApi {
 
     // TODO Validate other params.
 
-    if (!StringUtils.equals(metadataType, "cst")) {
+    if (!StringUtils.equals(metadataType, SUPPORTED_METADATA_TYPE)) {
       throw new UnsupportedMetadataException(
           HttpStatus.NOT_IMPLEMENTED,
           String.format("Metadata type %s is not yet supported", metadataType));
@@ -134,7 +135,10 @@ public class StoreController implements StoreApi {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       throw new IndexMetadataException(
-          String.format("Unable to read file for PUT CST request for id=%s", productId), e);
+          String.format(
+              "Unable to read file for addMetadata request for metadataType=$s, id=%s",
+              metadataType, productId),
+          e);
     }
     storeService.indexProduct(inputStream, fileSize, productId);
     return ok().build();

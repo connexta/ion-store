@@ -6,6 +6,7 @@
  */
 package com.connexta.store.clients;
 
+import com.connexta.store.controllers.StoreController;
 import com.connexta.store.exceptions.IndexMetadataException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -49,7 +50,7 @@ public class IndexClient {
 
           @Override
           public String getFilename() {
-            return "cst.json";
+            return StoreController.SUPPORTED_METADATA_TYPE + ".json";
           }
         });
     final HttpHeaders httpHeaders = new HttpHeaders();
