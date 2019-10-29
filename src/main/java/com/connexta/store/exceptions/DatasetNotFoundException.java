@@ -8,9 +8,9 @@ package com.connexta.store.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class UnsupportedMetadataException extends CreateProductException {
+public class DatasetNotFoundException extends RetrieveException {
 
-  public UnsupportedMetadataException(HttpStatus status, String reason) {
-    super(status, reason);
+  public DatasetNotFoundException(String key) {
+    super(HttpStatus.NOT_FOUND, String.format("Key %s does not exist", key));
   }
 }

@@ -23,8 +23,8 @@ import org.springframework.util.MultiValueMap;
 public class CustomTestRestTemplate extends TestRestTemplate {
 
   public CustomTestRestTemplate(ApplicationContext applicationContext) {
-    // The LocalHostUriTemplateHandler will expand a path like "/mis/product" in to a URL like
-    // "https://localhost:8080/mis/product
+    // The LocalHostUriTemplateHandler will expand a path like "/dataset" in to a URL like
+    // "https://localhost:8080/dataset
     getRestTemplate()
         .setUriTemplateHandler(
             new LocalHostUriTemplateHandler(applicationContext.getEnvironment()));

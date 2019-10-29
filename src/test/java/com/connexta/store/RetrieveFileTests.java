@@ -31,9 +31,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class RetrieveProductTests {
+public class RetrieveFileTests {
 
-  private static final String PRODUCT_ID = "341d6c1ce5e0403a99fe86edaed66eea";
+  private static final String DATASET_ID = "341d6c1ce5e0403a99fe86edaed66eea";
 
   @MockBean private AmazonS3 mockAmazonS3;
 
@@ -53,32 +53,29 @@ public class RetrieveProductTests {
 
   @Test
   public void testBadRequest() throws Exception {
-    mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/    "))
-        .andExpect(status().isBadRequest());
+    mockMvc.perform(MockMvcRequestBuilders.get("/dataset/    ")).andExpect(status().isBadRequest());
   }
 
   @Test
   public void testS3BucketDoesNotExist() throws Exception {
-    final String key = PRODUCT_ID;
+    final String key = DATASET_ID;
     when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(false);
     assertErrorResponse();
   }
 
   /**
-   * @see StoreITests#testRetrieveProductIdNotFound()
-   * @see StoreITests#testRetrieveProductWhenS3IsEmpty()
+   * @see StoreITests#testRetrieveFileNotFound()
+   * @see StoreITests#testRetrieveFileWhenS3IsEmpty()
    */
   @Test
   public void testS3KeyDoesNotExist() throws Exception {
-    final String key = PRODUCT_ID;
+    final String key = DATASET_ID;
     when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
     when(mockAmazonS3.doesObjectExist(s3Bucket, key)).thenReturn(false);
 
     mockMvc
         .perform(
-            MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID)
-                .header("Accept-Version", "'0.1.0"))
+            MockMvcRequestBuilders.get("/dataset/" + DATASET_ID).header("Accept-Version", "'0.1.0"))
         .andExpect(status().isNotFound());
   }
 
@@ -103,7 +100,7 @@ public class RetrieveProductTests {
 
   private void assertErrorResponse() throws Exception {
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/mis/product/" + PRODUCT_ID))
+        .perform(MockMvcRequestBuilders.get("/dataset/" + DATASET_ID))
         .andExpect(status().isInternalServerError());
   }
 }
