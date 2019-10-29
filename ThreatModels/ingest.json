@@ -2,7 +2,7 @@
   "summary": {
     "title": "Ingest",
     "owner": "Connexta",
-    "description": "Show the possible threats to the store service while performing ingest"
+    "description": "Show the possible threats to the store service while performing ingest.\n\nDocker and TLS"
   },
   "detail": {
     "contributors": [],
@@ -28,9 +28,10 @@
               "id": "a8e7e07c-8c6f-4ce4-89b0-2a28f27215da",
               "z": 1,
               "hasOpenThreats": false,
+              "outOfScope": true,
               "attrs": {
                 ".element-shape": {
-                  "class": "element-shape hasNoOpenThreats isInScope"
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
                 },
                 "text": {
                   "text": "S3 Staging"
@@ -80,9 +81,10 @@
               "id": "fe1de0c2-34bc-441a-8b94-bb56968530d6",
               "z": 3,
               "hasOpenThreats": false,
+              "outOfScope": true,
               "attrs": {
                 ".element-shape": {
-                  "class": "element-shape hasNoOpenThreats isInScope"
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
                 },
                 "text": {
                   "text": "Harvestor"
@@ -252,17 +254,17 @@
               "type": "tm.Boundary",
               "smooth": true,
               "source": {
-                "x": 888,
-                "y": 240
+                "x": 738,
+                "y": 178
               },
               "target": {
-                "x": 361,
-                "y": 569
+                "x": 330,
+                "y": 57
               },
               "vertices": [
                 {
-                  "x": 430,
-                  "y": 268
+                  "x": 427,
+                  "y": 247
                 }
               ],
               "id": "334c5c8c-c1b8-4def-844a-92596449d5ac",
@@ -450,7 +452,7 @@
                   "position": 0.5,
                   "attrs": {
                     "text": {
-                      "text": "IRM",
+                      "text": "Staged File and\nMetacard",
                       "font-weight": "400",
                       "font-size": "small"
                     }
