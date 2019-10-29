@@ -12,7 +12,7 @@ buildscript {
         lombokVersion = "1.18.10"
         springBootVersion = "2.2.0.RELEASE"
         springfoxSwaggerVersion = "2.9.2"
-        storeApiVersion = "0.2.0"
+        storeApiVersion = "0.3.0"
     }
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
