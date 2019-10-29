@@ -8,17 +8,17 @@ package com.connexta.store.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class RetrieveFileException extends DetailedResponseStatusException {
+public class RetrieveException extends DetailedResponseStatusException {
 
-  protected RetrieveFileException(HttpStatus status, String reason) {
+  protected RetrieveException(HttpStatus status, String reason) {
     super(status, reason);
   }
 
-  public RetrieveFileException(String reason, Throwable cause) {
+  public RetrieveException(String reason, Throwable cause) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, reason, cause);
   }
 
-  public RetrieveFileException(String reason) {
+  public RetrieveException(String reason) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, reason);
   }
 }

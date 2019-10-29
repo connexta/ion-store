@@ -9,7 +9,7 @@ package com.connexta.store.service.api;
 import com.connexta.store.adaptors.RetrieveResponse;
 import com.connexta.store.exceptions.CreateDatasetException;
 import com.connexta.store.exceptions.IndexMetadataException;
-import com.connexta.store.exceptions.RetrieveFileException;
+import com.connexta.store.exceptions.RetrieveException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,7 +37,7 @@ public interface StoreService {
   @NotNull
   RetrieveResponse retrieveFile(
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
-      throws RetrieveFileException;
+      throws RetrieveException;
 
   void indexDataset(
       @NotNull final InputStream cstInputStream,

@@ -11,7 +11,7 @@ import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexDatasetClient;
 import com.connexta.store.exceptions.CreateDatasetException;
 import com.connexta.store.exceptions.IndexMetadataException;
-import com.connexta.store.exceptions.RetrieveFileException;
+import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
@@ -56,7 +56,7 @@ public class StoreServiceImpl implements StoreService {
   @Override
   public @NotNull RetrieveResponse retrieveFile(
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
-      throws RetrieveFileException {
+      throws RetrieveException {
     return storageAdaptor.retrieve(datasetId);
   }
 

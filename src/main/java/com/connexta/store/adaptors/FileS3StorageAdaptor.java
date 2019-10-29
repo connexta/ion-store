@@ -16,7 +16,7 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.store.exceptions.CreateDatasetException;
 import com.connexta.store.exceptions.DatasetNotFoundException;
-import com.connexta.store.exceptions.RetrieveFileException;
+import com.connexta.store.exceptions.RetrieveException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -28,7 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 
 @Slf4j
-public class S3StorageAdaptor implements StorageAdaptor {
+public class FileS3StorageAdaptor implements StorageAdaptor {
 
   private static final String FILE_NAME_METADATA_KEY = "Filename";
 
@@ -36,7 +36,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   private final AmazonS3 amazonS3;
   private final TransferManager transferManager;
 
-  public S3StorageAdaptor(@NotNull final AmazonS3 amazonS3, @NotBlank final String bucket) {
+  public FileS3StorageAdaptor(@NotNull final AmazonS3 amazonS3, @NotBlank final String bucket) {
     this.amazonS3 = amazonS3;
     this.transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
     this.bucket = bucket;
@@ -84,8 +84,8 @@ public class S3StorageAdaptor implements StorageAdaptor {
    */
   @Override
   @NotNull
-  public RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveFileException {
-    log.info("Retrieving item in bucket \"{}\" with key \"{}\"", bucket, key);
+  public RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException {
+    log.info("Retrieving file in bucket \"{}\" with key \"{}\"", bucket, key);
 
     S3Object s3Object;
     InputStream inputStream = null;
@@ -95,7 +95,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       final String fileName =
           s3Object.getObjectMetadata().getUserMetaDataOf(FILE_NAME_METADATA_KEY);
       if (StringUtils.isEmpty(fileName)) {
-        throw new RetrieveFileException(
+        throw new RetrieveException(
             String.format(
                 "Expected S3 object to have a non-null metadata value for %s",
                 FILE_NAME_METADATA_KEY));
@@ -117,11 +117,11 @@ public class S3StorageAdaptor implements StorageAdaptor {
   }
 
   @NotNull
-  private S3Object getS3Object(final String key) throws RetrieveFileException {
+  private S3Object getS3Object(@NotBlank final String key) throws RetrieveException {
     final S3Object s3Object;
     try {
       if (!amazonS3.doesBucketExistV2(bucket)) {
-        throw new RetrieveFileException(String.format("Bucket %s does not exist", bucket));
+        throw new RetrieveException(String.format("Bucket %s does not exist", bucket));
       }
 
       if (!amazonS3.doesObjectExist(bucket, key)) {
@@ -130,12 +130,12 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
       s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
     } catch (final SdkClientException e) {
-      throw new RetrieveFileException(
+      throw new RetrieveException(
           String.format("Unable to retrieve item with key %s: %s", key, e.getMessage()), e);
     }
 
     if (null == s3Object) {
-      throw new RetrieveFileException(
+      throw new RetrieveException(
           String.format(
               "Unable to retrieve item with key %s: constraints were specified but not met", key));
     }

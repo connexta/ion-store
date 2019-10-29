@@ -11,7 +11,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.connexta.store.adaptors.S3StorageAdaptor;
+import com.connexta.store.adaptors.FileS3StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptor;
 import java.io.File;
 import java.io.IOException;
@@ -43,9 +43,9 @@ public class S3StorageConfiguration {
   }
 
   @Bean
-  public StorageAdaptor s3StorageAdaptor(
+  public StorageAdaptor storageAdaptor(
       @NotNull final AmazonS3 amazonS3, @Value("${s3.bucket}") @NotBlank final String bucket) {
-    return new S3StorageAdaptor(amazonS3, bucket);
+    return new FileS3StorageAdaptor(amazonS3, bucket);
   }
 
   @Bean

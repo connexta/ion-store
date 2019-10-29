@@ -8,7 +8,7 @@ package com.connexta.store.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class DatasetNotFoundException extends RetrieveFileException {
+public class DatasetNotFoundException extends RetrieveException {
 
   public DatasetNotFoundException(String key) {
     super(HttpStatus.NOT_FOUND, String.format("Key %s does not exist", key));

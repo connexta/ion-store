@@ -7,7 +7,7 @@
 package com.connexta.store.adaptors;
 
 import com.connexta.store.exceptions.CreateDatasetException;
-import com.connexta.store.exceptions.RetrieveFileException;
+import com.connexta.store.exceptions.RetrieveException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -38,5 +38,5 @@ public interface StorageAdaptor {
    * @throws CreateDatasetException
    */
   @NotNull
-  RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveFileException;
+  RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException;
 }
