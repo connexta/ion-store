@@ -6,21 +6,16 @@
  */
 package com.connexta.store.clients;
 
-import com.connexta.store.controllers.StoreController;
-import com.connexta.store.exceptions.IndexMetadataException;
-import java.io.InputStream;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import com.connexta.search.rest.models.IndexRequest;
+import com.connexta.store.exceptions.IndexDatasetException;
+import java.net.URI;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @AllArgsConstructor
@@ -34,33 +29,18 @@ public class IndexDatasetClientImpl implements IndexDatasetClient {
 
   @Override
   public void indexDataset(
-      @NotNull final InputStream irmInputStream,
-      @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
-      throws IndexMetadataException {
-    // TODO Use IndexApi classes to create request
-    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add(
-        "file",
-        new InputStreamResource(irmInputStream) {
-
-          @Override
-          public long contentLength() {
-            return fileSize;
-          }
-
-          @Override
-          public String getFilename() {
-            return StoreController.SUPPORTED_METADATA_TYPE + ".xml";
-          }
-        });
-    final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set(ACCEPT_VERSION_HEADER_NAME, indexApiVersion);
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId,
+      @NotNull final URI irmUri)
+      throws IndexDatasetException {
+    final HttpHeaders headers = new HttpHeaders();
+    headers.set(ACCEPT_VERSION_HEADER_NAME, indexApiVersion);
 
     try {
-      restTemplate.put(indexEndpoint + datasetId, new HttpEntity<>(body, httpHeaders));
+      restTemplate.put(
+          indexEndpoint + datasetId,
+          new HttpEntity<>(new IndexRequest().irmLocation(irmUri), headers));
     } catch (Exception e) {
-      throw new IndexMetadataException(
+      throw new IndexDatasetException(
           String.format("Error indexing datasetId=%s: %s", datasetId, e.getMessage()), e);
     }
   }

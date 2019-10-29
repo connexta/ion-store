@@ -4,7 +4,7 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.store;
+package com.connexta.store.controllers;
 
 import static com.connexta.store.controllers.StoreController.RETRIEVE_FILE_URL_TEMPLATE;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,6 +19,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.connexta.store.StoreITests;
 import javax.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -30,9 +31,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+/**
+ * TODO Use {@link org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest} or {@link
+ * org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest} instead.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-public class RetrieveFileTests {
+public class StoreControllerRetrieveFileComponentTest {
 
   private static final String DATASET_ID = "341d6c1ce5e0403a99fe86edaed66eea";
 
@@ -40,8 +45,8 @@ public class RetrieveFileTests {
 
   @Inject private MockMvc mockMvc;
 
-  @Value("${s3.bucket}")
-  private String s3Bucket;
+  @Value("${s3.bucket.file}")
+  private String fileBucket;
 
   @AfterEach
   public void after() {
@@ -62,7 +67,7 @@ public class RetrieveFileTests {
   @Test
   public void testS3BucketDoesNotExist() throws Exception {
     final String key = DATASET_ID;
-    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(false);
+    when(mockAmazonS3.doesBucketExistV2(fileBucket)).thenReturn(false);
     assertErrorResponse();
   }
 
@@ -73,8 +78,8 @@ public class RetrieveFileTests {
   @Test
   public void testS3KeyDoesNotExist() throws Exception {
     final String key = DATASET_ID;
-    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
-    when(mockAmazonS3.doesObjectExist(s3Bucket, key)).thenReturn(false);
+    when(mockAmazonS3.doesBucketExistV2(fileBucket)).thenReturn(true);
+    when(mockAmazonS3.doesObjectExist(fileBucket, key)).thenReturn(false);
 
     mockMvc
         .perform(get(RETRIEVE_FILE_URL_TEMPLATE, key).header("Accept-Version", "'0.1.0"))
@@ -84,7 +89,7 @@ public class RetrieveFileTests {
   /** @see AmazonS3#getObject(GetObjectRequest) */
   @Test
   public void testS3ConstraintsWerentMet() throws Exception {
-    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
+    when(mockAmazonS3.doesBucketExistV2(fileBucket)).thenReturn(true);
     when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(true);
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenReturn(null);
     assertErrorResponse();
@@ -94,7 +99,7 @@ public class RetrieveFileTests {
   @ValueSource(classes = {SdkClientException.class, AmazonServiceException.class})
   public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
       throws Exception {
-    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
+    when(mockAmazonS3.doesBucketExistV2(fileBucket)).thenReturn(true);
     when(mockAmazonS3.doesObjectExist(anyString(), anyString())).thenReturn(true);
     when(mockAmazonS3.getObject(any(GetObjectRequest.class))).thenThrow(throwableType);
     assertErrorResponse();

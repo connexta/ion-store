@@ -13,7 +13,7 @@ import lombok.Data;
 import org.springframework.http.MediaType;
 
 @Data
-public class RetrieveResponse {
+public class FileRetrieveResponse {
 
   @NotNull private final MediaType mediaType;
   @NotNull private final InputStream inputStream;

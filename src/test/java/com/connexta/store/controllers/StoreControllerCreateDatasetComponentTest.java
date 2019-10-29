@@ -4,7 +4,7 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.store;
+package com.connexta.store.controllers;
 
 import static com.connexta.store.controllers.StoreController.CREATE_DATASET_URL_TEMPLATE;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,7 +18,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.connexta.store.controllers.StoreController;
 import java.nio.charset.StandardCharsets;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
@@ -34,9 +33,13 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
+/**
+ * TODO Use {@link org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest} or {@link
+ * org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest} instead.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-public class CreateDatasetTests {
+public class StoreControllerCreateDatasetComponentTest {
 
   @MockBean private AmazonS3 mockAmazonS3;
 
@@ -45,8 +48,8 @@ public class CreateDatasetTests {
   @Value("${endpoints.store.version}")
   private String storeApiVersion;
 
-  @Value("${s3.bucket}")
-  private String s3Bucket;
+  @Value("${s3.bucket.file}")
+  private String fileBucket;
 
   @AfterEach
   public void after() {
@@ -90,7 +93,7 @@ public class CreateDatasetTests {
 
   @Test
   public void testS3BucketDoesNotExist() throws Exception {
-    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(false);
+    when(mockAmazonS3.doesBucketExistV2(fileBucket)).thenReturn(false);
     assertErrorResponse();
   }
 
@@ -99,7 +102,7 @@ public class CreateDatasetTests {
       classes = {SdkClientException.class, AmazonServiceException.class, RuntimeException.class})
   public void testS3ThrowableTypes(final Class<? extends Throwable> throwableType)
       throws Exception {
-    when(mockAmazonS3.doesBucketExistV2(s3Bucket)).thenReturn(true);
+    when(mockAmazonS3.doesBucketExistV2(fileBucket)).thenReturn(true);
     when(mockAmazonS3.putObject(any(PutObjectRequest.class))).thenThrow(throwableType);
     assertErrorResponse();
   }

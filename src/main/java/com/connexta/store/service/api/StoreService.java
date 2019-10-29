@@ -6,13 +6,12 @@
  */
 package com.connexta.store.service.api;
 
-import com.connexta.store.adaptors.RetrieveResponse;
-import com.connexta.store.exceptions.CreateDatasetException;
-import com.connexta.store.exceptions.IndexMetadataException;
+import com.connexta.store.adaptors.FileRetrieveResponse;
+import com.connexta.store.exceptions.IndexDatasetException;
 import com.connexta.store.exceptions.RetrieveException;
+import com.connexta.store.exceptions.StoreException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -28,20 +27,26 @@ public interface StoreService {
       @NotBlank final String mediaType,
       @NotBlank final String fileName,
       @NotNull final InputStream fileInputStream)
-      throws CreateDatasetException, URISyntaxException;
+      throws StoreException;
 
   /**
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
-   * RetrieveResponse}.
+   * FileRetrieveResponse}.
    */
   @NotNull
-  RetrieveResponse retrieveFile(
+  FileRetrieveResponse retrieveFile(
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws RetrieveException;
 
-  void addMetadata(
+  /** The caller is responsible for closing the returned {@link java.io.InputStream}. */
+  @NotNull
+  InputStream retrieveIrm(
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
+      throws RetrieveException;
+
+  void addIrm(
       @NotNull final InputStream irmInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
-      throws IndexMetadataException;
+      throws IndexDatasetException;
 }

@@ -7,7 +7,7 @@
 /* Build Script */
 buildscript {
     ext {
-        indexApiVersion = "0.3.0"
+        indexApiVersion = "0.4.0"
         junitJupiterVersion = "5.5.2"
         lombokVersion = "1.18.10"
         springBootVersion = "2.2.1.RELEASE"
@@ -40,8 +40,8 @@ repositories {
 dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    compileOnly "com.connexta.search:index-api-rest-spring-stubs:${indexApiVersion}"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
+    implementation "com.connexta.search:index-api-rest-spring-stubs:${indexApiVersion}"
     implementation "com.connexta.store:store-api-rest-spring-stubs:${storeApiVersion}"
     implementation "io.springfox:springfox-swagger2:${springfoxSwaggerVersion}"
     implementation "io.springfox:springfox-swagger-ui:${springfoxSwaggerVersion}"
@@ -49,13 +49,13 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
     implementation "org.springframework.data:spring-data-solr:4.1.1.RELEASE"
+    testCompile "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
     testCompile "org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}"
     testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
-    testCompile "org.testcontainers:junit-jupiter:1.12.3"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
-    testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}") {
+    testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}") {
         exclude group: "junit", module: "junit" // excludes JUnit 4
     }
+    testCompile "org.testcontainers:junit-jupiter:1.12.3"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
 }
 

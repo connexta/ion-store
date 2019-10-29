@@ -15,7 +15,7 @@ services:
       - MINIO_SECRET_KEY=MINIOEXAMPLESECRETKEY
     networks:
       - cdr
-    command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
+    command: -c "mkdir /data/ingest-quarantine && mkdir /data/irm && /usr/bin/minio server /data"
 secrets:
   # Directories are relative to the master compose file
   s3_secret:

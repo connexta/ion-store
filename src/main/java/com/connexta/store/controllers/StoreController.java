@@ -8,9 +8,7 @@ package com.connexta.store.controllers;
 
 import static org.springframework.http.ResponseEntity.ok;
 
-import com.connexta.store.adaptors.RetrieveResponse;
-import com.connexta.store.exceptions.CreateDatasetException;
-import com.connexta.store.exceptions.IndexMetadataException;
+import com.connexta.store.adaptors.FileRetrieveResponse;
 import com.connexta.store.rest.models.ErrorMessage;
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
@@ -21,7 +19,6 @@ import io.swagger.annotations.ApiResponses;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotBlank;
@@ -30,11 +27,12 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.solr.common.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,9 +50,11 @@ public class StoreController implements StoreApi {
   public static final String CREATE_DATASET_URL_TEMPLATE = "/dataset";
   public static final String ADD_METADATA_URL_TEMPLATE = "/dataset/{datasetId}/{metadataType}";
   public static final String RETRIEVE_FILE_URL_TEMPLATE = "/dataset/{datasetId}";
+  public static final String RETRIEVE_IRM_URL_TEMPLATE = "/dataset/{datasetId}/irm";
+  public static final MediaType IRM_MEDIA_TYPE = new MediaType("application", "dni-tdf+xml");
+  public static final String IRM_MEDIA_TYPE_VALUE = "application/dni-tdf+xml";
 
   @NotNull private final StoreService storeService;
-
   @NotBlank private final String storeApiVersion;
 
   /**
@@ -79,12 +79,6 @@ public class StoreController implements StoreApi {
     final URI location;
     try (final InputStream inputStream = file.getInputStream()) {
       location = storeService.createDataset(file.getSize(), mediaType, fileName, inputStream);
-    } catch (URISyntaxException e) {
-      throw new CreateDatasetException(
-          String.format(
-              "Unable to complete createDataset request with mediaType=%s and fileName=%s",
-              mediaType, fileName),
-          e);
     } catch (IOException e) {
       throw new ValidationException(
           String.format(
@@ -122,13 +116,14 @@ public class StoreController implements StoreApi {
 
     // TODO Verify InputStream is closed in tests
     try (final InputStream inputStream = file.getInputStream()) {
-      storeService.addMetadata(inputStream, fileSize, datasetId);
+      storeService.addIrm(inputStream, fileSize, datasetId);
     } catch (IOException e) {
-      throw new IndexMetadataException(
+      throw new ValidationException(
           String.format(
-              "Unable to read file for addMetadata request for metadataType=%s, id=%s",
-              metadataType, datasetId),
-          e);
+              String.format(
+                  "Unable to read file for addMetadata request for metadataType=%s, id=%s",
+                  metadataType, datasetId),
+              e));
     }
 
     return ok().build();
@@ -162,7 +157,7 @@ public class StoreController implements StoreApi {
       })
   @RequestMapping(
       value = RETRIEVE_FILE_URL_TEMPLATE,
-      produces = {"application/octet-stream", "application/json"},
+      produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_JSON_VALUE},
       method = RequestMethod.GET)
   public ResponseEntity<Resource> retrieveFile(
       @Pattern(regexp = "^[0-9a-zA-Z]+$")
@@ -172,17 +167,17 @@ public class StoreController implements StoreApi {
           final String datasetId) {
     InputStream inputStream = null;
     try {
-      final RetrieveResponse retrieveResponse = storeService.retrieveFile(datasetId);
+      final FileRetrieveResponse fileRetrieveResponse = storeService.retrieveFile(datasetId);
       log.info("Successfully retrieved file for datasetId={}", datasetId);
 
       final HttpHeaders httpHeaders = new HttpHeaders();
       httpHeaders.setContentDisposition(
           ContentDisposition.builder("attachment")
-              .filename(retrieveResponse.getFileName())
+              .filename(fileRetrieveResponse.getFileName())
               .build());
-      inputStream = retrieveResponse.getInputStream();
+      inputStream = fileRetrieveResponse.getInputStream();
       return ResponseEntity.ok()
-          .contentType(retrieveResponse.getMediaType())
+          .contentType(fileRetrieveResponse.getMediaType())
           .headers(httpHeaders)
           .body(new InputStreamResource(inputStream));
     } catch (Throwable t) {
@@ -190,7 +185,69 @@ public class StoreController implements StoreApi {
         try {
           inputStream.close();
         } catch (IOException e) {
-          log.warn("Unable to close InputStream when file for datasetId={}", datasetId, e);
+          log.warn(
+              "Unable to close InputStream when retrieving file for datasetId={}", datasetId, e);
+        }
+      }
+      throw t;
+    }
+  }
+
+  @ApiOperation(
+      value = "Get a IRM for a dataset.",
+      nickname = "retrieveIrm",
+      response = Resource.class,
+      tags = {"store"})
+  @ApiResponses(
+      value = {
+        @ApiResponse(code = 200, message = "Get IRM", response = Resource.class),
+        @ApiResponse(
+            code = 401,
+            message = "The client could not be authenticated. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 400,
+            message =
+                "The client message could not be understood by the server due to invalid format or syntax. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 403,
+            message = "The client does not have permission. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 501,
+            message = "The requested API version is not supported and therefore not implemented. ",
+            response = ErrorMessage.class)
+      })
+  @RequestMapping(
+      value = RETRIEVE_IRM_URL_TEMPLATE,
+      produces = {IRM_MEDIA_TYPE_VALUE, MediaType.APPLICATION_JSON_VALUE},
+      method = RequestMethod.GET)
+  public ResponseEntity<Resource> retrieveIrm(
+      @Pattern(regexp = "^[0-9a-zA-Z]+$")
+          @Size(min = 32, max = 32)
+          @ApiParam(value = "The ID of the dataset. ", required = true)
+          @PathVariable("datasetId")
+          final String datasetId) {
+    InputStream inputStream = null;
+    try {
+      inputStream = storeService.retrieveIrm(datasetId);
+      log.info("Successfully retrieved irm for datasetId={}", datasetId);
+
+      final HttpHeaders httpHeaders = new HttpHeaders();
+      httpHeaders.setContentDisposition(
+          ContentDisposition.builder("attachment").filename("irm-" + datasetId + ".xml").build());
+      return ResponseEntity.ok()
+          .contentType(IRM_MEDIA_TYPE)
+          .headers(httpHeaders)
+          .body(new InputStreamResource(inputStream));
+    } catch (Throwable t) {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          log.warn(
+              "Unable to close InputStream when retrieving irm for datasetId={}", datasetId, e);
         }
       }
       throw t;
