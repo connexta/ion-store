@@ -6,6 +6,7 @@
  */
 package com.connexta.store.controllers;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.ResponseEntity.ok;
 
 import com.connexta.store.adaptors.RetrieveResponse;
@@ -48,6 +49,8 @@ public class StoreController implements StoreApi {
 
   public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
   public static final String SUPPORTED_METADATA_TYPE = "irm";
+  private static final long GIGABYTE = 1 << 30;
+  public static final long MAX_FILE_BYTES = 10 * GIGABYTE;
 
   @NotNull private final StoreService storeService;
 
@@ -69,19 +72,30 @@ public class StoreController implements StoreApi {
     }
 
     final Long fileSize = file.getSize();
-    // TODO validate that fileSize is (0 GB, 10 GB]
+    if (fileSize > MAX_FILE_BYTES) {
+      throw new CreateDatasetException(
+          BAD_REQUEST,
+          String.format(
+              "File size is %d bytes. File size cannot be greater than %d bytes",
+              fileSize, MAX_FILE_BYTES));
+    }
 
     final String mediaType = file.getContentType();
-    // TODO verify that mediaType is not blank and is a valid Content Type
+    if (mediaType == null) {
+      throw new CreateDatasetException(BAD_REQUEST, "Media type is missing");
+    }
 
     final String fileName = file.getOriginalFilename();
-    // TODO verify that fileName is not blank
+    if (StringUtils.isEmpty(fileName)) {
+      throw new CreateDatasetException(BAD_REQUEST, "Filename is missing");
+    }
 
     final InputStream inputStream;
     try {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       throw new CreateDatasetException(
+          BAD_REQUEST,
           String.format(
               "Unable to read file for createDataset request with mediaType=%s and fileName=%s",
               mediaType, fileName),

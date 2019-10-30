@@ -6,8 +6,15 @@
  */
 package com.connexta.store;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.ignoreStubs;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -18,11 +25,12 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.connexta.store.controllers.StoreController;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -30,15 +38,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CreateDatasetTests {
 
   @MockBean private AmazonS3 mockAmazonS3;
+
+  @Inject private StoreController storeController;
 
   @Inject private MockMvc mockMvc;
 
@@ -89,9 +102,40 @@ public class CreateDatasetTests {
   }
 
   @Test
-  @Disabled("TODO")
-  public void testCantReadAttachment() {
-    // TODO verify 400
+  void testCantReadAttachment() throws IOException {
+    MultipartFile file = spy(newValidMultipartFile());
+    doThrow(new IOException("Cannot read attachment")).when(file).getInputStream();
+    assertBadRequest(file);
+    verify(file).getInputStream();
+  }
+
+  @Test
+  void testFileTooLarge() {
+    MultipartFile file = spy(newValidMultipartFile());
+    doReturn((10 * 1L << 30) + 1).when(file).getSize();
+    assertBadRequest(file);
+    verify(file).getSize();
+  }
+
+  @Test
+  void testNoMediaType() {
+    MultipartFile file = spy(newValidMultipartFile());
+    doReturn(null).when(file).getContentType();
+    assertBadRequest(file);
+    verify(file).getContentType();
+  }
+
+  @Test
+  void testNoFilename() {
+    MultipartFile file = spy(newValidMultipartFile());
+    doReturn(null).when(file).getOriginalFilename();
+    assertBadRequest(file);
+    verify(file).getOriginalFilename();
+  }
+
+  @NotNull
+  private MockMultipartFile newValidMultipartFile() {
+    return new MockMultipartFile("name", "fname", "mediatype", "x".getBytes());
   }
 
   @Test
@@ -126,5 +170,15 @@ public class CreateDatasetTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isInternalServerError());
+  }
+
+  private void assertBadRequest(MultipartFile file) {
+    try {
+      storeController.createDataset(storeApiVersion, file);
+    } catch (ResponseStatusException e) {
+      assertThat("Expected BAD REQUEST", e.getStatus(), is(HttpStatus.BAD_REQUEST));
+      return;
+    }
+    fail("Excepted a ResponseStatusException");
   }
 }
