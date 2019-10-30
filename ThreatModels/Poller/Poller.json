@@ -20,16 +20,17 @@
                 "height": 100
               },
               "position": {
-                "x": 690,
-                "y": 270
+                "x": 620,
+                "y": 275
               },
               "angle": 0,
               "id": "92a8dd91-7a9c-4805-9b5b-34c3d120426e",
               "z": 4,
               "hasOpenThreats": false,
+              "outOfScope": true,
               "attrs": {
                 ".element-shape": {
-                  "class": "element-shape hasNoOpenThreats isInScope"
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
                 },
                 "text": {
                   "text": "Transform"
@@ -46,17 +47,18 @@
                 "height": 100
               },
               "position": {
-                "x": 100,
-                "y": 300
+                "x": 19,
+                "y": 278
               },
               "angle": 0,
               "id": "a6531db7-5feb-4e9f-9a52-e2f5022f98ea",
               "z": 5,
               "hasOpenThreats": false,
               "threats": [],
+              "outOfScope": true,
               "attrs": {
                 ".element-shape": {
-                  "class": "element-shape hasNoOpenThreats isInScope"
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
                 },
                 "text": {
                   "text": "Store"
@@ -137,12 +139,7 @@
               "target": {
                 "id": "b2db2a98-d433-493f-beeb-def668a84a86"
               },
-              "vertices": [
-                {
-                  "x": 430,
-                  "y": 210
-                }
-              ],
+              "vertices": [],
               "id": "b9efd864-a290-48c6-a62c-b52b6e6ba1f9",
               "labels": [
                 {
@@ -181,8 +178,8 @@
               },
               "vertices": [
                 {
-                  "x": 560,
-                  "y": 420
+                  "x": 529,
+                  "y": 376
                 }
               ],
               "id": "e62e75db-2c9d-4c89-bd88-5af827ea6633",
@@ -223,8 +220,8 @@
               },
               "vertices": [
                 {
-                  "x": 580,
-                  "y": 350
+                  "x": 527,
+                  "y": 278
                 }
               ],
               "id": "a027f4bc-7486-4630-8b94-ea2c25b05fc6",
@@ -233,7 +230,7 @@
                   "position": 0.5,
                   "attrs": {
                     "text": {
-                      "text": "job status",
+                      "text": "job status response",
                       "font-weight": "400",
                       "font-size": "small"
                     }
@@ -260,59 +257,7 @@
               "target": {
                 "id": "a6531db7-5feb-4e9f-9a52-e2f5022f98ea"
               },
-              "vertices": [
-                {
-                  "x": 270,
-                  "y": 300
-                },
-                {
-                  "x": 220,
-                  "y": 310
-                }
-              ],
-              "id": "717d6c21-3f04-4ffd-99f8-8be89cdb73ad",
-              "labels": [
-                {
-                  "position": 0.5,
-                  "attrs": {
-                    "text": {
-                      "text": "IRM document",
-                      "font-weight": "400",
-                      "font-size": "small"
-                    }
-                  }
-                }
-              ],
-              "z": 15,
-              "hasOpenThreats": false,
-              "attrs": {
-                ".marker-target": {
-                  "class": "marker-target hasNoOpenThreats isInScope"
-                },
-                ".connection": {
-                  "class": "connection hasNoOpenThreats isInScope"
-                }
-              }
-            },
-            {
-              "type": "tm.Flow",
-              "smooth": true,
-              "source": {
-                "id": "b2db2a98-d433-493f-beeb-def668a84a86"
-              },
-              "target": {
-                "id": "a6531db7-5feb-4e9f-9a52-e2f5022f98ea"
-              },
-              "vertices": [
-                {
-                  "x": 270,
-                  "y": 390
-                },
-                {
-                  "x": 210,
-                  "y": 370
-                }
-              ],
+              "vertices": [],
               "id": "8f65e1aa-9fed-4474-9c6a-4326ae43a1ff",
               "labels": [
                 {
@@ -322,7 +267,7 @@
                   },
                   "attrs": {
                     "text": {
-                      "text": "change dataset state\n(quarantine/final)",
+                      "text": "IRM URL, dataset\npromotoe/quarantine",
                       "font-weight": "400",
                       "font-size": "small"
                     }
@@ -347,45 +292,6 @@
                 },
                 ".connection": {
                   "class": "connection hasOpenThreats isInScope"
-                }
-              }
-            },
-            {
-              "type": "tm.Flow",
-              "smooth": true,
-              "source": {
-                "id": "92a8dd91-7a9c-4805-9b5b-34c3d120426e"
-              },
-              "target": {
-                "id": "b2db2a98-d433-493f-beeb-def668a84a86"
-              },
-              "vertices": [
-                {
-                  "x": 590,
-                  "y": 250
-                }
-              ],
-              "id": "20cc0205-65cd-46ef-819c-56b962458fac",
-              "labels": [
-                {
-                  "position": 0.5,
-                  "attrs": {
-                    "text": {
-                      "text": "IRM document",
-                      "font-weight": "400",
-                      "font-size": "small"
-                    }
-                  }
-                }
-              ],
-              "z": 17,
-              "hasOpenThreats": false,
-              "attrs": {
-                ".marker-target": {
-                  "class": "marker-target hasNoOpenThreats isInScope"
-                },
-                ".connection": {
-                  "class": "connection hasNoOpenThreats isInScope"
                 }
               }
             }
