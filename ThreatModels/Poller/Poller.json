@@ -1,0 +1,308 @@
+{
+  "summary": {
+    "title": "Poller Threat Model",
+    "owner": "Connexta LLC",
+    "description": "Models the threats to the Poller microservice."
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "title": "Threat Model",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 0,
+        "diagramJson": {
+          "cells": [
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 620,
+                "y": 275
+              },
+              "angle": 0,
+              "id": "92a8dd91-7a9c-4805-9b5b-34c3d120426e",
+              "z": 4,
+              "hasOpenThreats": false,
+              "outOfScope": true,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "Transform"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 19,
+                "y": 278
+              },
+              "angle": 0,
+              "id": "a6531db7-5feb-4e9f-9a52-e2f5022f98ea",
+              "z": 5,
+              "hasOpenThreats": false,
+              "threats": [],
+              "outOfScope": true,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "Store"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 310,
+                "y": 50
+              },
+              "angle": 0,
+              "id": "a5454224-459a-4813-b6aa-4454a9704c9c",
+              "z": 7,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Queue grows too large",
+                  "type": "Denial of service",
+                  "description": "This component is stateful. If requests are sent to the Store service faster than the  requests can be pulled from the queue, the queue grows. It could grow to a size where it becomes unavailable due to long response times or the process is killed.",
+                  "mitigation": "Throttle ingest endpoint."
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Transform Status Queue"
+                },
+                ".element-text": {
+                  "class": "element-text hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 340,
+                "y": 270
+              },
+              "angle": 0,
+              "id": "b2db2a98-d433-493f-beeb-def668a84a86",
+              "z": 8,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Poller"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "a5454224-459a-4813-b6aa-4454a9704c9c"
+              },
+              "target": {
+                "id": "b2db2a98-d433-493f-beeb-def668a84a86"
+              },
+              "vertices": [],
+              "id": "b9efd864-a290-48c6-a62c-b52b6e6ba1f9",
+              "labels": [
+                {
+                  "position": {
+                    "distance": 0.5446766302339121,
+                    "offset": 6.071658814214357
+                  },
+                  "attrs": {
+                    "text": {
+                      "text": "job info",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 10,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "b2db2a98-d433-493f-beeb-def668a84a86"
+              },
+              "target": {
+                "id": "92a8dd91-7a9c-4805-9b5b-34c3d120426e"
+              },
+              "vertices": [
+                {
+                  "x": 529,
+                  "y": 376
+                }
+              ],
+              "id": "e62e75db-2c9d-4c89-bd88-5af827ea6633",
+              "labels": [
+                {
+                  "position": {
+                    "distance": 0.5014648512005806,
+                    "offset": -5
+                  },
+                  "attrs": {
+                    "text": {
+                      "text": "delete job status",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 13,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "92a8dd91-7a9c-4805-9b5b-34c3d120426e"
+              },
+              "target": {
+                "id": "b2db2a98-d433-493f-beeb-def668a84a86"
+              },
+              "vertices": [
+                {
+                  "x": 527,
+                  "y": 278
+                }
+              ],
+              "id": "a027f4bc-7486-4630-8b94-ea2c25b05fc6",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "job status response",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 14,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "b2db2a98-d433-493f-beeb-def668a84a86"
+              },
+              "target": {
+                "id": "a6531db7-5feb-4e9f-9a52-e2f5022f98ea"
+              },
+              "vertices": [],
+              "id": "8f65e1aa-9fed-4474-9c6a-4326ae43a1ff",
+              "labels": [
+                {
+                  "position": {
+                    "distance": 0.4569983404137199,
+                    "offset": -3.539723057968864
+                  },
+                  "attrs": {
+                    "text": {
+                      "text": "IRM URL, dataset\npromotoe/quarantine",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 16,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "This component assumes that all requests from the Poller are correct. If the Poller asks this component to make a dataset visible (or quarantine the dataset), the component will comply with the request. If the command to make data visible is in error, then the data that should remain hidden could be made visible.",
+                  "title": "Incorrect request to change dataset state",
+                  "type": "Information disclosure",
+                  "mitigation": "Accepted risk"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            }
+          ]
+        },
+        "size": {
+          "height": 2035.7772216796875,
+          "width": 3013.84375
+        }
+      }
+    ],
+    "reviewer": ""
+  }
+}

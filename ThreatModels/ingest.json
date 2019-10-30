@@ -1,0 +1,482 @@
+{
+  "summary": {
+    "title": "Store Threat Model",
+    "owner": "Connexta",
+    "description": "Show the possible threats to the store service while performing ingest.\n\nThis service runs inside of a Docker container in Docker Swarm. Tranport threats are mitigated by Docker and TLS"
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "title": "Ingest",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 0,
+        "$$hashKey": "object:445",
+        "diagramJson": {
+          "cells": [
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 408,
+                "y": 36
+              },
+              "angle": 0,
+              "id": "a8e7e07c-8c6f-4ce4-89b0-2a28f27215da",
+              "z": 1,
+              "hasOpenThreats": false,
+              "outOfScope": true,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "S3 Staging"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 432,
+                "y": 272
+              },
+              "angle": 0,
+              "id": "e78bb043-65d1-4f29-8631-2529235cd4d5",
+              "z": 2,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Store Service"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Actor",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 113,
+                "y": 280
+              },
+              "angle": 0,
+              "id": "fe1de0c2-34bc-441a-8b94-bb56968530d6",
+              "z": 3,
+              "hasOpenThreats": false,
+              "outOfScope": true,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "Harvestor"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "fe1de0c2-34bc-441a-8b94-bb56968530d6"
+              },
+              "target": {
+                "id": "e78bb043-65d1-4f29-8631-2529235cd4d5"
+              },
+              "vertices": [
+                {
+                  "x": 354,
+                  "y": 283
+                }
+              ],
+              "id": "74bf271d-d634-4881-affb-d85e659cc428",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Ingest Request",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 4,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "e78bb043-65d1-4f29-8631-2529235cd4d5"
+              },
+              "target": {
+                "id": "fe1de0c2-34bc-441a-8b94-bb56968530d6"
+              },
+              "vertices": [
+                {
+                  "x": 351,
+                  "y": 351
+                }
+              ],
+              "id": "e1fa4976-b96f-456e-9982-2498a4f057a7",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Ingest Response",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 5,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "e78bb043-65d1-4f29-8631-2529235cd4d5"
+              },
+              "target": {
+                "id": "a8e7e07c-8c6f-4ce4-89b0-2a28f27215da"
+              },
+              "vertices": [
+                {
+                  "x": 432,
+                  "y": 192
+                }
+              ],
+              "id": "b6683200-0f73-4951-ac40-ece20527832b",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Stage Dataset",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 6,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "a8e7e07c-8c6f-4ce4-89b0-2a28f27215da"
+              },
+              "target": {
+                "id": "e78bb043-65d1-4f29-8631-2529235cd4d5"
+              },
+              "vertices": [
+                {
+                  "x": 542,
+                  "y": 197
+                }
+              ],
+              "id": "b1e993b3-58bc-495f-9fce-b6075092aeea",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "S3 Response",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 7,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Boundary",
+              "smooth": true,
+              "source": {
+                "x": 738,
+                "y": 178
+              },
+              "target": {
+                "x": 330,
+                "y": 57
+              },
+              "vertices": [
+                {
+                  "x": 427,
+                  "y": 247
+                }
+              ],
+              "id": "334c5c8c-c1b8-4def-844a-92596449d5ac",
+              "z": 8,
+              "attrs": {}
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 397,
+                "y": 464
+              },
+              "angle": 0,
+              "id": "7fdd7894-61b1-4890-b2bc-3bdbb8421631",
+              "z": 9,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Status Queue"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "e78bb043-65d1-4f29-8631-2529235cd4d5"
+              },
+              "target": {
+                "id": "7fdd7894-61b1-4890-b2bc-3bdbb8421631"
+              },
+              "vertices": [],
+              "id": "0937806b-6e88-4ff8-93cd-64831e4e063a",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Transform Status URL",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 10,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Actor",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 727,
+                "y": 281
+              },
+              "angle": 0,
+              "id": "a45ba9e3-0059-4fc3-9230-dc30233f5cd5",
+              "z": 11,
+              "hasOpenThreats": false,
+              "outOfScope": true,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "Transformation Service"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "a45ba9e3-0059-4fc3-9230-dc30233f5cd5"
+              },
+              "target": {
+                "id": "e78bb043-65d1-4f29-8631-2529235cd4d5"
+              },
+              "vertices": [
+                {
+                  "x": 628,
+                  "y": 265
+                }
+              ],
+              "id": "9603e8c6-21b4-402f-b947-2c8d24727aab",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Transform Status URL",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 12,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "e78bb043-65d1-4f29-8631-2529235cd4d5"
+              },
+              "target": {
+                "id": "a45ba9e3-0059-4fc3-9230-dc30233f5cd5"
+              },
+              "vertices": [
+                {
+                  "x": 631,
+                  "y": 382
+                }
+              ],
+              "id": "ad195f1d-6c1c-4540-a83e-838e41d7b0fd",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Transform Request",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 13,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "e78bb043-65d1-4f29-8631-2529235cd4d5"
+              },
+              "target": {
+                "id": "a45ba9e3-0059-4fc3-9230-dc30233f5cd5"
+              },
+              "vertices": [],
+              "id": "7a51e56b-03b2-472e-bc3a-ab02f80a21b2",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Staged File and\nMetacard",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 14,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            }
+          ]
+        },
+        "size": {
+          "height": 719,
+          "width": 889
+        }
+      }
+    ]
+  }
+}
