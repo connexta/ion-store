@@ -1,0 +1,447 @@
+{
+  "summary": {
+    "title": "Store Threat Model",
+    "owner": "Connexta",
+    "description": "Describes threats against the Store Service when accepting a promote/quarantine request and sending an Index Request to the Search Service. This service runs inside of a Docker container in Docker Swarm. Transport threats are mitigated by Docker and TLS."
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "title": "Promotion and Quarantine",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 0,
+        "$$hashKey": "object:10",
+        "diagramJson": {
+          "cells": [
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 651,
+                "y": 211
+              },
+              "angle": 0,
+              "id": "3ce36e74-9f5d-4e50-baaf-27c104f1fe7a",
+              "z": 1,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Store Service"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 872,
+                "y": 219
+              },
+              "angle": 0,
+              "id": "8564cb19-3584-4f98-b19d-df035757fe14",
+              "z": 2,
+              "hasOpenThreats": false,
+              "outOfScope": true,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "Search Service"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 658,
+                "y": 16
+              },
+              "angle": 0,
+              "id": "21bdc047-f830-46e1-8aaf-556d81929bd8",
+              "z": 4,
+              "hasOpenThreats": false,
+              "outOfScope": true,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "Poller"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "21bdc047-f830-46e1-8aaf-556d81929bd8"
+              },
+              "target": {
+                "id": "3ce36e74-9f5d-4e50-baaf-27c104f1fe7a"
+              },
+              "vertices": [
+                {
+                  "x": 651,
+                  "y": 161
+                }
+              ],
+              "id": "03e3d000-5b70-4d20-a65c-5329f4b57ed8",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Promote Dataset",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 5,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "21bdc047-f830-46e1-8aaf-556d81929bd8"
+              },
+              "target": {
+                "id": "3ce36e74-9f5d-4e50-baaf-27c104f1fe7a"
+              },
+              "vertices": [
+                {
+                  "x": 763,
+                  "y": 156
+                }
+              ],
+              "id": "89193811-2fe6-41e9-962c-9a9a40128273",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Quarantine Dataset",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 6,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "8564cb19-3584-4f98-b19d-df035757fe14"
+              },
+              "target": {
+                "id": "3ce36e74-9f5d-4e50-baaf-27c104f1fe7a"
+              },
+              "vertices": [
+                {
+                  "x": 811,
+                  "y": 296
+                }
+              ],
+              "id": "4c80791e-1709-4c89-9c36-f3ab55fa8513",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Index Response",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 7,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "3ce36e74-9f5d-4e50-baaf-27c104f1fe7a"
+              },
+              "target": {
+                "id": "8564cb19-3584-4f98-b19d-df035757fe14"
+              },
+              "vertices": [
+                {
+                  "x": 810,
+                  "y": 231
+                }
+              ],
+              "id": "df009104-f184-4b46-a855-1ded5219a974",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Index Request",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 8,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 301,
+                "y": 231
+              },
+              "angle": 0,
+              "id": "ae11e84d-0c53-488c-a5cd-d44c51955a2e",
+              "z": 9,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Staged S3"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "3ce36e74-9f5d-4e50-baaf-27c104f1fe7a"
+              },
+              "target": {
+                "id": "ae11e84d-0c53-488c-a5cd-d44c51955a2e"
+              },
+              "vertices": [
+                {
+                  "x": 576,
+                  "y": 208
+                }
+              ],
+              "id": "535c1bb5-ded2-44d2-a91b-cabb189a45b5",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Delete Metacard/File",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 10,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "ae11e84d-0c53-488c-a5cd-d44c51955a2e"
+              },
+              "target": {
+                "id": "3ce36e74-9f5d-4e50-baaf-27c104f1fe7a"
+              },
+              "vertices": [],
+              "id": "a21b56b8-1f77-42e4-8983-1ab7683124ea",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "Retrieve Staged File",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 11,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 429,
+                "y": 383
+              },
+              "angle": 0,
+              "id": "4dc53ba7-888d-4bbd-852c-ac83e41c4af4",
+              "z": 12,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "S3"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "3ce36e74-9f5d-4e50-baaf-27c104f1fe7a"
+              },
+              "target": {
+                "id": "4dc53ba7-888d-4bbd-852c-ac83e41c4af4"
+              },
+              "vertices": [
+                {
+                  "x": 623,
+                  "y": 334
+                }
+              ],
+              "id": "4f473d97-fa58-4a5e-8ac1-4ecb50999bc8",
+              "labels": [
+                {
+                  "position": 0.5,
+                  "attrs": {
+                    "text": {
+                      "text": "File and IRM",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 13,
+              "hasOpenThreats": false,
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasNoOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Boundary",
+              "smooth": true,
+              "source": {
+                "x": 528,
+                "y": 135
+              },
+              "target": {
+                "x": 743,
+                "y": 402
+              },
+              "vertices": [
+                {
+                  "x": 629,
+                  "y": 277
+                }
+              ],
+              "id": "4c38060d-7821-4a1a-9f55-031e436daa18",
+              "z": 14,
+              "attrs": {}
+            }
+          ]
+        },
+        "size": {
+          "height": 1105,
+          "width": 1043
+        }
+      }
+    ]
+  }
+}

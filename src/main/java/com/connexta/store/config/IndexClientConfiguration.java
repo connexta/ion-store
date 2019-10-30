@@ -6,7 +6,8 @@
  */
 package com.connexta.store.config;
 
-import com.connexta.store.clients.IndexClient;
+import com.connexta.store.clients.IndexDatasetClient;
+import com.connexta.store.clients.IndexDatasetClientImpl;
 import javax.inject.Named;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -27,10 +28,10 @@ public class IndexClientConfiguration {
   }
 
   @Bean
-  public IndexClient indexClient(
+  public IndexDatasetClient indexDatasetClient(
       @NotNull @Named("nonBufferingRestTemplate") final RestTemplate restTemplate,
       @NotBlank @Value("${endpointUrl.index}") final String indexEndpoint,
       @NotBlank @Value("${endpoints.index.version}") final String indexApiVersion) {
-    return new IndexClient(restTemplate, indexEndpoint, indexApiVersion);
+    return new IndexDatasetClientImpl(restTemplate, indexEndpoint, indexApiVersion);
   }
 }

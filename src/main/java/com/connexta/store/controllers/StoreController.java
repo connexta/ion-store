@@ -9,9 +9,8 @@ package com.connexta.store.controllers;
 import static org.springframework.http.ResponseEntity.ok;
 
 import com.connexta.store.adaptors.RetrieveResponse;
-import com.connexta.store.exceptions.CreateProductException;
+import com.connexta.store.exceptions.CreateDatasetException;
 import com.connexta.store.exceptions.IndexMetadataException;
-import com.connexta.store.exceptions.UnsupportedMetadataException;
 import com.connexta.store.rest.models.ErrorMessage;
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
@@ -35,7 +34,6 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,10 +44,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @AllArgsConstructor
 @RestController
-@RequestMapping("/mis")
 public class StoreController implements StoreApi {
 
   public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
+  public static final String SUPPORTED_METADATA_TYPE = "cst";
 
   @NotNull private final StoreService storeService;
 
@@ -60,16 +58,14 @@ public class StoreController implements StoreApi {
    * {@link Exception}s
    */
   @Override
-  public ResponseEntity<Void> storeProduct(
+  public ResponseEntity<Void> createDataset(
       final String acceptVersion, @Valid final MultipartFile file) {
     final String expectedAcceptVersion = storeApiVersion;
     if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
-      log.warn(
-          "Expected Accept-Version to be \"{}\" but was \"{}\". Only \"{}\" is currently supported.",
-          expectedAcceptVersion,
-          acceptVersion,
-          expectedAcceptVersion);
-      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+      throw new UnsupportedOperationException(
+          String.format(
+              "%s was \"%s\", but only \"%s\" is currently supported.",
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
     }
 
     final Long fileSize = file.getSize();
@@ -85,20 +81,20 @@ public class StoreController implements StoreApi {
     try {
       inputStream = file.getInputStream();
     } catch (IOException e) {
-      throw new CreateProductException(
+      throw new CreateDatasetException(
           String.format(
-              "Unable to read file for storeProduct request with a file with mediaType=%s and fileName=%s",
+              "Unable to read file for createDataset request with mediaType=%s and fileName=%s",
               mediaType, fileName),
           e);
     }
 
     final URI location;
     try {
-      location = storeService.createProduct(fileSize, mediaType, fileName, inputStream);
+      location = storeService.createDataset(fileSize, mediaType, fileName, inputStream);
     } catch (URISyntaxException e) {
-      throw new CreateProductException(
+      throw new CreateDatasetException(
           String.format(
-              "Unable to complete storeProduct request for a file with mediaType=%s and fileName=%s",
+              "Unable to complete createDataset request with mediaType=%s and fileName=%s",
               mediaType, fileName),
           e);
     }
@@ -106,18 +102,24 @@ public class StoreController implements StoreApi {
     return ResponseEntity.created(location).build();
   }
 
-  /** TODO Add tests for this endpoint. */
   @Override
   public ResponseEntity<Void> addMetadata(
       final String acceptVersion,
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId,
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId,
       @Pattern(regexp = "^[0-9a-zA-Z\\-]+$") @Size(min = 1, max = 32) final String metadataType,
       @Valid final MultipartFile file) {
-    // TODO validate params
+    final String expectedAcceptVersion = storeApiVersion;
+    if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
+      throw new UnsupportedOperationException(
+          String.format(
+              "%s was \"%s\", but only \"%s\" is currently supported.",
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
+    }
 
-    if (!StringUtils.equals(metadataType, "cst")) {
-      throw new UnsupportedMetadataException(
-          HttpStatus.NOT_IMPLEMENTED,
+    // TODO Validate other params.
+
+    if (!StringUtils.equals(metadataType, SUPPORTED_METADATA_TYPE)) {
+      throw new UnsupportedOperationException(
           String.format("Metadata type %s is not yet supported", metadataType));
     }
 
@@ -129,21 +131,23 @@ public class StoreController implements StoreApi {
       inputStream = file.getInputStream();
     } catch (IOException e) {
       throw new IndexMetadataException(
-          String.format("Unable to read file for PUT CST request for id=%s", productId), e);
+          String.format(
+              "Unable to read file for addMetadata request for metadataType=%s, id=%s",
+              metadataType, datasetId),
+          e);
     }
-    storeService.indexProduct(inputStream, fileSize, productId);
+    storeService.indexDataset(inputStream, fileSize, datasetId);
     return ok().build();
   }
 
   @ApiOperation(
-      value = "Get a Product.",
-      nickname = "retrieveProduct",
-      notes = "Clients send a Product ID to retrieve the Product as a file.",
+      value = "Get a file for a dataset.",
+      nickname = "retrieveFile",
       response = Resource.class,
       tags = {"store"})
   @ApiResponses(
       value = {
-        @ApiResponse(code = 200, message = "Get Product", response = Resource.class),
+        @ApiResponse(code = 200, message = "Get File", response = Resource.class),
         @ApiResponse(
             code = 401,
             message = "The client could not be authenticated. ",
@@ -163,19 +167,19 @@ public class StoreController implements StoreApi {
             response = ErrorMessage.class)
       })
   @RequestMapping(
-      value = "/product/{productId}",
+      value = "/dataset/{datasetId}",
       produces = {"application/octet-stream", "application/json"},
       method = RequestMethod.GET)
-  public ResponseEntity<Resource> retrieveProduct(
+  public ResponseEntity<Resource> retrieveFile(
       @Pattern(regexp = "^[0-9a-zA-Z]+$")
           @Size(min = 32, max = 32)
-          @ApiParam(value = "The ID of the Product. ", required = true)
-          @PathVariable("productId")
-          final String productId) {
+          @ApiParam(value = "The ID of the dataset. ", required = true)
+          @PathVariable("datasetId")
+          final String datasetId) {
     InputStream inputStream = null;
     try {
-      final RetrieveResponse retrieveResponse = storeService.retrieveProduct(productId);
-      log.info("Successfully retrieved id={}", productId);
+      final RetrieveResponse retrieveResponse = storeService.retrieveFile(datasetId);
+      log.info("Successfully retrieved file for datasetId={}", datasetId);
 
       final HttpHeaders httpHeaders = new HttpHeaders();
       httpHeaders.setContentDisposition(
@@ -192,7 +196,7 @@ public class StoreController implements StoreApi {
         try {
           inputStream.close();
         } catch (IOException e) {
-          log.warn("Unable to close InputStream when retrieving key \"{}\".", productId, e);
+          log.warn("Unable to close InputStream when file for datasetId={}", datasetId, e);
         }
       }
       throw t;

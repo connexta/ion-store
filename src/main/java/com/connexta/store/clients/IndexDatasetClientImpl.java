@@ -6,6 +6,7 @@
  */
 package com.connexta.store.clients;
 
+import com.connexta.store.controllers.StoreController;
 import com.connexta.store.exceptions.IndexMetadataException;
 import java.io.InputStream;
 import javax.validation.constraints.Max;
@@ -23,16 +24,19 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @AllArgsConstructor
-public class IndexClient {
+public class IndexDatasetClientImpl implements IndexDatasetClient {
+
+  public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
 
   @NotNull private final RestTemplate restTemplate;
   @NotBlank private final String indexEndpoint;
   @NotBlank private final String indexApiVersion;
 
-  public void index(
+  @Override
+  public void indexDataset(
       @NotNull final InputStream cstInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String productId)
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws IndexMetadataException {
     // TODO Use IndexApi classes to create request
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -47,17 +51,17 @@ public class IndexClient {
 
           @Override
           public String getFilename() {
-            return "cst.json";
+            return StoreController.SUPPORTED_METADATA_TYPE + ".json";
           }
         });
     final HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set("Accept-Version", indexApiVersion);
+    httpHeaders.set(ACCEPT_VERSION_HEADER_NAME, indexApiVersion);
 
     try {
-      restTemplate.put(indexEndpoint + productId, new HttpEntity<>(body, httpHeaders));
+      restTemplate.put(indexEndpoint + datasetId, new HttpEntity<>(body, httpHeaders));
     } catch (Exception e) {
       throw new IndexMetadataException(
-          String.format("Error indexing product with id %s: %s", productId, e.getMessage()), e);
+          String.format("Error indexing datasetId=%s: %s", datasetId, e.getMessage()), e);
     }
   }
 }

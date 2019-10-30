@@ -14,8 +14,8 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
-import com.connexta.store.exceptions.CreateProductException;
-import com.connexta.store.exceptions.ProductNotFoundException;
+import com.connexta.store.exceptions.CreateDatasetException;
+import com.connexta.store.exceptions.DatasetNotFoundException;
 import com.connexta.store.exceptions.RetrieveException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 
 @Slf4j
-public class S3StorageAdaptor implements StorageAdaptor {
+public class FileS3StorageAdaptor implements StorageAdaptor {
 
   private static final String FILE_NAME_METADATA_KEY = "Filename";
 
@@ -36,7 +36,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   private final AmazonS3 amazonS3;
   private final TransferManager transferManager;
 
-  public S3StorageAdaptor(@NotNull final AmazonS3 amazonS3, @NotBlank final String bucket) {
+  public FileS3StorageAdaptor(@NotNull final AmazonS3 amazonS3, @NotBlank final String bucket) {
     this.amazonS3 = amazonS3;
     this.transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
     this.bucket = bucket;
@@ -49,7 +49,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       @NotBlank final String fileName,
       @NotNull final InputStream inputStream,
       @NotBlank final String key)
-      throws CreateProductException {
+      throws CreateDatasetException {
     // TODO check if id already exists
 
     final ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -60,7 +60,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
     log.info("Storing {} in bucket \"{}\" with key \"{}\"", fileName, bucket, key);
 
     if (!amazonS3.doesBucketExistV2(bucket)) {
-      throw new CreateProductException(String.format("Bucket %s does not exist", bucket));
+      throw new CreateDatasetException(String.format("Bucket %s does not exist", bucket));
     }
 
     try {
@@ -69,7 +69,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
       upload.waitForCompletion();
       log.info(String.format("Transfer state: %s", upload.getState()));
     } catch (RuntimeException | InterruptedException e) {
-      throw new CreateProductException(
+      throw new CreateDatasetException(
           String.format(
               "Unable to store \"%s\" in bucket \"%s\" with key \"%s\"", fileName, bucket, key),
           e);
@@ -85,10 +85,10 @@ public class S3StorageAdaptor implements StorageAdaptor {
   @Override
   @NotNull
   public RetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException {
-    log.info("Retrieving product in bucket \"{}\" with key \"{}\"", bucket, key);
+    log.info("Retrieving file in bucket \"{}\" with key \"{}\"", bucket, key);
 
     S3Object s3Object;
-    InputStream productInputStream = null;
+    InputStream inputStream = null;
     try {
       s3Object = getS3Object(key);
 
@@ -100,16 +100,14 @@ public class S3StorageAdaptor implements StorageAdaptor {
                 "Expected S3 object to have a non-null metadata value for %s",
                 FILE_NAME_METADATA_KEY));
       }
-      productInputStream = s3Object.getObjectContent();
+      inputStream = s3Object.getObjectContent();
 
       return new RetrieveResponse(
-          MediaType.valueOf(s3Object.getObjectMetadata().getContentType()),
-          productInputStream,
-          fileName);
+          MediaType.valueOf(s3Object.getObjectMetadata().getContentType()), inputStream, fileName);
     } catch (Throwable t) {
-      if (productInputStream != null) {
+      if (inputStream != null) {
         try {
-          productInputStream.close();
+          inputStream.close();
         } catch (IOException e) {
           log.warn("Unable to close InputStream when retrieving key \"{}\".", key, e);
         }
@@ -119,7 +117,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
   }
 
   @NotNull
-  private S3Object getS3Object(final String key) throws RetrieveException {
+  private S3Object getS3Object(@NotBlank final String key) throws RetrieveException {
     final S3Object s3Object;
     try {
       if (!amazonS3.doesBucketExistV2(bucket)) {
@@ -127,20 +125,19 @@ public class S3StorageAdaptor implements StorageAdaptor {
       }
 
       if (!amazonS3.doesObjectExist(bucket, key)) {
-        throw new ProductNotFoundException(key);
+        throw new DatasetNotFoundException(key);
       }
 
       s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
     } catch (final SdkClientException e) {
       throw new RetrieveException(
-          String.format("Unable to retrieve product with key %s: %s", key, e.getMessage()), e);
+          String.format("Unable to retrieve item with key %s: %s", key, e.getMessage()), e);
     }
 
     if (null == s3Object) {
       throw new RetrieveException(
           String.format(
-              "Unable to retrieve product with key %s: constraints were specified but not met",
-              key));
+              "Unable to retrieve item with key %s: constraints were specified but not met", key));
     }
 
     return s3Object;

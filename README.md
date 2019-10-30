@@ -69,7 +69,7 @@ For more information about spotless checks see
     Example configs/store_config.yml:
     ```yaml
     endpointUrl:
-      retrieve: http://localhost:9041/mis/product/
+      retrieve: http://localhost:9041/dataset/
     ```
 
     The service is capable of storing data in an S3-compatible data store.
