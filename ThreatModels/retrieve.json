@@ -2,7 +2,7 @@
   "summary": {
     "title": "Retrieve Threat Model",
     "owner": "Connexta",
-    "description": "Describes threats to the Store Service during Metadata and File retrieval."
+    "description": "Describes threats to the Store Service during Metadata and File retrieval. This service runs in a Docker container in Docker Swarm. Transport threats are mitigated by Docker and TLS."
   },
   "detail": {
     "contributors": [],

@@ -1,8 +1,8 @@
 {
   "summary": {
-    "title": "Ingest",
+    "title": "Store Threat Model",
     "owner": "Connexta",
-    "description": "Show the possible threats to the store service while performing ingest.\n\nDocker and TLS"
+    "description": "Show the possible threats to the store service while performing ingest.\n\nThis service runs inside of a Docker container in Docker Swarm. Tranport threats are mitigated by Docker and TLS"
   },
   "detail": {
     "contributors": [],

@@ -1,14 +1,14 @@
 {
   "summary": {
-    "title": "Indexing Threat Model",
+    "title": "Store Threat Model",
     "owner": "Connexta",
-    "description": "Describes threats against the Store Service when accepting a promote/quarantine request and sending an Index Request to the Search Service."
+    "description": "Describes threats against the Store Service when accepting a promote/quarantine request and sending an Index Request to the Search Service. This service runs inside of a Docker container in Docker Swarm. Transport threats are mitigated by Docker and TLS."
   },
   "detail": {
     "contributors": [],
     "diagrams": [
       {
-        "title": "Indexing",
+        "title": "Promotion and Quarantine",
         "thumbnail": "./public/content/images/thumbnail.jpg",
         "id": 0,
         "$$hashKey": "object:10",
@@ -384,7 +384,12 @@
               "target": {
                 "id": "4dc53ba7-888d-4bbd-852c-ac83e41c4af4"
               },
-              "vertices": [],
+              "vertices": [
+                {
+                  "x": 623,
+                  "y": 334
+                }
+              ],
               "id": "4f473d97-fa58-4a5e-8ac1-4ecb50999bc8",
               "labels": [
                 {
@@ -413,17 +418,17 @@
               "type": "tm.Boundary",
               "smooth": true,
               "source": {
-                "x": 456,
-                "y": 131
+                "x": 528,
+                "y": 135
               },
               "target": {
-                "x": 724,
-                "y": 457
+                "x": 743,
+                "y": 402
               },
               "vertices": [
                 {
-                  "x": 596,
-                  "y": 297
+                  "x": 629,
+                  "y": 277
                 }
               ],
               "id": "4c38060d-7821-4a1a-9f55-031e436daa18",
