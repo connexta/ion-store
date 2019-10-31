@@ -39,8 +39,8 @@ public interface StoreService {
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws RetrieveException;
 
-  void indexDataset(
-      @NotNull final InputStream cstInputStream,
+  void addMetadata(
+      @NotNull final InputStream irmInputStream,
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws IndexMetadataException;

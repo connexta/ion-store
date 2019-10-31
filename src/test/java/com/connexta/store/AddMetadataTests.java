@@ -167,9 +167,8 @@ public class AddMetadataTests {
   public void testAddMetadata() throws Exception {
     final String datasetId = "341d6c1ce5e0403a99fe86edaed66eea";
     final String partName = "file";
-    final String cst =
-        "{\"ext.extracted.text\" : \"All the color had been leached from Winterfell until only grey and white remained\"}";
-    final String contentType = "application/json";
+    final String irm = "<?xml version=\"1.0\" ?><metadata></metadata>";
+    final String contentType = "application/xml";
 
     indexMockRestServiceServer
         .expect(requestTo(endpointUrlIndex + datasetId))
@@ -185,8 +184,8 @@ public class AddMetadataTests {
                         StringContains.containsString(
                             String.format("%s: %s", HttpHeaders.CONTENT_TYPE, contentType)),
                         StringContains.containsString(
-                            String.format("%s: %d", HttpHeaders.CONTENT_LENGTH, cst.length())),
-                        StringContains.containsString(cst))))
+                            String.format("%s: %d", HttpHeaders.CONTENT_LENGTH, irm.length())),
+                        StringContains.containsString(irm))))
         .andRespond(withSuccess());
 
     mockMvc
@@ -197,7 +196,7 @@ public class AddMetadataTests {
                         partName,
                         "this originalFilename is ignored",
                         contentType,
-                        IOUtils.toInputStream(cst, StandardCharsets.UTF_8)))
+                        IOUtils.toInputStream(irm, StandardCharsets.UTF_8)))
                 .header(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -213,6 +212,6 @@ public class AddMetadataTests {
     return Stream.of(
         Arguments.of("   ", HttpStatus.BAD_REQUEST),
         Arguments.of("some string that doesn't match the regex", HttpStatus.BAD_REQUEST),
-        Arguments.of("somethingOtherThanCst", HttpStatus.NOT_IMPLEMENTED));
+        Arguments.of("somethingOtherThanIrm", HttpStatus.NOT_IMPLEMENTED));
   }
 }
