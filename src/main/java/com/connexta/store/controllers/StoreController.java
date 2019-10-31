@@ -6,7 +6,7 @@
  */
 package com.connexta.store.controllers;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.ResponseEntity.ok;
 
 import com.connexta.store.adaptors.RetrieveResponse;
@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -73,8 +74,7 @@ public class StoreController implements StoreApi {
 
     final Long fileSize = file.getSize();
     if (fileSize > MAX_FILE_BYTES) {
-      throw new CreateDatasetException(
-          BAD_REQUEST,
+      throw new ValidationException(
           String.format(
               "File size is %d bytes. File size cannot be greater than %d bytes",
               fileSize, MAX_FILE_BYTES));
@@ -82,20 +82,19 @@ public class StoreController implements StoreApi {
 
     final String mediaType = file.getContentType();
     if (mediaType == null) {
-      throw new CreateDatasetException(BAD_REQUEST, "Media type is missing");
+      throw new ValidationException("Media type is missing");
     }
 
     final String fileName = file.getOriginalFilename();
-    if (StringUtils.isEmpty(fileName)) {
-      throw new CreateDatasetException(BAD_REQUEST, "Filename is missing");
+    if (isBlank(fileName)) {
+      throw new ValidationException("Filename is missing");
     }
 
     final InputStream inputStream;
     try {
       inputStream = file.getInputStream();
     } catch (IOException e) {
-      throw new CreateDatasetException(
-          BAD_REQUEST,
+      throw new ValidationException(
           String.format(
               "Unable to read file for createDataset request with mediaType=%s and fileName=%s",
               mediaType, fileName),
