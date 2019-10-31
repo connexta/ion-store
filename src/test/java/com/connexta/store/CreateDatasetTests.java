@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -86,12 +85,6 @@ public class CreateDatasetTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isNotImplemented());
-  }
-
-  @Test
-  @Disabled("TODO")
-  public void testCantReadAttachment() {
-    // TODO verify 400
   }
 
   @Test

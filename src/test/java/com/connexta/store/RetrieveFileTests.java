@@ -51,9 +51,13 @@ public class RetrieveFileTests {
   @SuppressWarnings("squid:S2699") // Test case missing assertion
   public void testContextLoads() {}
 
-  @Test
-  public void testBadRequest() throws Exception {
-    mockMvc.perform(MockMvcRequestBuilders.get("/dataset/    ")).andExpect(status().isBadRequest());
+  @ParameterizedTest(name = "400 Bad Request if ID is {0}")
+  @ValueSource(
+      strings = {"    ", "1234567890123456789012345678901234", "+0067360b70e4acfab561fe593ad3f7a"})
+  void testBadIds(String id) throws Exception {
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/dataset/{id}", id))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

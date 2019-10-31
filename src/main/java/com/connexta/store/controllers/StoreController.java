@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -68,20 +69,16 @@ public class StoreController implements StoreApi {
               ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
     }
 
+    new MultipartFileValidator(file).validate();
     final Long fileSize = file.getSize();
-    // TODO validate that fileSize is (0 GB, 10 GB]
-
     final String mediaType = file.getContentType();
-    // TODO verify that mediaType is not blank and is a valid Content Type
-
     final String fileName = file.getOriginalFilename();
-    // TODO verify that fileName is not blank
 
     final InputStream inputStream;
     try {
       inputStream = file.getInputStream();
     } catch (IOException e) {
-      throw new CreateDatasetException(
+      throw new ValidationException(
           String.format(
               "Unable to read file for createDataset request with mediaType=%s and fileName=%s",
               mediaType, fileName),
