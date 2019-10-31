@@ -20,22 +20,18 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
+//TODO: These test can be chagned to test the MultipartFileValidator instead of the controller.
 @SpringBootTest
-@AutoConfigureMockMvc
 public class ControllerInputValidationTests {
 
   @MockBean private AmazonS3 mockAmazonS3;
 
   @Inject private StoreController storeController;
-
-  @Inject private MockMvc mockMvc;
 
   @Value("${endpoints.store.version}")
   private String storeApiVersion;
@@ -60,6 +56,14 @@ public class ControllerInputValidationTests {
   void testNoMediaType() {
     MultipartFile file = spy(newValidMultipartFile());
     doReturn(null).when(file).getContentType();
+    assertBadRequest(file);
+    verify(file).getContentType();
+  }
+
+  @Test
+  void testBlankMediaType() {
+    MultipartFile file = spy(newValidMultipartFile());
+    doReturn("   ").when(file).getContentType();
     assertBadRequest(file);
     verify(file).getContentType();
   }

@@ -6,7 +6,6 @@
  */
 package com.connexta.store.controllers;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.ResponseEntity.ok;
 
 import com.connexta.store.adaptors.RetrieveResponse;
@@ -50,8 +49,6 @@ public class StoreController implements StoreApi {
 
   public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
   public static final String SUPPORTED_METADATA_TYPE = "irm";
-  private static final long GIGABYTE = 1 << 30;
-  public static final long MAX_FILE_BYTES = 10 * GIGABYTE;
 
   @NotNull private final StoreService storeService;
 
@@ -72,23 +69,10 @@ public class StoreController implements StoreApi {
               ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
     }
 
+    new MultipartFileValidator(file).validate();
     final Long fileSize = file.getSize();
-    if (fileSize > MAX_FILE_BYTES) {
-      throw new ValidationException(
-          String.format(
-              "File size is %d bytes. File size cannot be greater than %d bytes",
-              fileSize, MAX_FILE_BYTES));
-    }
-
     final String mediaType = file.getContentType();
-    if (mediaType == null) {
-      throw new ValidationException("Media type is missing");
-    }
-
     final String fileName = file.getOriginalFilename();
-    if (isBlank(fileName)) {
-      throw new ValidationException("Filename is missing");
-    }
 
     final InputStream inputStream;
     try {
