@@ -25,7 +25,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-//TODO: These test can be chagned to test the MultipartFileValidator instead of the controller.
+// TODO: These test can be chagned to test the MultipartFileValidator instead of the controller.
 @SpringBootTest
 public class ControllerInputValidationTests {
 
