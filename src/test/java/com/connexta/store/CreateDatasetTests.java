@@ -6,6 +6,7 @@
  */
 package com.connexta.store;
 
+import static com.connexta.store.controllers.StoreController.CREATE_DATASET_URL_TEMPLATE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.ignoreStubs;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -59,7 +60,7 @@ public class CreateDatasetTests {
   public void testMissingFile() throws Exception {
     mockMvc
         .perform(
-            multipart("/dataset")
+            multipart(CREATE_DATASET_URL_TEMPLATE)
                 .header(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -70,7 +71,7 @@ public class CreateDatasetTests {
   public void testBadAcceptVersion() throws Exception {
     mockMvc
         .perform(
-            multipart("/dataset")
+            multipart(CREATE_DATASET_URL_TEMPLATE)
                 .file(
                     new MockMultipartFile(
                         "file",
@@ -106,7 +107,7 @@ public class CreateDatasetTests {
   private void assertErrorResponse() throws Exception {
     mockMvc
         .perform(
-            multipart("/dataset")
+            multipart(CREATE_DATASET_URL_TEMPLATE)
                 .file(
                     new MockMultipartFile(
                         "file",
