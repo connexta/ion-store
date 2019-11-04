@@ -120,9 +120,9 @@ public class StoreController implements StoreApi {
     final Long fileSize = file.getSize();
     // TODO validate that fileSize is (0 GB, 10 GB]
 
-    final InputStream inputStream;
-    try {
-      inputStream = file.getInputStream();
+    // TODO Verify InputStream is closed in tests
+    try (final InputStream inputStream = file.getInputStream()) {
+      storeService.addMetadata(inputStream, fileSize, datasetId);
     } catch (IOException e) {
       throw new IndexMetadataException(
           String.format(
@@ -130,7 +130,7 @@ public class StoreController implements StoreApi {
               metadataType, datasetId),
           e);
     }
-    storeService.addMetadata(inputStream, fileSize, datasetId);
+
     return ok().build();
   }
 
