@@ -41,6 +41,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "com.connexta.search:index-api-rest-spring-stubs:${indexApiVersion}"
+    implementation 'com.dyngr:polling:1.1.3'
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
     implementation "com.connexta.store:store-api-rest-spring-stubs:${storeApiVersion}"
     implementation "io.springfox:springfox-swagger2:${springfoxSwaggerVersion}"
