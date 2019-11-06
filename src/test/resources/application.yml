@@ -8,5 +8,7 @@ endpoints:
     version: testIndexApiVersion
   store:
     version: testStoreApiVersion
+  transform:
+    version: transformApiVersion
 s3:
   bucket: ingest-quarantine

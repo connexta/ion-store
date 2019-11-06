@@ -8,6 +8,7 @@ package com.connexta.poller.service;
 
 import com.connexta.poller.api.PollingService;
 import com.connexta.poller.api.PollingTask;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,6 @@ public class TransformPollingService implements PollingService {
 
   @Override
   public <T> Future<T> poll(PollingTask<T> pollingTask) {
-    return null;
+    return new CompletableFuture<>();
   }
 }

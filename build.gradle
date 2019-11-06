@@ -13,6 +13,8 @@ buildscript {
         springBootVersion = "2.2.0.RELEASE"
         springfoxSwaggerVersion = "2.9.2"
         storeApiVersion = "0.3.0"
+        //TODO This is a placeholder. This version does not define a status endpoint.
+        transformApiVersion = "0.2.0"
     }
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
@@ -107,7 +109,7 @@ dependencyCheck {
 }
 
 processResources {
-    expand([indexApiVersion: "${indexApiVersion}", storeApiVersion: "${storeApiVersion}"])
+    expand([indexApiVersion: "${indexApiVersion}", storeApiVersion: "${storeApiVersion}", transformApiVersion: "${transformApiVersion}"])
 }
 
 bootJar {

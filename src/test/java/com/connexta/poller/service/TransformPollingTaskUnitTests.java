@@ -13,5 +13,5 @@ import org.junit.jupiter.api.Test;
 class TransformPollingTaskUnitTests {
 
   @Test
-  void process() {}
+  void testProcess() {}
 }
