@@ -9,7 +9,7 @@ package com.connexta.poller.api;
 import com.dyngr.core.AttemptMaker;
 import com.dyngr.core.AttemptResult;
 
-/** This interface is the boundary between the polling library and client code. */
+/** This interface is a boundary between the polling library and client code. */
 public interface PollingTask<T> extends AttemptMaker<T> {
 
   // AttemptResult is a class from the open source polling library
