@@ -6,6 +6,7 @@
  */
 package com.connexta.store;
 
+import static com.connexta.store.controllers.StoreController.CREATE_DATASET_URL_TEMPLATE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -134,7 +135,7 @@ public class StoreITests {
 
     // when
     final ResponseEntity<Resource> response =
-        restTemplate.postForEntity("/dataset/", body, Resource.class);
+        restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, body, Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -164,12 +165,12 @@ public class StoreITests {
             return fileName;
           }
         });
-    final URI firstLocation = restTemplate.postForLocation("/dataset/", firstBody);
+    final URI firstLocation = restTemplate.postForLocation(CREATE_DATASET_URL_TEMPLATE, firstBody);
 
     // and create another dataset
     final InputStream inputStream =
         IOUtils.toInputStream("another file contents", StandardCharsets.UTF_8);
-    final long fileSize = (long) inputStream.available();
+    final long fileSize = inputStream.available();
     final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
     body.add(
         "file",
@@ -188,7 +189,7 @@ public class StoreITests {
 
     // when
     final ResponseEntity<Resource> response =
-        restTemplate.postForEntity("/dataset/", body, Resource.class);
+        restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, body, Resource.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -223,7 +224,7 @@ public class StoreITests {
           }
         });
 
-    final URI location = restTemplate.postForLocation("/dataset/", body);
+    final URI location = restTemplate.postForLocation(CREATE_DATASET_URL_TEMPLATE, body);
 
     // when
     final ResponseEntity<Resource> response = restTemplate.getForEntity(location, Resource.class);
@@ -270,7 +271,7 @@ public class StoreITests {
           }
         });
 
-    restTemplate.postForEntity("/dataset/", multipartBodyBuilder, Resource.class);
+    restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, multipartBodyBuilder, Resource.class);
 
     final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
     uriBuilder.setPath(uriBuilder.getPath() + "/" + DATASET_ID);

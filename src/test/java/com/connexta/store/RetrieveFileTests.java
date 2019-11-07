@@ -6,11 +6,13 @@
  */
 package com.connexta.store;
 
+import static com.connexta.store.controllers.StoreController.RETRIEVE_FILE_URL_TEMPLATE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.ignoreStubs;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.amazonaws.AmazonServiceException;
@@ -27,7 +29,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -54,10 +55,8 @@ public class RetrieveFileTests {
   @ParameterizedTest(name = "400 Bad Request if ID is {0}")
   @ValueSource(
       strings = {"    ", "1234567890123456789012345678901234", "+0067360b70e4acfab561fe593ad3f7a"})
-  void testBadIds(String id) throws Exception {
-    mockMvc
-        .perform(MockMvcRequestBuilders.get("/dataset/{id}", id))
-        .andExpect(status().isBadRequest());
+  void testBadIds(final String datasetId) throws Exception {
+    mockMvc.perform(get(RETRIEVE_FILE_URL_TEMPLATE, datasetId)).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -78,8 +77,7 @@ public class RetrieveFileTests {
     when(mockAmazonS3.doesObjectExist(s3Bucket, key)).thenReturn(false);
 
     mockMvc
-        .perform(
-            MockMvcRequestBuilders.get("/dataset/" + DATASET_ID).header("Accept-Version", "'0.1.0"))
+        .perform(get(RETRIEVE_FILE_URL_TEMPLATE, key).header("Accept-Version", "'0.1.0"))
         .andExpect(status().isNotFound());
   }
 
@@ -104,7 +102,7 @@ public class RetrieveFileTests {
 
   private void assertErrorResponse() throws Exception {
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/dataset/" + DATASET_ID))
+        .perform(get(RETRIEVE_FILE_URL_TEMPLATE, DATASET_ID))
         .andExpect(status().isInternalServerError());
   }
 }

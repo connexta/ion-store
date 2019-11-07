@@ -49,6 +49,9 @@ public class StoreController implements StoreApi {
 
   public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
   public static final String SUPPORTED_METADATA_TYPE = "irm";
+  public static final String CREATE_DATASET_URL_TEMPLATE = "/dataset";
+  public static final String ADD_METADATA_URL_TEMPLATE = "/dataset/{datasetId}/{metadataType}";
+  public static final String RETRIEVE_FILE_URL_TEMPLATE = "/dataset/{datasetId}";
 
   @NotNull private final StoreService storeService;
 
@@ -69,29 +72,23 @@ public class StoreController implements StoreApi {
               ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
     }
 
-    new MultipartFileValidator(file).validate();
-    final Long fileSize = file.getSize();
+    MultipartFileValidator.validate(file);
     final String mediaType = file.getContentType();
     final String fileName = file.getOriginalFilename();
 
-    final InputStream inputStream;
-    try {
-      inputStream = file.getInputStream();
-    } catch (IOException e) {
-      throw new ValidationException(
-          String.format(
-              "Unable to read file for createDataset request with mediaType=%s and fileName=%s",
-              mediaType, fileName),
-          e);
-    }
-
     final URI location;
-    try {
-      location = storeService.createDataset(fileSize, mediaType, fileName, inputStream);
+    try (final InputStream inputStream = file.getInputStream()) {
+      location = storeService.createDataset(file.getSize(), mediaType, fileName, inputStream);
     } catch (URISyntaxException e) {
       throw new CreateDatasetException(
           String.format(
               "Unable to complete createDataset request with mediaType=%s and fileName=%s",
+              mediaType, fileName),
+          e);
+    } catch (IOException e) {
+      throw new ValidationException(
+          String.format(
+              "Unable to read file for createDataset request with mediaType=%s and fileName=%s",
               mediaType, fileName),
           e);
     }
@@ -123,9 +120,9 @@ public class StoreController implements StoreApi {
     final Long fileSize = file.getSize();
     // TODO validate that fileSize is (0 GB, 10 GB]
 
-    final InputStream inputStream;
-    try {
-      inputStream = file.getInputStream();
+    // TODO Verify InputStream is closed in tests
+    try (final InputStream inputStream = file.getInputStream()) {
+      storeService.addMetadata(inputStream, fileSize, datasetId);
     } catch (IOException e) {
       throw new IndexMetadataException(
           String.format(
@@ -133,7 +130,7 @@ public class StoreController implements StoreApi {
               metadataType, datasetId),
           e);
     }
-    storeService.addMetadata(inputStream, fileSize, datasetId);
+
     return ok().build();
   }
 
@@ -164,7 +161,7 @@ public class StoreController implements StoreApi {
             response = ErrorMessage.class)
       })
   @RequestMapping(
-      value = "/dataset/{datasetId}",
+      value = RETRIEVE_FILE_URL_TEMPLATE,
       produces = {"application/octet-stream", "application/json"},
       method = RequestMethod.GET)
   public ResponseEntity<Resource> retrieveFile(
