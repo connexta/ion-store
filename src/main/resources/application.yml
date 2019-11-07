@@ -26,3 +26,5 @@ endpoints:
     version: ${indexApiVersion}
   store:
     version: ${storeApiVersion}
+  transform:
+    version: ${transformApiVersion}
