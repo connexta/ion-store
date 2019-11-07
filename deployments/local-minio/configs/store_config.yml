@@ -1,2 +1,2 @@
 endpointUrl:
-  retrieve: http://localhost:9041
+  retrieve: http://store:8080
