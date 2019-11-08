@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.connexta.store.rest.spring.StoreApi;
+import com.connexta.store.service.api.IngestService;
 import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
 import javax.validation.ValidationException;
@@ -32,11 +33,13 @@ public class StoreControllerTest {
 
   @Mock private StoreService mockStoreService;
 
+  @Mock private IngestService mockIngestService;
+
   private StoreApi storeApi;
 
   @BeforeEach
   public void beforeEach() {
-    storeApi = new StoreController(mockStoreService, STORE_API_VERSION);
+    storeApi = new StoreController(mockIngestService, mockStoreService, STORE_API_VERSION);
   }
 
   @ParameterizedTest

@@ -6,7 +6,7 @@
  */
 package com.connexta.store.clients;
 
-import com.connexta.ingest.exceptions.StoreException;
+import com.connexta.store.exceptions.StoreException;
 import java.io.InputStream;
 import java.net.URI;
 import javax.validation.constraints.Max;
@@ -64,7 +64,7 @@ public class StoreClient {
     try {
       location = restTemplate.postForLocation(storeEndpoint, request);
     } catch (Exception e) {
-      throw new StoreException(e);
+      throw new StoreException("Store exception", e);
     }
     return location;
   }
