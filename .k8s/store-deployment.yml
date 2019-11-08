@@ -1,0 +1,77 @@
+# Store Service deployment that creates a container for the app. It also mounts volumes for configuration and secret
+# files. The configuration files are created via manually added ConfigMaps called "store-config-map" and "s3-config-map".
+# The secret files are created manually with secret resources called "s3-secret-secret" and "s3-access-secret".
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-deployment
+  labels:
+    app: store
+spec:
+  selector:
+    matchLabels:
+      app: store
+  template:
+    metadata:
+      labels:
+        app: store
+    spec:
+      containers:
+        - name: store
+          image: ${DOCKER_REGISTRY:-docker.io}/cnxta/ion-store
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: store-configs
+              mountPath: /etc/config
+            - name: s3-configs
+              mountPath: /etc/config
+            - name: s3-access
+              mountPath: /etc/secrets
+            - name: s3-secret
+              mountPath: /etc/secrets
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 10051
+              protocol: TCP
+          args:
+            - "--s3.secret.file=/etc/secrets/s3_secret.sec"
+            - "--s3.access.file=/etc/secrets/s3_access.sec"
+            - "--spring.config.additional-location=file:/etc/config/s3_config.yml"
+            - "--spring.config.additional-location=file:/etc/config/store_config.yml"
+      volumes:
+        - name: store-configs
+          configMap:
+            name: store-config-map
+            defaultMode: 0755
+        - name: s3-configs
+          configMap:
+            name: s3-config-map
+            defaultMode: 0755
+        - name: s3-secret
+          secret:
+            name: s3-secret-secret
+            defaultMode: 0755
+        - name: s3-access
+          secret:
+            name: s3-access-secret
+            defaultMode: 0755
+
+# Exposes the store container as a service that can be reached externally
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ion-store
+  labels:
+    app: store
+spec:
+  type: NodePort
+  selector:
+    app: store
+  ports:
+    - port: 8080
+      nodePort: 30941
+    - port: 10051
+      nodePort: 31941
