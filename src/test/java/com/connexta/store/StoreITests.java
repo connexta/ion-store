@@ -6,26 +6,34 @@
  */
 package com.connexta.store;
 
+import static com.connexta.store.controllers.StoreController.ADD_METADATA_URL_TEMPLATE;
 import static com.connexta.store.controllers.StoreController.CREATE_DATASET_URL_TEMPLATE;
+import static com.connexta.store.controllers.StoreController.SUPPORTED_METADATA_TYPE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.connexta.store.config.AmazonS3Configuration;
 import com.connexta.store.controllers.StoreController;
+import com.connexta.store.controllers.StoreControllerRetrieveFileComponentTest;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -44,12 +52,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
@@ -77,9 +89,29 @@ public class StoreITests {
                   .forPath("/minio/health/ready")
                   .withStartupTimeout(Duration.ofSeconds(30)));
 
+  @TestConfiguration
+  static class Config {
+
+    @Bean
+    public AmazonS3Configuration testAmazonS3Configuration() {
+      return new AmazonS3Configuration(
+          String.format(
+              "http://%s:%d",
+              minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
+          "local",
+          MINIO_ADMIN_ACCESS_KEY,
+          MINIO_ADMIN_SECRET_KEY);
+    }
+  }
+
   private TestRestTemplate restTemplate;
+  private MockRestServiceServer indexMockRestServiceServer;
   @Autowired private ApplicationContext applicationContext;
   @Inject private AmazonS3 amazonS3;
+
+  @Inject
+  @Named("nonBufferingRestTemplate")
+  private RestTemplate nonBufferingRestTemplate;
 
   @Value("${endpoints.store.version}")
   private String storeApiVersion;
@@ -87,23 +119,42 @@ public class StoreITests {
   @Value("${endpointUrl.retrieve}")
   private String endpointUrlRetrieve;
 
-  @Value("${s3.bucket}")
-  private String s3Bucket;
+  @Value("${endpointUrl.index}")
+  private String endpointUrlIndex;
+
+  @Value("${endpoints.index.version}")
+  private String indexApiVersion;
+
+  @Value("${s3.bucket.file}")
+  private String fileBucket;
+
+  @Value("${s3.bucket.irm}")
+  private String irmBucket;
 
   @BeforeEach
-  public void before() {
+  public void beforeEach() {
     restTemplate =
         new CustomTestRestTemplate(applicationContext)
             .addRequestHeader(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion);
-    amazonS3.createBucket(s3Bucket);
+
+    indexMockRestServiceServer = MockRestServiceServer.createServer(nonBufferingRestTemplate);
+
+    amazonS3.createBucket(fileBucket);
+    amazonS3.createBucket(irmBucket);
   }
 
   @AfterEach
-  public void after() {
-    amazonS3.listObjects(s3Bucket).getObjectSummaries().stream()
+  public void afterEach() {
+    indexMockRestServiceServer.verify();
+
+    amazonS3.listObjects(fileBucket).getObjectSummaries().stream()
         .map(S3ObjectSummary::getKey)
-        .forEach(key -> amazonS3.deleteObject(s3Bucket, key));
-    amazonS3.deleteBucket(s3Bucket);
+        .forEach(key -> amazonS3.deleteObject(fileBucket, key));
+    amazonS3.deleteBucket(fileBucket);
+    amazonS3.listObjects(irmBucket).getObjectSummaries().stream()
+        .map(S3ObjectSummary::getKey)
+        .forEach(key -> amazonS3.deleteObject(irmBucket, key));
+    amazonS3.deleteBucket(irmBucket);
   }
 
   @Test
@@ -134,8 +185,8 @@ public class StoreITests {
         });
 
     // when
-    final ResponseEntity<Resource> response =
-        restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, body, Resource.class);
+    final ResponseEntity response =
+        restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, body, Void.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -188,8 +239,8 @@ public class StoreITests {
         });
 
     // when
-    final ResponseEntity<Resource> response =
-        restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, body, Resource.class);
+    final ResponseEntity response =
+        restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, body, Void.class);
 
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
@@ -245,7 +296,7 @@ public class StoreITests {
 
   /**
    * @see #testRetrieveFileWhenS3IsEmpty()
-   * @see RetrieveFileTests#testS3KeyDoesNotExist()
+   * @see StoreControllerRetrieveFileComponentTest#testS3KeyDoesNotExist()
    */
   @Test
   public void testRetrieveFileNotFound() throws Exception {
@@ -271,27 +322,189 @@ public class StoreITests {
           }
         });
 
-    restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, multipartBodyBuilder, Resource.class);
-
-    final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
-    uriBuilder.setPath(uriBuilder.getPath() + "/" + DATASET_ID);
+    restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, multipartBodyBuilder, Void.class);
 
     // verify
     assertThat(
-        restTemplate.getForEntity(uriBuilder.build(), Resource.class).getStatusCode(),
+        restTemplate
+            .getForEntity(
+                UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
+                    .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
+                    .build(DATASET_ID),
+                Resource.class)
+            .getStatusCode(),
         is(HttpStatus.NOT_FOUND));
   }
 
   /**
    * @see #testRetrieveFileNotFound()
-   * @see RetrieveFileTests#testS3KeyDoesNotExist()
+   * @see StoreControllerRetrieveFileComponentTest#testS3KeyDoesNotExist()
    */
   @Test
   public void testRetrieveFileWhenS3IsEmpty() throws Exception {
-    final URIBuilder uriBuilder = new URIBuilder(endpointUrlRetrieve);
-    uriBuilder.setPath(uriBuilder.getPath() + "/" + DATASET_ID);
     assertThat(
-        restTemplate.getForEntity(uriBuilder.build(), Resource.class).getStatusCode(),
+        restTemplate
+            .getForEntity(
+                UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
+                    .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
+                    .build(DATASET_ID),
+                Resource.class)
+            .getStatusCode(),
+        is(HttpStatus.NOT_FOUND));
+  }
+
+  @Test
+  public void testAddMetadata() throws Exception {
+    // given
+    final String datasetId = "00067360b70e4acfab561fe593ad3f7a";
+    final URI irmUri =
+        UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
+            .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
+            .build(datasetId);
+
+    // and stub index server
+    indexMockRestServiceServer
+        .expect(requestTo(String.format("%s%s", endpointUrlIndex, datasetId)))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header("Accept-Version", indexApiVersion))
+        .andExpect(jsonPath("$.irmLocation").value(irmUri.toString()))
+        .andRespond(withStatus(HttpStatus.OK));
+
+    // when add metadata
+    final Charset encoding = StandardCharsets.UTF_8;
+    final String irm = "<?xml version=\"1.0\" ?><metadata></metadata>";
+    final InputStream inputStream = IOUtils.toInputStream(irm, encoding);
+    final long fileSize = inputStream.available();
+    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add(
+        "file",
+        new InputStreamResource(inputStream) {
+
+          @Override
+          public long contentLength() {
+            return fileSize;
+          }
+
+          @Override
+          public String getFilename() {
+            return "test_file_name.xml";
+          }
+        });
+    restTemplate.put(ADD_METADATA_URL_TEMPLATE, body, datasetId, SUPPORTED_METADATA_TYPE);
+
+    // then
+    assertThat(irmUri, getRequestIsSuccessful());
+  }
+
+  @Test
+  public void testRetrieveIrm() throws Exception {
+    // given
+    final String datasetId = "00067360b70e4acfab561fe593ad3f7a";
+    final URI irmUri =
+        UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
+            .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
+            .build(datasetId);
+
+    // and stub index server
+    indexMockRestServiceServer
+        .expect(requestTo(String.format("%s%s", endpointUrlIndex, datasetId)))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header("Accept-Version", indexApiVersion))
+        .andExpect(jsonPath("$.irmLocation").value(irmUri.toString()))
+        .andRespond(withStatus(HttpStatus.OK));
+
+    // and add metadata
+    final Charset encoding = StandardCharsets.UTF_8;
+    final String irm = "<?xml version=\"1.0\" ?><metadata></metadata>";
+    final InputStream inputStream = IOUtils.toInputStream(irm, encoding);
+    final long fileSize = inputStream.available();
+    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add(
+        "file",
+        new InputStreamResource(inputStream) {
+
+          @Override
+          public long contentLength() {
+            return fileSize;
+          }
+
+          @Override
+          public String getFilename() {
+            return "test_file_name.xml";
+          }
+        });
+    restTemplate.put(ADD_METADATA_URL_TEMPLATE, body, datasetId, SUPPORTED_METADATA_TYPE);
+
+    // when
+    final ResponseEntity<Resource> response = restTemplate.getForEntity(irmUri, Resource.class);
+
+    // then
+    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    final Resource retrievedFile = response.getBody();
+    assertThat(retrievedFile.contentLength(), is(fileSize));
+    assertThat(retrievedFile.isReadable(), is(true));
+    final HttpHeaders responseHeaders = response.getHeaders();
+    assertThat(responseHeaders.getContentType(), is(StoreController.IRM_MEDIA_TYPE));
+    assertThat(IOUtils.toString(retrievedFile.getInputStream(), encoding), is(irm));
+  }
+
+  @Test
+  public void testRetrieveIrmNotFound() throws Exception {
+    // given
+    final String datasetId = "00067360b70e4acfab561fe593ad3f7a";
+    final URI irmUri =
+        UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
+            .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
+            .build(datasetId);
+    indexMockRestServiceServer
+        .expect(requestTo(String.format("%s%s", endpointUrlIndex, datasetId)))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header("Accept-Version", indexApiVersion))
+        .andExpect(jsonPath("$.irmLocation").value(irmUri.toString()))
+        .andRespond(withStatus(HttpStatus.OK));
+    final Charset encoding = StandardCharsets.UTF_8;
+    final String irm = "<?xml version=\"1.0\" ?><metadata></metadata>";
+    final InputStream inputStream = IOUtils.toInputStream(irm, encoding);
+    final long fileSize = inputStream.available();
+    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add(
+        "file",
+        new InputStreamResource(inputStream) {
+
+          @Override
+          public long contentLength() {
+            return fileSize;
+          }
+
+          @Override
+          public String getFilename() {
+            return "test_file_name.xml";
+          }
+        });
+    restTemplate.put(ADD_METADATA_URL_TEMPLATE, body, datasetId, SUPPORTED_METADATA_TYPE);
+
+    // verify
+    assertThat(
+        restTemplate
+            .getForEntity(
+                UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
+                    .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
+                    .build(DATASET_ID),
+                Resource.class)
+            .getStatusCode(),
+        is(HttpStatus.NOT_FOUND));
+  }
+
+  @Test
+  public void testRetrieveIrmWhenS3IsEmpty() {
+    assertThat(
+        restTemplate
+            .getForEntity(
+                UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
+                    .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
+                    .build(DATASET_ID),
+                Resource.class)
+            .getStatusCode(),
         is(HttpStatus.NOT_FOUND));
   }
 
@@ -314,20 +527,5 @@ public class StoreITests {
             == EXPECTED_GET_REQUEST_RESPONSE_STATUS;
       }
     };
-  }
-
-  @TestConfiguration
-  static class Config {
-
-    @Bean
-    public AmazonS3Configuration testAmazonS3Configuration() {
-      return new AmazonS3Configuration(
-          String.format(
-              "http://%s:%d",
-              minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
-          "local",
-          MINIO_ADMIN_ACCESS_KEY,
-          MINIO_ADMIN_SECRET_KEY);
-    }
   }
 }

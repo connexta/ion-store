@@ -63,13 +63,15 @@ For more information about spotless checks see
     s3:
       endpointUrl: http://minio:9000
       region: local
-      bucket: ingest-quarantine
+      bucket:
+        file: ingest-quarantine
+        irm: irm
     ```
 
     Example configs/store_config.yml:
     ```yaml
     endpointUrl:
-      retrieve: http://localhost:9041/dataset/
+      retrieve: http://localhost:9041
     ```
 
     The service is capable of storing data in an S3-compatible data store.

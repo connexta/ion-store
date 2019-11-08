@@ -8,9 +8,9 @@ package com.connexta.store.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class IndexMetadataException extends DetailedResponseStatusException {
+public class IndexDatasetException extends DetailedResponseStatusException {
 
-  public IndexMetadataException(String reason, Throwable cause) {
+  public IndexDatasetException(String reason, Throwable cause) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, reason, cause);
   }
 }

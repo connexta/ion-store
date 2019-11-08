@@ -10,6 +10,9 @@ import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexDatasetClient;
 import com.connexta.store.service.api.StoreService;
 import com.connexta.store.service.impl.StoreServiceImpl;
+import java.net.URI;
+import java.net.URISyntaxException;
+import javax.inject.Named;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +25,11 @@ public class StoreServiceConfiguration {
   @Bean
   public StoreService storeService(
       @NotBlank @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
-      @NotNull final StorageAdaptor storageAdapter,
-      @NotNull final IndexDatasetClient indexDatasetClient) {
-    return new StoreServiceImpl(retrieveEndpoint, storageAdapter, indexDatasetClient);
+      @NotNull @Named("fileStorageAdaptor") final StorageAdaptor fileStorageAdapter,
+      @NotNull @Named("irmStorageAdaptor") final StorageAdaptor irmStorageAdapter,
+      @NotNull final IndexDatasetClient indexDatasetClient)
+      throws URISyntaxException {
+    return new StoreServiceImpl(
+        new URI(retrieveEndpoint), fileStorageAdapter, irmStorageAdapter, indexDatasetClient);
   }
 }

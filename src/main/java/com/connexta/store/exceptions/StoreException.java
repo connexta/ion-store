@@ -8,13 +8,13 @@ package com.connexta.store.exceptions;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
-public class CreateDatasetException extends DetailedResponseStatusException {
+public class StoreException extends DetailedResponseStatusException {
 
-  public CreateDatasetException(String reason, Throwable cause) {
+  public StoreException(String reason, Throwable cause) {
     super(INTERNAL_SERVER_ERROR, reason, cause);
   }
 
-  public CreateDatasetException(String reason) {
+  public StoreException(String reason) {
     super(INTERNAL_SERVER_ERROR, reason);
   }
 }

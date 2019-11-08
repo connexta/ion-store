@@ -4,13 +4,12 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.store;
+package com.connexta.store.controllers;
 
 import static com.connexta.store.controllers.MultipartFileValidator.MAX_FILE_BYTES;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import com.connexta.store.controllers.StoreController;
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
@@ -27,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 // TODO: These test can be changed to test the MultipartFileValidator instead of the controller.
 @ExtendWith(MockitoExtension.class)
-public class StoreControllerUnitTests {
+public class StoreControllerTest {
 
   private static final String STORE_API_VERSION = "testStoreApiVersion";
 

@@ -7,9 +7,7 @@
 package com.connexta.store.config;
 
 import com.connexta.store.exceptions.DetailedErrorAttributes;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,12 +21,6 @@ public class ApplicationConfiguration {
   @Bean
   public RestTemplate restTemplate(@NotNull RestTemplateBuilder builder) {
     return builder.errorHandler(new DefaultResponseErrorHandler()).build();
-  }
-
-  @Bean
-  public String storeApiVersion(
-      @NotBlank @Value("${endpoints.store.version}") String storeApiVersion) {
-    return storeApiVersion;
   }
 
   @Bean

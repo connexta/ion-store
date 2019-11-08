@@ -6,10 +6,8 @@
  */
 package com.connexta.store.clients;
 
-import com.connexta.store.exceptions.IndexMetadataException;
-import java.io.InputStream;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import com.connexta.store.exceptions.IndexDatasetException;
+import java.net.URI;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -17,8 +15,7 @@ import javax.validation.constraints.Size;
 public interface IndexDatasetClient {
 
   void indexDataset(
-      @NotNull final InputStream cstInputStream,
-      @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
-      throws IndexMetadataException;
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId,
+      @NotNull final URI irmUri)
+      throws IndexDatasetException;
 }

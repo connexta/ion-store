@@ -1,2 +1,2 @@
 endpointUrl:
-  retrieve: http://localhost:9041/dataset/
+  retrieve: http://store:8080

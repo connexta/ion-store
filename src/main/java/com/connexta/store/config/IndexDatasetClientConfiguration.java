@@ -18,7 +18,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class IndexClientConfiguration {
+public class IndexDatasetClientConfiguration {
 
   @Bean("nonBufferingRestTemplate")
   public RestTemplate nonBufferingRestTemplate() {

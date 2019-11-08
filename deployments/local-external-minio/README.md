@@ -9,7 +9,7 @@ docker network needed.
 * Java 11
 * Docker daemon
 * Linux/Mac
-* Minio at http://localhost:9000 with a "ingest-quarantine" bucket and login information defined in
+* Minio at http://localhost:9000 with a "ingest-quarantine" bucket, "irm" bucket, and login information defined in
 `secrets/minio_access.notsec` and `secrets/minio_secret.notsec`.
 
 ## How to Run

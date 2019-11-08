@@ -1,7 +1,7 @@
 server:
   port: 8080
 endpointUrl:
-  retrieve: http://localhost:${server.port}/dataset/
+  retrieve: http://localhost:${server.port}
   index: http://search:8080/index/
 endpoints:
   index:
@@ -9,4 +9,6 @@ endpoints:
   store:
     version: testStoreApiVersion
 s3:
-  bucket: ingest-quarantine
+  bucket:
+    file: ingest-quarantine
+    irm: irm
