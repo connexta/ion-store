@@ -18,27 +18,27 @@ spec:
     spec:
       containers:
         - name: store
-          image: ${DOCKER_REGISTRY:-docker.io}/cnxta/ion-store
+          image: cnxta/ion-store
           imagePullPolicy: Never
           volumeMounts:
             - name: store-configs
-              mountPath: /etc/config
+              mountPath: /etc/store-config
             - name: s3-configs
-              mountPath: /etc/config
+              mountPath: /etc/s3-config
             - name: s3-access
-              mountPath: /etc/secrets
+              mountPath: /etc/access-secret
             - name: s3-secret
-              mountPath: /etc/secrets
+              mountPath: /etc/secret-secret
           ports:
             - containerPort: 8080
               protocol: TCP
             - containerPort: 10051
               protocol: TCP
           args:
-            - "--s3.secret.file=/etc/secrets/s3_secret.sec"
-            - "--s3.access.file=/etc/secrets/s3_access.sec"
-            - "--spring.config.additional-location=file:/etc/config/s3_config.yml"
-            - "--spring.config.additional-location=file:/etc/config/store_config.yml"
+            - "--s3.secret.file=/etc/secret-secret/s3_secret.sec"
+            - "--s3.access.file=/etc/access-secret/s3_access.sec"
+            - "--spring.config.additional-location=file:/etc/s3-config/s3_config.yml"
+            - "--spring.config.additional-location=file:/etc/store-config/store_config.yml"
       volumes:
         - name: store-configs
           configMap:
@@ -50,12 +50,10 @@ spec:
             defaultMode: 0755
         - name: s3-secret
           secret:
-            name: s3-secret-secret
-            defaultMode: 0755
+            secretName: s3-secret-secret
         - name: s3-access
           secret:
-            name: s3-access-secret
-            defaultMode: 0755
+            secretName: s3-access-secret
 
 # Exposes the store container as a service that can be reached externally
 ---
@@ -73,5 +71,7 @@ spec:
   ports:
     - port: 8080
       nodePort: 30941
+      name: app
     - port: 10051
       nodePort: 31941
+      name: debug
