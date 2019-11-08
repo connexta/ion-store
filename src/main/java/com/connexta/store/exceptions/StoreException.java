@@ -8,6 +8,8 @@ package com.connexta.store.exceptions;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
+import com.connexta.store.exceptions.common.DetailedResponseStatusException;
+
 public class StoreException extends DetailedResponseStatusException {
 
   public StoreException(String reason, Throwable cause) {

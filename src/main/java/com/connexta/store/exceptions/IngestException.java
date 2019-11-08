@@ -9,9 +9,10 @@ package com.connexta.store.exceptions;
 import com.connexta.store.exceptions.common.DetailedResponseStatusException;
 import org.springframework.http.HttpStatus;
 
-public class IndexDatasetException extends DetailedResponseStatusException {
+public class IngestException extends DetailedResponseStatusException {
 
-  public IndexDatasetException(String reason, Throwable cause) {
+  public IngestException(String reason, Throwable cause) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, reason, cause);
+    addDetail("Caused by " + cause.getMessage());
   }
 }

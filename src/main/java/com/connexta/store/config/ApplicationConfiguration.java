@@ -6,7 +6,7 @@
  */
 package com.connexta.store.config;
 
-import com.connexta.store.exceptions.DetailedErrorAttributes;
+import com.connexta.store.exceptions.common.DetailedErrorAttributes;
 import javax.validation.constraints.NotNull;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
