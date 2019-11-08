@@ -1,9 +1,13 @@
 server:
   port: 8080
 endpointUrl:
+  store: http://localhost:9041/mis/product/
   retrieve: http://localhost:${server.port}
+  transform: http://localhost:9090/transform/
   index: http://search:8080/index/
 endpoints:
+  transform:
+    version: testTransformApiVersion
   index:
     version: testIndexApiVersion
   store:
@@ -12,5 +16,6 @@ endpoints:
     version: testTransformApiVersion
 s3:
   bucket:
+    ingest: metacard-quarantine
     file: ingest-quarantine
     irm: irm

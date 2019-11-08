@@ -41,8 +41,9 @@ repositories {
 dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    compileOnly "com.connexta.transformation:transformation-api-rest-spring-stubs:${transformApiVersion}"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
+    implementation "com.connexta.ingest:ingest-api-rest-spring-stubs:0.6.0"
+    implementation "com.connexta.transformation:transformation-api-rest-spring-stubs:${transformApiVersion}"
     implementation "com.connexta.search:index-api-rest-spring-stubs:${indexApiVersion}"
     implementation "com.connexta.store:store-api-rest-spring-stubs:${storeApiVersion}"
     implementation "com.dyngr:polling:1.1.3"
@@ -109,7 +110,7 @@ dependencyCheck {
 }
 
 processResources {
-    expand([indexApiVersion: "${indexApiVersion}", storeApiVersion: "${storeApiVersion}",  transformApiVersion: "${transformApiVersion}"])
+    expand([indexApiVersion: "${indexApiVersion}", storeApiVersion: "${storeApiVersion}", transformApiVersion: "${transformApiVersion}"])
 }
 
 bootJar {
