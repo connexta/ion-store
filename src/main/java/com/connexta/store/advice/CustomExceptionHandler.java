@@ -6,7 +6,7 @@
  */
 package com.connexta.store.advice;
 
-import com.connexta.store.exceptions.DetailedErrorAttributes;
+import com.connexta.store.exceptions.common.DetailedErrorAttributes;
 import java.util.Map;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotNull;

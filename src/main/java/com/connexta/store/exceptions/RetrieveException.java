@@ -6,6 +6,7 @@
  */
 package com.connexta.store.exceptions;
 
+import com.connexta.store.exceptions.common.DetailedResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 public class RetrieveException extends DetailedResponseStatusException {

@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.connexta.store.config.StoreControllerConfiguration;
-import com.connexta.store.exceptions.DetailedErrorAttributes;
+import com.connexta.store.exceptions.common.DetailedErrorAttributes;
 import com.connexta.store.service.api.StoreService;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;

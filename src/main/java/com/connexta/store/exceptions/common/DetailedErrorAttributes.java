@@ -4,7 +4,7 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.store.exceptions;
+package com.connexta.store.exceptions.common;
 
 import java.util.ArrayList;
 import java.util.Arrays;
