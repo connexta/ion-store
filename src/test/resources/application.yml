@@ -1,8 +1,8 @@
 server:
-  port: 8080
+  port: 8081
 endpointUrl:
   store: http://localhost:9041/mis/product/
-  retrieve: http://localhost:${server.port}
+  retrieve: http://localhost:${server.port}/
   transform: http://localhost:9090/transform/
   index: http://search:8080/index/
 endpoints:
