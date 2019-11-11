@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
         - name: store
-          image: cnxta/ion-store
-          imagePullPolicy: Never
+          image: ${registry}/cnxta/ion-store
+#          imagePullPolicy: Never
           volumeMounts:
             - name: store-configs
               mountPath: /etc/store-config
@@ -69,13 +69,42 @@ metadata:
   labels:
     app: store
 spec:
-  type: NodePort
   selector:
     app: store
   ports:
     - port: 8080
-      nodePort: 30941
       name: app
     - port: 10051
-      nodePort: 31941
       name: debug
+
+# Adds Ingress for communicating externally and with other services in the namespace
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ion-store-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  tls:
+    - hosts:
+        - ion-store.default.gsp.test
+#      secretName: elk-gsp-tls
+  rules:
+    - host: ion-store.default.gsp.test
+      http:
+        paths:
+          - backend:
+              serviceName: ion-store
+              servicePort: app
+#    - host: ion-store-debug.default.gsp.test
+#      http:
+#        paths:
+#          - backend:
+#              serviceName: ion-store
+#              servicePort: debug
