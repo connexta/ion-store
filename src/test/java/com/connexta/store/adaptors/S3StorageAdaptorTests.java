@@ -17,7 +17,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.connexta.store.config.AmazonS3Configuration;
-import com.connexta.store.exceptions.StoreMetacardException;
+import com.connexta.store.exceptions.DatasetNotFoundException;
+import com.connexta.store.exceptions.StoreException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,14 +38,14 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
-public class S3MetacardStorageAdaptorTests {
+public class S3StorageAdaptorTests {
 
   private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
   private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
   private static final int MINIO_PORT = 9000;
   private static AmazonS3Configuration configuration;
   private static AmazonS3 amazonS3;
-  private static MetacardStorageAdaptor storageAdaptor;
+  private static S3StorageAdaptor storageAdaptor;
   private static String BUCKET = "metacard-quarantine";
 
   @Container
@@ -58,8 +59,6 @@ public class S3MetacardStorageAdaptorTests {
               new HttpWaitStrategy()
                   .forPath("/minio/health/ready")
                   .withStartupTimeout(Duration.ofSeconds(30)));
-
-  private String metacardContents;
 
   @BeforeAll
   public static void setUp() {
@@ -84,7 +83,7 @@ public class S3MetacardStorageAdaptorTests {
             .enablePathStyleAccess()
             .build();
 
-    storageAdaptor = new S3MetacardStorageAdaptor(amazonS3, BUCKET);
+    storageAdaptor = new S3StorageAdaptor(amazonS3, BUCKET);
   }
 
   @BeforeEach
@@ -111,14 +110,14 @@ public class S3MetacardStorageAdaptorTests {
     final String key = "1234";
     final String metacardContents = "asdf";
     storageAdaptor.store(4L, new ByteArrayInputStream(metacardContents.getBytes()), key);
-    assertThat(storageAdaptor.retrieve(key), hasContents(metacardContents));
+    assertThat(storageAdaptor.retrieveFileStream(key), hasContents(metacardContents));
   }
 
   @Test
   public void testRetrieveRequestWrongKey() {
     String key = "1234";
     storageAdaptor.store(4L, new ByteArrayInputStream("asdf".getBytes()), key);
-    assertThrows(StoreMetacardException.class, () -> storageAdaptor.retrieve("wrong_key"));
+    assertThrows(DatasetNotFoundException.class, () -> storageAdaptor.retrieve("wrong_key"));
   }
 
   @Test
@@ -129,7 +128,7 @@ public class S3MetacardStorageAdaptorTests {
   @Test
   public void testStoreWithContentLengthNotMatching() {
     assertThrows(
-        StoreMetacardException.class,
+        StoreException.class,
         () -> {
           storageAdaptor.store(10L, new ByteArrayInputStream("asdf".getBytes()), "1234");
         });

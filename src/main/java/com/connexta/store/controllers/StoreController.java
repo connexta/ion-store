@@ -11,10 +11,9 @@ import static org.springframework.http.ResponseEntity.ok;
 
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.store.adaptors.FileRetrieveResponse;
-import com.connexta.store.exceptions.StoreMetacardException;
+import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.rest.models.ErrorMessage;
 import com.connexta.store.rest.spring.StoreApi;
-import com.connexta.store.service.api.IngestService;
 import com.connexta.store.service.api.StoreService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -22,7 +21,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -64,42 +62,8 @@ public class StoreController implements StoreApi, IngestApi {
   public static final MediaType IRM_MEDIA_TYPE = new MediaType("application", "dni-tdf+xml");
   public static final String IRM_MEDIA_TYPE_VALUE = "application/dni-tdf+xml";
   public static final MediaType METACARD_MEDIA_TYPE = MediaType.APPLICATION_XML;
-  @NotNull private final IngestService ingestService;
   @NotNull private final StoreService storeService;
   @NotBlank private final String storeApiVersion;
-
-  /**
-   * TODO Use {@link org.springframework.web.server.ResponseStatusException} instead of catching
-   * {@link Exception}s
-   */
-  @Override
-  public ResponseEntity<Void> createDataset(
-      final String acceptVersion, @Valid final MultipartFile file) {
-    final String expectedAcceptVersion = storeApiVersion;
-    if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
-      throw new UnsupportedOperationException(
-          String.format(
-              "%s was \"%s\", but only \"%s\" is currently supported.",
-              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
-    }
-
-    MultipartFileValidator.validate(file);
-    final String mediaType = file.getContentType();
-    final String fileName = file.getOriginalFilename();
-
-    final URI location;
-    try (final InputStream inputStream = file.getInputStream()) {
-      location = storeService.createDataset(file.getSize(), mediaType, fileName, inputStream);
-    } catch (IOException e) {
-      throw new ValidationException(
-          String.format(
-              "Unable to read file for createDataset request with mediaType=%s and fileName=%s",
-              mediaType, fileName),
-          e);
-    }
-
-    return ResponseEntity.created(location).build();
-  }
 
   @Override
   public Optional<NativeWebRequest> getRequest() {
@@ -166,7 +130,7 @@ public class StoreController implements StoreApi, IngestApi {
     } catch (IOException e) {
       throw new ValidationException("Could not open attachment"); // TODO Replace this exception
     }
-    ingestService.ingest(
+    storeService.ingest(
         file.getSize(),
         file.getContentType(),
         inputStream,
@@ -183,7 +147,7 @@ public class StoreController implements StoreApi, IngestApi {
     InputStream inputStream = null;
     try {
       // TODO return 404 if key doesn't exist
-      inputStream = ingestService.retrieveMetacard(id);
+      inputStream = storeService.retrieveMetacard(id);
       log.info("Successfully retrieved metacard id={}", id);
       return ResponseEntity.ok()
           .contentType(METACARD_MEDIA_TYPE)
@@ -198,8 +162,7 @@ public class StoreController implements StoreApi, IngestApi {
       }
 
       log.warn("Unable to retrieve metacard id={}", id, e);
-      throw new StoreMetacardException(
-          String.format("Unable to retrieve metacard: %s", e.getMessage()), e);
+      throw new StoreException(String.format("Unable to retrieve metacard: %s", e.getMessage()), e);
     } catch (Throwable t) {
       if (inputStream != null) {
         try {

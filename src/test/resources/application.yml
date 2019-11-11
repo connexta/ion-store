@@ -16,6 +16,6 @@ endpoints:
     version: testTransformApiVersion
 s3:
   bucket:
-    ingest: metacard-quarantine
+    metacard: metacard-quarantine
     file: ingest-quarantine
     irm: irm

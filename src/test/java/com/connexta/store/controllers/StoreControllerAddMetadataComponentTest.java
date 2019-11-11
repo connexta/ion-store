@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.connexta.store.config.StoreControllerConfiguration;
 import com.connexta.store.exceptions.common.DetailedErrorAttributes;
-import com.connexta.store.service.api.IngestService;
 import com.connexta.store.service.api.StoreService;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
@@ -40,7 +39,6 @@ import org.springframework.test.web.servlet.MockMvc;
 public class StoreControllerAddMetadataComponentTest {
 
   @MockBean private StoreService mockStoreService;
-  @MockBean private IngestService mockIngestService;
 
   @Inject private MockMvc mockMvc;
 

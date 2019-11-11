@@ -11,8 +11,6 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.connexta.store.adaptors.MetacardStorageAdaptor;
-import com.connexta.store.adaptors.S3MetacardStorageAdaptor;
 import com.connexta.store.adaptors.S3StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptor;
 import java.io.File;
@@ -59,10 +57,10 @@ public class S3StorageConfiguration {
   }
 
   @Bean
-  public MetacardStorageAdaptor metacardStorageAdaptor(
+  public S3StorageAdaptor metacardStorageAdaptor(
       @NotNull final AmazonS3 amazonS3,
-      @Value("${s3.bucket.ingest}") @NotBlank final String bucket) {
-    return new S3MetacardStorageAdaptor(amazonS3, bucket);
+      @Value("${s3.bucket.metacard}") @NotBlank final String bucket) {
+    return new S3StorageAdaptor(amazonS3, bucket);
   }
 
   @Bean

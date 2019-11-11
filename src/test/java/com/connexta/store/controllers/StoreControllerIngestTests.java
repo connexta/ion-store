@@ -19,10 +19,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.connexta.store.config.StoreControllerConfiguration;
 import com.connexta.store.exceptions.StoreException;
-import com.connexta.store.exceptions.StoreMetacardException;
 import com.connexta.store.exceptions.TransformException;
 import com.connexta.store.exceptions.common.DetailedErrorAttributes;
-import com.connexta.store.service.api.IngestService;
 import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +55,6 @@ public class StoreControllerIngestTests {
       new MockMultipartFile("metacard", "ignored.xml", "application/xml", "content".getBytes());
 
   @MockBean private StoreService mockStoreService;
-  @MockBean private IngestService mockIngestService;
   @Inject private MockMvc mockMvc;
 
   @ParameterizedTest
@@ -78,7 +75,7 @@ public class StoreControllerIngestTests {
                 .header("Accept-Version", ACCEPT_VERSION))
         .andExpect(status().isAccepted());
 
-    verify(mockIngestService)
+    verify(mockStoreService)
         .ingest(
             eq(FILE.getSize()),
             eq(FILE.getContentType()),
@@ -99,7 +96,7 @@ public class StoreControllerIngestTests {
                 .header("Accept-Version", ACCEPT_VERSION))
         .andExpect(status().isBadRequest());
 
-    verifyNoInteractions(mockIngestService);
+    verifyNoInteractions(mockStoreService);
   }
 
   @Test
@@ -113,7 +110,7 @@ public class StoreControllerIngestTests {
                 .header("Accept-Version", ACCEPT_VERSION))
         .andExpect(status().isBadRequest());
 
-    verifyNoInteractions(mockIngestService);
+    verifyNoInteractions(mockStoreService);
   }
 
   @Test
@@ -127,7 +124,7 @@ public class StoreControllerIngestTests {
                 .header("Accept-Version", ACCEPT_VERSION))
         .andExpect(status().isBadRequest());
 
-    verifyNoInteractions(mockIngestService);
+    verifyNoInteractions(mockStoreService);
   }
 
   @Test
@@ -141,7 +138,7 @@ public class StoreControllerIngestTests {
                 .param("correlationId", CORRELATION_ID))
         .andExpect(status().isBadRequest());
 
-    verifyNoInteractions(mockIngestService);
+    verifyNoInteractions(mockStoreService);
   }
 
   @Test
@@ -155,7 +152,7 @@ public class StoreControllerIngestTests {
                 .param("correlationId", CORRELATION_ID))
         .andExpect(status().isBadRequest());
 
-    verifyNoInteractions(mockIngestService);
+    verifyNoInteractions(mockStoreService);
   }
 
   @ParameterizedTest
@@ -185,18 +182,18 @@ public class StoreControllerIngestTests {
                 .param("correlationId", CORRELATION_ID))
         .andExpect(status().isBadRequest());
 
-    verifyNoInteractions(mockIngestService);
+    verifyNoInteractions(mockStoreService);
   }
 
   /**
-   * TODO Test RuntimeException and Throwable thrown by {@link IngestService#ingest(Long, String,
+   * TODO Test RuntimeException and Throwable thrown by {@link StoreService#ingest(Long, String,
    * InputStream, String, Long, InputStream)}
    */
   @ParameterizedTest(name = "{0} is the response status code when IngestService#ingest throws {1}")
   @MethodSource("exceptionThrownByIngestServiceAndExpectedResponseStatus")
   public void testIngestServiceExceptions(
       final Throwable throwable, final HttpStatus expectedResponseStatus) throws Exception {
-    doThrow(throwable).when(mockIngestService).ingest(any(), any(), any(), any(), any(), any());
+    doThrow(throwable).when(mockStoreService).ingest(any(), any(), any(), any(), any(), any());
 
     mockMvc
         .perform(
@@ -214,7 +211,7 @@ public class StoreControllerIngestTests {
         Arguments.of(new StoreException("Test", new Throwable()), HttpStatus.INTERNAL_SERVER_ERROR),
         Arguments.of(new TransformException(new Throwable()), HttpStatus.INTERNAL_SERVER_ERROR),
         Arguments.of(
-            new StoreMetacardException("Test", new Throwable()), HttpStatus.INTERNAL_SERVER_ERROR));
+            new StoreException("Test", new Throwable()), HttpStatus.INTERNAL_SERVER_ERROR));
   }
 
   @NotNull
