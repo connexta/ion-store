@@ -27,5 +27,6 @@ public interface IngestService {
       @NotNull final InputStream metacardInputStream)
       throws StoreException, TransformException, StoreMetacardException;
 
+  @NotNull
   InputStream retrieveMetacard(@NotBlank final String id);
 }
