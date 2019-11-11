@@ -23,12 +23,16 @@ spec:
           volumeMounts:
             - name: store-configs
               mountPath: /etc/store-config
+              readOnly: true
             - name: s3-configs
               mountPath: /etc/s3-config
+              readOnly: true
             - name: s3-access
               mountPath: /etc/access-secret
+              readOnly: true
             - name: s3-secret
               mountPath: /etc/secret-secret
+              readOnly: true
           ports:
             - containerPort: 8080
               protocol: TCP
