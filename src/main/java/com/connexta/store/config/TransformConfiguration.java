@@ -6,16 +6,11 @@
  */
 package com.connexta.store.config;
 
-import com.connexta.poller.service.Poller;
 import com.connexta.poller.service.StatusService;
-import java.net.URI;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,11 +24,7 @@ public class TransformConfiguration {
     return transformApiVersion;
   }
 
-  @Bean("input")
-  public BlockingQueue<URI> transferQueue() {
-    return new LinkedBlockingQueue<>(100000);
-  }
-
+  // TODO: For now the polling library and the async jobs can share the same thread pool
   @Bean
   public ExecutorService executorService() {
     return Executors.newFixedThreadPool(64);
@@ -41,13 +32,6 @@ public class TransformConfiguration {
 
   @Bean
   public StatusService statusService(@NotNull final ExecutorService executorService) {
-    return new StatusService(executorService, WebClient.create());
-  }
-
-  @Bean
-  public Poller pollerService(
-      @NotNull final StatusService statusService,
-      @NotNull @Qualifier("input") final BlockingQueue transferQueue) {
-    return new Poller(statusService, transferQueue);
+    return new StatusService(1, 10, executorService, WebClient.create());
   }
 }

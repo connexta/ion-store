@@ -38,8 +38,8 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class StatusService {
 
-  private final int sleepTime = 1;
-  private final int giveUpAfter = 20;
+  private final int secondsBetweenRetries;
+  private final int secondsToLive;
   @NotNull ExecutorService executorService;
   @NotNull WebClient webClient;
 
@@ -66,7 +66,8 @@ public class StatusService {
                                             "Could not get status for %s", uri.toString()))))
                     .bodyToMono(StatusResponse.class)
                     .block();
-          } catch (Throwable e) {
+            // SonarLint said to catch Exception and not Throwable
+          } catch (Exception e) {
             continueFor(e);
           }
 
@@ -88,7 +89,7 @@ public class StatusService {
     return PollerBuilder.newBuilder()
         .withExecutorService(executorService)
         .stopIfException(false)
-        .withWaitStrategy(WaitStrategies.fixedWait(sleepTime, TimeUnit.SECONDS))
-        .withStopStrategy(StopStrategies.stopAfterDelay(giveUpAfter, TimeUnit.SECONDS));
+        .withWaitStrategy(WaitStrategies.fixedWait(secondsBetweenRetries, TimeUnit.SECONDS))
+        .withStopStrategy(StopStrategies.stopAfterDelay(secondsToLive, TimeUnit.SECONDS));
   }
 }
