@@ -43,7 +43,7 @@ public class TransformClient {
     try {
       restTemplate.postForEntity(transformEndpoint, transformRequestHttpEntity, Void.class);
     } catch (Exception e) {
-      throw new TransformException(e);
+      throw new TransformException("Exception during transform request.", e);
     }
   }
 }

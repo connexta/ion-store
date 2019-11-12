@@ -1,10 +1,9 @@
 server:
   port: 8081
 endpointUrl:
-  store: http://localhost:9041/mis/product/
-  retrieve: http://localhost:${server.port}/
-  transform: http://localhost:9090/transform/
-  index: http://search:8080/index/
+  retrieve: http://localhost:${server.port}
+  transform: http://localhost:9090/transform
+  index: http://search:8080/index
 endpoints:
   transform:
     version: testTransformApiVersion

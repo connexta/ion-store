@@ -11,12 +11,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
-import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 // TODO: These test can be changed to test the MultipartFileValidator instead of the controller.
@@ -37,7 +37,7 @@ public class StoreControllerTest {
   @Test
   void testNotImplementedCreateDataset(@Mock final MultipartFile mockMultipartFile) {
     assertThat(
-        storeApi.createDataset(STORE_API_VERSION, mockMultipartFile).getStatusCode().value(),
-        is(HttpStatus.SC_NOT_IMPLEMENTED));
+        storeApi.createDataset(STORE_API_VERSION, mockMultipartFile).getStatusCode(),
+        is(HttpStatus.NOT_IMPLEMENTED));
   }
 }

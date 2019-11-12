@@ -26,22 +26,10 @@ public interface StorageAdaptor {
    */
   void store(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotNull final InputStream inputStream,
-      @NotBlank final String key)
-      throws StoreException;
-
-  /**
-   * Stores the {@code file} in a blob store using the given {@code key}.
-   *
-   * @throws IOException if the file can't be read
-   * @throws StoreException if there is an error when attempting to store
-   */
-  void store(
-      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotBlank final String mediaType,
+      final String mediaType,
       @NotNull final InputStream inputStream,
       @NotBlank final String key,
-      @NotNull Map<String, String> metadata)
+      Map<String, String> metadata)
       throws StoreException;
 
   /**

@@ -6,8 +6,6 @@
  */
 package com.connexta.store.adaptors;
 
-import static com.connexta.store.controllers.StoreController.METACARD_MEDIA_TYPE;
-
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -45,44 +43,21 @@ public class S3StorageAdaptor implements StorageAdaptor {
   @Override
   public void store(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotNull final InputStream inputStream,
-      @NotBlank final String key)
-      throws StoreException {
-    // TODO check if id already exists
-
-    final ObjectMetadata objectMetadata = new ObjectMetadata();
-    objectMetadata.setContentType(METACARD_MEDIA_TYPE.toString());
-    objectMetadata.setContentLength(fileSize);
-
-    log.info("Storing metacard in bucket \"{}\" with key \"{}\"", bucket, key);
-    try {
-      final Upload upload = transferManager.upload(bucket, key, inputStream, objectMetadata);
-      log.info(String.format("Transfer state: %s", upload.getState()));
-      upload.waitForCompletion();
-      log.info(String.format("Transfer state: %s", upload.getState()));
-    } catch (RuntimeException | InterruptedException e) {
-      throw new StoreException(
-          String.format("Unable to store metacard in bucket \"%s\" with key \"%s\"", bucket, key),
-          e);
-    }
-
-    log.info("Successfully stored metacard in bucket \"{}\" with key \"{}\"", bucket, key);
-  }
-
-  @Override
-  public void store(
-      @NotNull @Min(1L) @Max(10737418240L) final Long size,
-      @NotBlank final String mediaType,
+      final String mediaType,
       @NotNull final InputStream inputStream,
       @NotBlank final String key,
-      @NotNull Map<String, String> metadata)
+      Map<String, String> metadata)
       throws StoreException {
     // TODO check if id already exists
 
     final ObjectMetadata objectMetadata = new ObjectMetadata();
-    objectMetadata.setContentType(mediaType);
-    objectMetadata.setContentLength(size);
-    objectMetadata.setUserMetadata(metadata);
+    if (!mediaType.isEmpty()) {
+      objectMetadata.setContentType(mediaType);
+    }
+    if (!mediaType.isEmpty()) {
+      objectMetadata.setUserMetadata(metadata);
+    }
+    objectMetadata.setContentLength(fileSize);
 
     log.info("Storing item in bucket \"{}\" with key \"{}\"", bucket, key);
 
@@ -160,13 +135,5 @@ public class S3StorageAdaptor implements StorageAdaptor {
     }
 
     return s3Object;
-  }
-
-  /** The caller is responsible for closing the returned {@link InputStream}. */
-  @NotNull
-  public InputStream retrieveFileStream(@NotBlank final String key) throws StoreException {
-    log.info("Retrieving product in bucket \"{}\" with key \"{}\"", bucket, key);
-    StorageAdaptorRetrieveResponse storageAdaptorRetrieveResponse = retrieve(key);
-    return storageAdaptorRetrieveResponse.getInputStream();
   }
 }

@@ -6,9 +6,13 @@
  */
 package com.connexta.store.exceptions;
 
-public class TransformException extends IngestException {
+import com.connexta.store.exceptions.common.DetailedResponseStatusException;
+import org.springframework.http.HttpStatus;
 
-  public TransformException(Throwable cause) {
-    super("Transform service exception", cause);
+public class TransformException extends DetailedResponseStatusException {
+
+  public TransformException(String reason, Throwable cause) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, reason, cause);
+    addDetail("Transform service exception caused by " + cause.getMessage());
   }
 }

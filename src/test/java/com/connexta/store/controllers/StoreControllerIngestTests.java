@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.connexta.store.config.StoreControllerConfiguration;
 import com.connexta.store.exceptions.StoreException;
-import com.connexta.store.exceptions.TransformException;
 import com.connexta.store.exceptions.common.DetailedErrorAttributes;
 import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
@@ -208,8 +207,6 @@ public class StoreControllerIngestTests {
 
   private static Stream<Arguments> exceptionThrownByIngestServiceAndExpectedResponseStatus() {
     return Stream.of(
-        Arguments.of(new StoreException("Test", new Throwable()), HttpStatus.INTERNAL_SERVER_ERROR),
-        Arguments.of(new TransformException(new Throwable()), HttpStatus.INTERNAL_SERVER_ERROR),
         Arguments.of(
             new StoreException("Test", new Throwable()), HttpStatus.INTERNAL_SERVER_ERROR));
   }

@@ -39,7 +39,6 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -59,6 +58,7 @@ public class StoreController implements StoreApi, IngestApi {
   public static final String ADD_METADATA_URL_TEMPLATE = "/dataset/{datasetId}/{metadataType}";
   public static final String RETRIEVE_FILE_URL_TEMPLATE = "/dataset/{datasetId}";
   public static final String RETRIEVE_IRM_URL_TEMPLATE = "/dataset/{datasetId}/irm";
+  public static final String RETRIEVE_METACARD_URL_TEMPLATE = "/dataset/{datasetId}/metacard";
   public static final MediaType IRM_MEDIA_TYPE = new MediaType("application", "dni-tdf+xml");
   public static final String IRM_MEDIA_TYPE_VALUE = "application/dni-tdf+xml";
   public static final MediaType METACARD_MEDIA_TYPE = MediaType.APPLICATION_XML;
@@ -141,14 +141,47 @@ public class StoreController implements StoreApi, IngestApi {
     return ResponseEntity.accepted().build();
   }
 
-  @GetMapping("/{id}")
+  @ApiOperation(
+      value = "Get a metacard for a dataset.",
+      nickname = "retrieveMetacard",
+      response = Resource.class,
+      tags = {"store"})
+  @ApiResponses(
+      value = {
+        @ApiResponse(code = 200, message = "Get Metacard", response = Resource.class),
+        @ApiResponse(
+            code = 401,
+            message = "The client could not be authenticated. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 400,
+            message =
+                "The client message could not be understood by the server due to invalid format or syntax. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 403,
+            message = "The client does not have permission. ",
+            response = ErrorMessage.class),
+        @ApiResponse(
+            code = 501,
+            message = "The requested API version is not supported and therefore not implemented. ",
+            response = ErrorMessage.class)
+      })
+  @RequestMapping(
+      value = RETRIEVE_METACARD_URL_TEMPLATE,
+      produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_XML_VALUE},
+      method = RequestMethod.GET)
   public ResponseEntity<Resource> retrieveMetacard(
-      @ApiParam(required = true) @PathVariable("id") final String id) {
+      @Pattern(regexp = "^[0-9a-zA-Z]+$")
+          @Size(min = 32, max = 32)
+          @ApiParam(value = "The ID of the dataset. ", required = true)
+          @PathVariable("datasetId")
+          final String datasetId) {
     InputStream inputStream = null;
     try {
       // TODO return 404 if key doesn't exist
-      inputStream = storeService.retrieveMetacard(id);
-      log.info("Successfully retrieved metacard id={}", id);
+      inputStream = storeService.retrieveMetacard(datasetId);
+      log.info("Successfully retrieved metacard from datasetId={}", datasetId);
       return ResponseEntity.ok()
           .contentType(METACARD_MEDIA_TYPE)
           .body(new InputStreamResource(inputStream));
@@ -157,18 +190,24 @@ public class StoreController implements StoreApi, IngestApi {
         try {
           inputStream.close();
         } catch (IOException ioe) {
-          log.warn("Unable to close InputStream when retrieving metacard id={}", id, ioe);
+          log.warn(
+              "Unable to close InputStream when retrieving metacard from datasetId={}",
+              datasetId,
+              ioe);
         }
       }
 
-      log.warn("Unable to retrieve metacard id={}", id, e);
+      log.warn("Unable to retrieve metacard datasetId={}", datasetId, e);
       throw new StoreException(String.format("Unable to retrieve metacard: %s", e.getMessage()), e);
     } catch (Throwable t) {
       if (inputStream != null) {
         try {
           inputStream.close();
         } catch (IOException e) {
-          log.warn("Unable to close InputStream when retrieving metacard id={}", id, e);
+          log.warn(
+              "Unable to close InputStream when retrieving metacard from datasetId={}",
+              datasetId,
+              e);
         }
       }
       throw t;

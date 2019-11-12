@@ -8,7 +8,6 @@ package com.connexta.store.service.impl;
 
 import com.connexta.poller.service.StatusService;
 import com.connexta.store.adaptors.FileRetrieveResponse;
-import com.connexta.store.adaptors.S3StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptorRetrieveResponse;
 import com.connexta.store.clients.IndexDatasetClient;
@@ -32,6 +31,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -44,7 +44,7 @@ public class StoreServiceImpl implements StoreService {
   @NotBlank private final URI retrieveUri;
   @NotNull private final StorageAdaptor fileStorageAdaptor;
   @NotNull private final StorageAdaptor irmStorageAdaptor;
-  @NotNull private final S3StorageAdaptor metacardStorageAdaptor;
+  @NotNull private final StorageAdaptor metacardStorageAdaptor;
   @NotNull private final IndexDatasetClient indexDatasetClient;
   @NotNull private final StatusService statusService;
   @NotNull private final TransformClient transformClient;
@@ -113,12 +113,16 @@ public class StoreServiceImpl implements StoreService {
             .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
             .build(datasetId);
 
-    final String key = UUID.randomUUID().toString().replace("-", "");
     // TODO verify mimetype of metacard
-    metacardStorageAdaptor.store(metacardFileSize, metacardInputStream, key);
+    metacardStorageAdaptor.store(
+        metacardFileSize,
+        MediaType.APPLICATION_XML_VALUE,
+        metacardInputStream,
+        datasetId,
+        Map.of());
     final URI metacardLocation;
     try {
-      metacardLocation = new URI(retrieveUri.toString() + key);
+      metacardLocation = new URI(retrieveUri.toString() + datasetId);
     } catch (URISyntaxException e) {
       throw new StoreException("Unable to construct retrieve URI", e);
     }
@@ -130,6 +134,6 @@ public class StoreServiceImpl implements StoreService {
   // TODO test this method
   @Override
   public InputStream retrieveMetacard(@NotBlank String id) {
-    return metacardStorageAdaptor.retrieveFileStream(id);
+    return metacardStorageAdaptor.retrieve(id).getInputStream();
   }
 }

@@ -19,7 +19,6 @@ spring:
 
 # The index endpoint should be deployed in the same network, so we don't need a config.yml file for it.
 endpointUrl:
-  store: http://store:8080/mis/product/
   index: http://search:8080/index/
 
 endpoints:

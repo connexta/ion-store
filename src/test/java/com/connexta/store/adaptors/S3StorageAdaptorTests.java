@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
@@ -40,12 +42,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class S3StorageAdaptorTests {
 
+  public static final String ASDF = "asdf";
   private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
   private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
   private static final int MINIO_PORT = 9000;
+  public static final String KEY = "1234";
   private static AmazonS3Configuration configuration;
   private static AmazonS3 amazonS3;
-  private static S3StorageAdaptor storageAdaptor;
+  private static StorageAdaptor storageAdaptor;
   private static String BUCKET = "metacard-quarantine";
 
   @Container
@@ -102,21 +106,36 @@ public class S3StorageAdaptorTests {
 
   @Test
   public void testSuccessfulStoreRequest() {
-    storageAdaptor.store(4L, new ByteArrayInputStream("asdf".getBytes()), "1234");
+    storageAdaptor.store(
+        4L,
+        MediaType.APPLICATION_XML_VALUE,
+        new ByteArrayInputStream(ASDF.getBytes()),
+        KEY,
+        Map.of());
   }
 
   @Test
   public void testSuccessfulRetrieveRequest() {
-    final String key = "1234";
-    final String metacardContents = "asdf";
-    storageAdaptor.store(4L, new ByteArrayInputStream(metacardContents.getBytes()), key);
-    assertThat(storageAdaptor.retrieveFileStream(key), hasContents(metacardContents));
+    final String key = KEY;
+    final String metacardContents = ASDF;
+    storageAdaptor.store(
+        4L,
+        MediaType.APPLICATION_XML_VALUE,
+        new ByteArrayInputStream(metacardContents.getBytes()),
+        key,
+        Map.of());
+    assertThat(storageAdaptor.retrieve(key).getInputStream(), hasContents(metacardContents));
   }
 
   @Test
   public void testRetrieveRequestWrongKey() {
-    String key = "1234";
-    storageAdaptor.store(4L, new ByteArrayInputStream("asdf".getBytes()), key);
+    String key = KEY;
+    storageAdaptor.store(
+        4L,
+        MediaType.APPLICATION_XML_VALUE,
+        new ByteArrayInputStream(ASDF.getBytes()),
+        key,
+        Map.of());
     assertThrows(DatasetNotFoundException.class, () -> storageAdaptor.retrieve("wrong_key"));
   }
 
@@ -130,7 +149,12 @@ public class S3StorageAdaptorTests {
     assertThrows(
         StoreException.class,
         () -> {
-          storageAdaptor.store(10L, new ByteArrayInputStream("asdf".getBytes()), "1234");
+          storageAdaptor.store(
+              10L,
+              MediaType.APPLICATION_XML_VALUE,
+              new ByteArrayInputStream(ASDF.getBytes()),
+              KEY,
+              Map.of());
         });
   }
 

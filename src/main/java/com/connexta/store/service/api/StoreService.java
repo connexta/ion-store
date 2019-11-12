@@ -28,7 +28,7 @@ public interface StoreService {
       @NotBlank final String fileName,
       @NotNull @Min(1L) @Max(10737418240L) final Long metacardFileSize,
       @NotNull final InputStream metacardInputStream)
-      throws StoreException, TransformException, StoreException;
+      throws StoreException, TransformException;
 
   /**
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
