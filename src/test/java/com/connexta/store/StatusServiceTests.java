@@ -16,7 +16,6 @@ import com.connexta.store.config.AmazonS3Configuration;
 import com.connexta.store.config.S3StorageConfiguration;
 import com.connexta.store.controllers.StoreController;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;

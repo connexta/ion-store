@@ -10,6 +10,8 @@ import com.connexta.poller.service.Poller;
 import com.connexta.poller.service.StatusService;
 import java.net.URI;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -17,7 +19,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class TransformConfiguration {
@@ -33,8 +34,13 @@ public class TransformConfiguration {
   }
 
   @Bean
-  public StatusService transformStatusService(@NotNull final RestTemplate restTemplate) {
-    return new StatusService(restTemplate);
+  public ExecutorService executorService() {
+    return Executors.newFixedThreadPool(64);
+  }
+
+  @Bean
+  public StatusService statusService(@NotNull final ExecutorService executorService) {
+    return new StatusService(executorService);
   }
 
   @Bean

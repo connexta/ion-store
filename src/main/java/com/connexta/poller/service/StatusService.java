@@ -16,15 +16,14 @@ import com.dyngr.core.StopStrategies;
 import com.dyngr.core.WaitStrategies;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
+import org.springframework.web.reactive.function.client.WebClientException;
 
 /**
  * This is class is meant to be instantiated as a Bean, Component, or Service. The class's
@@ -36,19 +35,15 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class StatusService {
 
-  private final RestTemplate restTemplate;
-  private final int corePoolSize;
   private final int sleepTime;
   ExecutorService executorService;
   private final int giveUpAfter;
 
-  public StatusService(RestTemplate restTemplate) {
+  public StatusService(ExecutorService executorService) {
     // These values can be changed or made configurable.
-    corePoolSize = 64;
     giveUpAfter = 20;
     sleepTime = 1;
-    this.restTemplate = restTemplate;
-    executorService = Executors.newFixedThreadPool(corePoolSize);
+    this.executorService = executorService;
   }
 
   public Future<StatusResponse> poll(URI uri) {
@@ -57,14 +52,16 @@ public class StatusService {
         () -> {
           StatusResponse statusResponse = null;
           try {
-            ResponseEntity<StatusResponse> entity =
-                restTemplate.getForEntity(uri, StatusResponse.class);
-            statusResponse = entity.getBody();
+            WebClient webClient = WebClient.create(uri.toString());
+            RequestHeadersUriSpec<?> request = webClient.get();
+            statusResponse = request.exchange().block().bodyToMono(StatusResponse.class).block();
 
-          } catch (HttpStatusCodeException e) {
+          } catch (WebClientException e) {
             // TODO Follow-on ticket -- Handle (4XX) and (5XX) responses
+            // TODO Test this catch
 
           } catch (ResourceAccessException e) {
+            // TODO Test this catch. Not sure if same exception is thrown since switch to WebClient
             // ResourceAccessException thrown if host is not available, unreachable, or not
             // listening on the port. Exit this attempt, but try again later.
             continueFor(e);
