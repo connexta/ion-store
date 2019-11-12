@@ -36,6 +36,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +53,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.annotation.DirtiesContext;
@@ -301,52 +303,52 @@ public class StoreITests {
     // then
     assertThat(response.getStatusCode(), is(HttpStatus.NOT_IMPLEMENTED));
   }
-  //
-  //  @Test
-  //  public void testRetrieveFile() throws Exception {
-  //    // given
-  //    final Charset encoding = StandardCharsets.UTF_8;
-  //    final String contents =
-  //        "All the color had been leached from Winterfell until only grey and white remained";
-  //    final InputStream inputStream = IOUtils.toInputStream(contents, encoding);
-  //    final long fileSize = (long) inputStream.available();
-  //    final String mediaType = "text/plain";
-  //    final String fileName = "test_file_name.txt";
-  //    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-  //    body.add(
-  //        "file",
-  //        new InputStreamResource(inputStream) {
-  //
-  //          @Override
-  //          public long contentLength() {
-  //            return fileSize;
-  //          }
-  //
-  //          @Override
-  //          public String getFilename() {
-  //            return fileName;
-  //          }
-  //        });
-  //
-  //    final URI location = restTemplate.postForLocation(CREATE_DATASET_URL_TEMPLATE, body);
-  //
-  //    // when
-  //    final ResponseEntity<Resource> response = restTemplate.getForEntity(location,
-  // Resource.class);
-  //
-  //    // then
-  //    assertThat(response.getStatusCode(), is(HttpStatus.OK));
-  //    final Resource retrievedFile = response.getBody();
-  //    assertThat(retrievedFile.getFilename(), is(fileName));
-  //    assertThat(retrievedFile.contentLength(), is(fileSize));
-  //    assertThat(retrievedFile.isReadable(), is(true));
-  //    final HttpHeaders responseHeaders = response.getHeaders();
-  //    assertThat(
-  //        responseHeaders.getContentDisposition().toString(),
-  //        is(String.format("attachment; filename=\"%s\"", fileName)));
-  //    assertThat(responseHeaders.getContentType(), is(MediaType.valueOf(mediaType)));
-  //    assertThat(IOUtils.toString(retrievedFile.getInputStream(), encoding), is(contents));
-  //  }
+
+  @Test
+  @Disabled
+  public void testRetrieveFile() throws Exception {
+    // given
+    final Charset encoding = StandardCharsets.UTF_8;
+    final String contents =
+        "All the color had been leached from Winterfell until only grey and white remained";
+    final InputStream inputStream = IOUtils.toInputStream(contents, encoding);
+    final long fileSize = (long) inputStream.available();
+    final String mediaType = MediaType.TEXT_PLAIN_VALUE;
+    final String fileName = "test_file_name.txt";
+    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add(
+        "file",
+        new InputStreamResource(inputStream) {
+
+          @Override
+          public long contentLength() {
+            return fileSize;
+          }
+
+          @Override
+          public String getFilename() {
+            return fileName;
+          }
+        });
+
+    final URI location = restTemplate.postForLocation(CREATE_DATASET_URL_TEMPLATE, body);
+
+    // when
+    final ResponseEntity<Resource> response = restTemplate.getForEntity(location, Resource.class);
+
+    // then
+    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    final Resource retrievedFile = response.getBody();
+    assertThat(retrievedFile.getFilename(), is(fileName));
+    assertThat(retrievedFile.contentLength(), is(fileSize));
+    assertThat(retrievedFile.isReadable(), is(true));
+    final HttpHeaders responseHeaders = response.getHeaders();
+    assertThat(
+        responseHeaders.getContentDisposition().toString(),
+        is(String.format("attachment; filename=\"%s\"", fileName)));
+    assertThat(responseHeaders.getContentType(), is(MediaType.valueOf(mediaType)));
+    assertThat(IOUtils.toString(retrievedFile.getInputStream(), encoding), is(contents));
+  }
 
   /**
    * @see #testRetrieveFileWhenS3IsEmpty()
