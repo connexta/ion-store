@@ -32,6 +32,6 @@ public class TransformConfiguration {
 
   @Bean
   public StatusService statusService(@NotNull final ExecutorService executorService) {
-    return new StatusService(1, 10, executorService, WebClient.create());
+    return new StatusService(1, 20, executorService, WebClient.create());
   }
 }
