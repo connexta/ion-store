@@ -17,7 +17,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -69,8 +68,8 @@ public class Poller {
       // Start polling
       Future<StatusResponse> pollResult = statusService.poll(statusUri);
 
-      // Run worker another thread so processing the transferQueue can continue
-      executor.submit(new Job(pollResult));
+      // Run on another thread so processing the transferQueue is not blocked
+      executor.submit(() -> run(pollResult));
     }
   }
 
@@ -93,23 +92,17 @@ public class Poller {
     log.warn("Stopped WorkerService with {} tasks uncompleted", unfinished.size());
   }
 
-  @AllArgsConstructor
-  static class Job implements Runnable {
-
-    private final Future<StatusResponse> pollResult;
-
-    public void run() {
-      StatusResponse response;
-      try {
-        response = pollResult.get();
-      } catch (InterruptedException | ExecutionException e) {
-        // TODO: Follow-on ticket -- Log the interruption
-        Thread.currentThread().interrupt();
-        return;
-      }
-
-      // TODO Follow-on ticket -- add functionality to call Store Service and other work
-
+  private void run(Future<StatusResponse> pollResult) {
+    StatusResponse response;
+    try {
+      response = pollResult.get();
+    } catch (InterruptedException | ExecutionException e) {
+      // TODO: Follow-on ticket -- Log the interruption
+      Thread.currentThread().interrupt();
+      return;
     }
+
+    // TODO Follow-on ticket -- Send REST request to Store Service
+
   }
 }

@@ -54,13 +54,6 @@ class StatusServiceTests {
   @Test
   void testPoll()
       throws URISyntaxException, ExecutionException, InterruptedException, JsonProcessingException {
-
-    StatusResponse response = new StatusResponse();
-    response.setStatus("complete");
-    ObjectMapper objectMapper = new ObjectMapper();
-    String json = objectMapper.writeValueAsString(response);
-    StatusResponse test = objectMapper.readValue(json, StatusResponse.class);
-
     server
         .expect(ExpectedCount.min(1), requestTo("http://status"))
         .andRespond(withSuccess("{\"status\":\"complete\"}", MediaType.APPLICATION_JSON));

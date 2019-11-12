@@ -12,7 +12,6 @@ import static com.dyngr.core.AttemptResults.justContinue;
 
 import com.dyngr.PollerBuilder;
 import com.dyngr.core.AttemptMaker;
-import com.dyngr.core.AttemptResult;
 import com.dyngr.core.StopStrategies;
 import com.dyngr.core.WaitStrategies;
 import java.net.URI;
@@ -52,9 +51,37 @@ public class StatusService {
     executorService = Executors.newFixedThreadPool(corePoolSize);
   }
 
-  public Future<StatusResponse> poll(URI statusUri) {
+  public Future<StatusResponse> poll(URI uri) {
 
-    return builder().polling(new Task(statusUri)).build().start();
+    AttemptMaker<StatusResponse> attemptMaker =
+        () -> {
+          StatusResponse statusResponse = null;
+          try {
+            ResponseEntity<StatusResponse> entity =
+                restTemplate.getForEntity(uri, StatusResponse.class);
+            statusResponse = entity.getBody();
+
+          } catch (HttpStatusCodeException e) {
+            // TODO Follow-on ticket -- Handle (4XX) and (5XX) responses
+
+          } catch (ResourceAccessException e) {
+            // ResourceAccessException thrown if host is not available, unreachable, or not
+            // listening on the port. Exit this attempt, but try again later.
+            continueFor(e);
+          }
+
+          // TODO: Follow-on ticket -- If the transform job is done, stop polling
+          if (statusResponse != null && "complete".equalsIgnoreCase(statusResponse.getStatus())) {
+
+            // Stop polling
+            return finishWith(statusResponse);
+          }
+
+          // Job not done, keep polling
+          return justContinue();
+        };
+
+    return builder().polling(attemptMaker).build().start();
   }
 
   private PollerBuilder builder() {
@@ -63,47 +90,5 @@ public class StatusService {
         .stopIfException(false)
         .withWaitStrategy(WaitStrategies.fixedWait(sleepTime, TimeUnit.SECONDS))
         .withStopStrategy(StopStrategies.stopAfterDelay(giveUpAfter, TimeUnit.SECONDS));
-  }
-
-  class Task implements AttemptMaker<StatusResponse> {
-
-    private final URI uri;
-
-    Task(URI uri) {
-      this.uri = uri;
-    }
-
-    public AttemptResult<StatusResponse> process() {
-      StatusResponse statusResponse = null;
-      try {
-        ResponseEntity<StatusResponse> entity =
-            restTemplate.getForEntity(uri, StatusResponse.class);
-        statusResponse = entity.getBody();
-
-      } catch (HttpStatusCodeException e) {
-        // TODO Follow-on ticket -- Handle (4XX) and (5XX) responses
-
-      } catch (ResourceAccessException e) {
-        // ResourceAccessException thrown if host is not available, unreachable, or not
-        // listening on the port. Exit this attempt, but try again later.
-        continueFor(e);
-      }
-
-      //    If the transform job is done, stop polling
-      if (statusResponse != null && isDone(statusResponse)) {
-
-        // Stop polling
-        return finishWith(statusResponse);
-      }
-
-      // Job not done, keep polling
-      return justContinue();
-    }
-  }
-
-  // Return true to stop polling
-  // TODO: Follow-on ticket --
-  private boolean isDone(StatusResponse response) {
-    return "complete".equals(response.getStatus());
   }
 }
