@@ -9,6 +9,7 @@ package com.connexta.store.controllers;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,9 +30,12 @@ public class StoreControllerTest {
 
   private StoreApi storeApi;
 
+  private IngestApi ingestApi;
+
   @BeforeEach
   public void beforeEach() {
     storeApi = new StoreController(mockStoreService, STORE_API_VERSION);
+    ingestApi = new StoreController(mockStoreService, STORE_API_VERSION);
   }
 
   @Test
@@ -39,5 +43,11 @@ public class StoreControllerTest {
     assertThat(
         storeApi.createDataset(STORE_API_VERSION, mockMultipartFile).getStatusCode(),
         is(HttpStatus.NOT_IMPLEMENTED));
+  }
+
+  @Test
+  public void testGetRequest() {
+    assertThat(storeApi.getRequest().isEmpty(), is(true));
+    assertThat(ingestApi.getRequest().isEmpty(), is(true));
   }
 }

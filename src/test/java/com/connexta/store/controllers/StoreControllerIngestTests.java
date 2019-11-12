@@ -6,13 +6,15 @@
  */
 package com.connexta.store.controllers;
 
+import static com.connexta.store.controllers.MultipartFileValidator.MAX_FILE_BYTES;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.LAST_MODIFIED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,38 +25,54 @@ import com.connexta.store.exceptions.common.DetailedErrorAttributes;
 import com.connexta.store.service.api.StoreService;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.OffsetDateTime;
 import java.util.stream.Stream;
 import javax.inject.Inject;
+import javax.validation.ValidationException;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 @WebMvcTest(StoreController.class)
 @Import({DetailedErrorAttributes.class, StoreControllerConfiguration.class})
 @AutoConfigureMockMvc
 public class StoreControllerIngestTests {
+  private StoreController storeController;
   private static final String ACCEPT_VERSION = "0.1.0";
   private static final String CORRELATION_ID = "90210";
   private static final String LAST_MODIFIED_DATE = "1984-04-20T08:08:08Z";
   private static final MockMultipartFile FILE =
       new MockMultipartFile(
-          "file", "originalFilename.txt", "text/plain", "file_content".getBytes());
+          "file", "originalFilename.txt", MediaType.TEXT_PLAIN_VALUE, "file_content".getBytes());
   private static final MockMultipartFile METACARD =
       new MockMultipartFile("metacard", "ignored.xml", "application/xml", "content".getBytes());
 
   @MockBean private StoreService mockStoreService;
   @Inject private MockMvc mockMvc;
+
+  @Mock MultipartFile mockFile;
+
+  @BeforeEach
+  public void beforeEach() {
+    mockFile = mock(MultipartFile.class);
+    storeController = new StoreController(mockStoreService, ACCEPT_VERSION);
+  }
 
   @ParameterizedTest
   @ValueSource(
@@ -222,5 +240,91 @@ public class StoreControllerIngestTests {
             return false;
           }
         });
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = " ")
+  public void testIngestBlankContentType(final String contentType) {
+    when(mockFile.getContentType()).thenReturn(contentType);
+    assertThat(
+        storeController
+            .ingest(
+                ACCEPT_VERSION,
+                OffsetDateTime.parse(LAST_MODIFIED_DATE),
+                mockFile,
+                CORRELATION_ID,
+                METACARD)
+            .getStatusCode(),
+        is(HttpStatus.ACCEPTED));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = "   ")
+  public void testBadFilename(final String filename) {
+    when(mockFile.getContentType()).thenReturn("testContentType");
+    when(mockFile.getOriginalFilename()).thenReturn(filename);
+    assertThat(
+        storeController
+            .ingest(
+                ACCEPT_VERSION,
+                OffsetDateTime.parse(LAST_MODIFIED_DATE),
+                mockFile,
+                CORRELATION_ID,
+                METACARD)
+            .getStatusCode(),
+        is(HttpStatus.ACCEPTED));
+  }
+
+  @Test
+  void testIngestFileTooLarge() {
+    when(mockFile.getContentType()).thenReturn("testContentType");
+    when(mockFile.getOriginalFilename()).thenReturn("testFilename");
+    when(mockFile.getSize()).thenReturn(MAX_FILE_BYTES + 1);
+    assertThat(
+        storeController
+            .ingest(
+                ACCEPT_VERSION,
+                OffsetDateTime.parse(LAST_MODIFIED_DATE),
+                mockFile,
+                CORRELATION_ID,
+                METACARD)
+            .getStatusCode(),
+        is(HttpStatus.ACCEPTED));
+  }
+
+  @Test
+  void testIngestFileTooSmall() {
+    when(mockFile.getContentType()).thenReturn("testContentType");
+    when(mockFile.getOriginalFilename()).thenReturn("testFilename");
+    when(mockFile.getSize()).thenReturn(0L);
+    assertThat(
+        storeController
+            .ingest(
+                ACCEPT_VERSION,
+                OffsetDateTime.parse(LAST_MODIFIED_DATE),
+                mockFile,
+                CORRELATION_ID,
+                METACARD)
+            .getStatusCode(),
+        is(HttpStatus.ACCEPTED));
+  }
+
+  @Test
+  void testIngestCannotReadAttachment() throws Exception {
+    when(mockFile.getContentType()).thenReturn("testContentType");
+    when(mockFile.getOriginalFilename()).thenReturn("testFilename");
+    when(mockFile.getSize()).thenReturn(MAX_FILE_BYTES);
+    when(mockFile.getInputStream()).thenThrow(IOException.class);
+    assertThrows(
+        ValidationException.class,
+        () ->
+            storeController.ingest(
+                ACCEPT_VERSION,
+                OffsetDateTime.parse(LAST_MODIFIED_DATE),
+                mockFile,
+                CORRELATION_ID,
+                METACARD));
   }
 }
