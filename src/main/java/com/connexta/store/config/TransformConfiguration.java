@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class TransformConfiguration {
@@ -40,7 +41,7 @@ public class TransformConfiguration {
 
   @Bean
   public StatusService statusService(@NotNull final ExecutorService executorService) {
-    return new StatusService(executorService);
+    return new StatusService(executorService, WebClient.create());
   }
 
   @Bean

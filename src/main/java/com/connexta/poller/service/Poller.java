@@ -6,6 +6,7 @@
  */
 package com.connexta.poller.service;
 
+import com.dyngr.exception.PollerException;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
@@ -97,7 +98,9 @@ public class Poller {
     try {
       response = pollResult.get();
     } catch (InterruptedException | ExecutionException e) {
-      // TODO: Follow-on ticket -- Log the interruption
+      // TODO: Follow-on ticket -- Polling failed permanently. Log the failure.
+      // If it is an execution exception, the cause is likely a PollerStoppedException.
+      // PollerStoppedException means retry or wait limits exceeded.
       Thread.currentThread().interrupt();
       return;
     }
