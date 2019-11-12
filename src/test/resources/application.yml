@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 endpointUrl:
   retrieve: http://localhost:${server.port}
   transform: http://localhost:9090/transform
