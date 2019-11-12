@@ -35,7 +35,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
-// @ExtendWith(MockitoExtension.class)
 class StatusServiceTests {
 
   // Three mocks to prevent the error "No qualifying bean of type
