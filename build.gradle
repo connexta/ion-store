@@ -20,7 +20,7 @@ buildscript {
 }
 
 plugins {
-    id "com.diffplug.gradle.spotless" version "3.25.0"
+    id "com.diffplug.gradle.spotless" version "3.26.0"
     id "java"
     id "com.palantir.docker" version "0.22.1"
     id "maven"
