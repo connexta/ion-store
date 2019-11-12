@@ -6,9 +6,7 @@
  */
 package com.connexta.poller.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-// TODO: Follow-on ticket -- Add/remove any fields needed.
+// TODO: Expectation is that this class would be provided by the Transform API
 public class StatusResponse {
 
   private String status;
@@ -21,11 +19,5 @@ public class StatusResponse {
 
   public void setStatus(String status) {
     this.status = status;
-  }
-
-  // TODO Follow-on ticket -- Return true to stop polling.
-  @JsonIgnore
-  public boolean isDone() {
-    return true;
   }
 }
