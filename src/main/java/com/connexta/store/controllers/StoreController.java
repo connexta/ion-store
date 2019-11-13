@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -68,6 +69,39 @@ public class StoreController implements StoreApi, IngestApi {
   @Override
   public Optional<NativeWebRequest> getRequest() {
     return Optional.empty();
+  }
+
+  /**
+   * TODO Use {@link org.springframework.web.server.ResponseStatusException} instead of catching
+   * {@link Exception}s
+   */
+  @Override
+  public ResponseEntity<Void> createDataset(
+      final String acceptVersion, @Valid final MultipartFile file) {
+    final String expectedAcceptVersion = storeApiVersion;
+    if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
+      throw new UnsupportedOperationException(
+          String.format(
+              "%s was \"%s\", but only \"%s\" is currently supported.",
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
+    }
+
+    MultipartFileValidator.validate(file);
+    final String mediaType = file.getContentType();
+    final String fileName = file.getOriginalFilename();
+
+    final URI location;
+    try (final InputStream inputStream = file.getInputStream()) {
+      location = storeService.createDataset(file.getSize(), mediaType, fileName, inputStream);
+    } catch (IOException e) {
+      throw new ValidationException(
+          String.format(
+              "Unable to read file for createDataset request with mediaType=%s and fileName=%s",
+              mediaType, fileName),
+          e);
+    }
+
+    return ResponseEntity.created(location).build();
   }
 
   @Override

@@ -36,7 +36,6 @@ import org.hamcrest.TypeSafeMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -249,7 +248,7 @@ public class StoreITests {
         restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, body, Void.class);
 
     // then
-    assertThat(response.getStatusCode(), is(HttpStatus.NOT_IMPLEMENTED));
+    assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
   }
 
   @Test
@@ -301,11 +300,10 @@ public class StoreITests {
         restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, body, Void.class);
 
     // then
-    assertThat(response.getStatusCode(), is(HttpStatus.NOT_IMPLEMENTED));
+    assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
   }
 
   @Test
-  @Disabled
   public void testRetrieveFile() throws Exception {
     // given
     final Charset encoding = StandardCharsets.UTF_8;

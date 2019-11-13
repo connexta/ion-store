@@ -1,2 +1,3 @@
 endpointUrl:
   retrieve: http://store:8080
+  transform: http://localhost:9090/transform/

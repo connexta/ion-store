@@ -4,3 +4,4 @@ s3:
   bucket:
     file: ingest-quarantine
     irm: irm
+    metacard: metacard-quarantine

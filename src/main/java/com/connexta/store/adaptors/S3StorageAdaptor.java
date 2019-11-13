@@ -54,7 +54,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
     if (!mediaType.isEmpty()) {
       objectMetadata.setContentType(mediaType);
     }
-    if (!mediaType.isEmpty()) {
+    if (!metadata.isEmpty()) {
       objectMetadata.setUserMetadata(metadata);
     }
     objectMetadata.setContentLength(fileSize);

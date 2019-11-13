@@ -50,6 +50,22 @@ public class StoreServiceImpl implements StoreService {
   @NotNull private final TransformClient transformClient;
 
   @Override
+  @NotNull
+  public URI createDataset(
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
+      @NotBlank final String mediaType,
+      @NotBlank final String fileName,
+      @NotNull final InputStream fileInputStream)
+      throws StoreException {
+    final String datasetId = UUID.randomUUID().toString().replace("-", "");
+    fileStorageAdaptor.store(
+        fileSize, mediaType, fileInputStream, datasetId, Map.of(FILE_NAME_METADATA_KEY, fileName));
+    return UriComponentsBuilder.fromUri(retrieveUri)
+        .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
+        .build(datasetId);
+  }
+
+  @Override
   public @NotNull FileRetrieveResponse retrieveFile(
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws RetrieveException {
