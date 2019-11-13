@@ -6,25 +6,20 @@
  */
 package com.connexta.store;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isA;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.hamcrest.Matchers.*;
 
-import com.connexta.poller.service.StatusResponse;
 import com.connexta.poller.service.StatusService;
 import com.connexta.store.config.AmazonS3Configuration;
 import com.connexta.store.config.S3StorageConfiguration;
 import com.connexta.store.controllers.StoreController;
-import com.dyngr.exception.PollerStoppedException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import javax.inject.Inject;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -46,28 +41,15 @@ class StatusServiceTests {
   @Inject StatusService statusService;
 
   @Test
-  void testPoll() throws ExecutionException, InterruptedException {
+  void testPoll() throws InterruptedException {
     HttpUrl url = server.url("/");
     server.enqueue(
         new MockResponse()
             .setResponseCode(200)
             .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .setBody("{\"status\":\"complete\"}"));
-    Future<StatusResponse> promisedResponse = statusService.poll(url.uri());
-    StatusResponse statusResponse = promisedResponse.get();
-    assertThat(statusResponse.getStatus(), is("complete"));
-  }
-
-  // TODO Configure StatusService to use shorter time-to-live
-  @Test
-  void testHostNotAvailable() throws InterruptedException, URISyntaxException {
-    Future<StatusResponse> promisedResponse = statusService.poll(new URI("http://nohost"));
-    try {
-      promisedResponse.get();
-    } catch (ExecutionException e) {
-      assertThat(e.getCause(), isA(PollerStoppedException.class));
-      return;
-    }
-    fail();
+    statusService.submit(url.uri());
+    RecordedRequest request = server.takeRequest();
+    assertThat(request.getRequestUrl(), is(url));
   }
 }

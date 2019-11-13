@@ -13,7 +13,6 @@ import com.connexta.store.service.api.StoreService;
 import com.connexta.store.service.impl.StoreServiceImpl;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutorService;
 import javax.inject.Named;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -30,15 +29,13 @@ public class StoreServiceConfiguration {
       @NotNull @Named("fileStorageAdaptor") final StorageAdaptor fileStorageAdapter,
       @NotNull @Named("irmStorageAdaptor") final StorageAdaptor irmStorageAdapter,
       @NotNull final IndexDatasetClient indexDatasetClient,
-      @NotNull final StatusService statusService,
-      @NotNull final ExecutorService executorService)
+      @NotNull final StatusService statusService)
       throws URISyntaxException {
     return new StoreServiceImpl(
         new URI(retrieveEndpoint),
         fileStorageAdapter,
         irmStorageAdapter,
         indexDatasetClient,
-        statusService,
-        executorService);
+        statusService);
   }
 }

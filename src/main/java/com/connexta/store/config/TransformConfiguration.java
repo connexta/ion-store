@@ -7,6 +7,7 @@
 package com.connexta.store.config;
 
 import com.connexta.poller.service.StatusService;
+import com.connexta.poller.service.StatusServiceImpl;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.validation.constraints.NotBlank;
@@ -24,7 +25,6 @@ public class TransformConfiguration {
     return transformApiVersion;
   }
 
-  // TODO: For now the polling library and the async jobs can share the same thread pool
   @Bean
   public ExecutorService executorService() {
     return Executors.newFixedThreadPool(64);
@@ -32,6 +32,6 @@ public class TransformConfiguration {
 
   @Bean
   public StatusService statusService(@NotNull final ExecutorService executorService) {
-    return new StatusService(1, 20, executorService, WebClient.create());
+    return new StatusServiceImpl(1, 20, executorService, WebClient.create());
   }
 }
