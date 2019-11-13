@@ -138,7 +138,7 @@ public class StoreServiceImpl implements StoreService {
         Map.of());
     final URI metacardLocation;
     try {
-      metacardLocation = new URI(retrieveUri.toString() + datasetId);
+      metacardLocation = new URI(retrieveUri.toString() + "/dataset/" + datasetId);
     } catch (URISyntaxException e) {
       throw new StoreException("Unable to construct retrieve URI", e);
     }
