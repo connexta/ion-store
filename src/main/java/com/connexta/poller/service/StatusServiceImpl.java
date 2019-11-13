@@ -18,6 +18,7 @@ import com.dyngr.core.WaitStrategies;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +34,10 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class StatusServiceImpl implements StatusService {
 
-  private final int secondsBetweenRetries;
-  private final int secondsToLive;
-  @NotNull ExecutorService executorService;
-  @NotNull WebClient webClient;
-  public static final HttpStatus EXPECTED_HTTP_STATUS = HttpStatus.OK;
+  @Min(0) private final int secondsBetweenRetries;
+  @Min(1) private final int secondsToLive;
+  @NotNull private final ExecutorService executorService;
+  @NotNull private final WebClient webClient;
 
   @Override
   @SuppressWarnings("unused")
@@ -55,7 +55,7 @@ public class StatusServiceImpl implements StatusService {
                 .uri(uri)
                 .retrieve()
                 .onStatus(
-                    httpStatus -> !EXPECTED_HTTP_STATUS.equals(httpStatus),
+                    httpStatus -> !HttpStatus.OK.equals(httpStatus),
                     clientResponse ->
                         Mono.error(
                             () ->
@@ -64,7 +64,6 @@ public class StatusServiceImpl implements StatusService {
                                     String.format("Could not get status for %s", uri.toString()))))
                 .bodyToMono(StatusResponse.class)
                 .block();
-        // SonarLint said to catch Exception and not Throwable
       } catch (Exception e) {
         continueFor(e);
       }
