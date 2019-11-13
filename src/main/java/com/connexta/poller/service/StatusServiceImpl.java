@@ -34,8 +34,12 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class StatusServiceImpl implements StatusService {
 
-  @Min(0) private final int secondsBetweenRetries;
-  @Min(1) private final int secondsToLive;
+  @Min(0)
+  private final int secondsBetweenRetries;
+
+  @Min(1)
+  private final int secondsToLive;
+
   @NotNull private final ExecutorService executorService;
   @NotNull private final WebClient webClient;
 
