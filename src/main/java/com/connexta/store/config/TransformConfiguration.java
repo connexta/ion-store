@@ -9,12 +9,13 @@ package com.connexta.store.config;
 import com.connexta.poller.service.StatusService;
 import com.connexta.poller.service.StatusServiceImpl;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.support.ExecutorServiceAdapter;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -26,8 +27,12 @@ public class TransformConfiguration {
   }
 
   @Bean
-  public ExecutorService executorService() {
-    return Executors.newFixedThreadPool(64);
+  public ExecutorService threadPoolTaskExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(32);
+    executor.setThreadNamePrefix("polling threadpool");
+    executor.initialize();
+    return new ExecutorServiceAdapter(executor);
   }
 
   @Bean

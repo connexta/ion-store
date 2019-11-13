@@ -13,8 +13,6 @@ import com.connexta.poller.service.StatusService;
 import com.connexta.store.config.AmazonS3Configuration;
 import com.connexta.store.config.S3StorageConfiguration;
 import com.connexta.store.controllers.StoreController;
-import java.net.URI;
-import java.net.URISyntaxException;
 import javax.inject.Inject;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;

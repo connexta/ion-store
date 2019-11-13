@@ -26,10 +26,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 /**
- * This is class is meant to be instantiated as a Bean, Component, or Service. The class's
- * responsibilities are to manage the settings for polling and kick off new polling tasks. Other
- * responsibilities include settings the wait and retry behavior. It also creates and configures the
- * executor, and ensures that it is shutdown properly.
+ * The class's responsibilities are to manage the settings for polling and kick off new polling
+ * tasks. Other responsibilities include settings the wait and retry behavior.
  */
 @Slf4j
 @AllArgsConstructor

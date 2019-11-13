@@ -42,6 +42,7 @@ repositories {
 dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "com.connexta.transformation:transformation-api-rest-spring-stubs:${transformApiVersion}"
     implementation "com.amazonaws:aws-java-sdk-s3:1.11.613"
     implementation "com.connexta.search:index-api-rest-spring-stubs:${indexApiVersion}"
     implementation "com.connexta.store:store-api-rest-spring-stubs:${storeApiVersion}"
