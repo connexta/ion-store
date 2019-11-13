@@ -6,25 +6,18 @@
  */
 package com.connexta.store.controllers;
 
-import static com.connexta.store.controllers.MultipartFileValidator.MAX_FILE_BYTES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.StoreService;
-import java.io.IOException;
-import javax.validation.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 // TODO: These test can be changed to test the MultipartFileValidator instead of the controller.
@@ -51,44 +44,10 @@ public class StoreControllerTest {
     assertThat(ingestApi.getRequest().isEmpty(), is(true));
   }
 
-  @ParameterizedTest
-  @NullAndEmptySource
-  @ValueSource(strings = "   ")
-  public void testBadContentType(
-      final String contentType, @Mock final MultipartFile mockMultipartFile) {
-    when(mockMultipartFile.getContentType()).thenReturn(contentType);
-    assertBadRequest(mockMultipartFile);
-  }
-
-  @ParameterizedTest
-  @NullAndEmptySource
-  @ValueSource(strings = "   ")
-  public void testBadFilename(final String filename, @Mock final MultipartFile mockMultipartFile) {
-    when(mockMultipartFile.getContentType()).thenReturn("testContentType");
-    when(mockMultipartFile.getOriginalFilename()).thenReturn(filename);
-    assertBadRequest(mockMultipartFile);
-  }
-
   @Test
-  void testFileTooLarge(@Mock final MultipartFile mockMultipartFile) {
-    when(mockMultipartFile.getContentType()).thenReturn("testContentType");
-    when(mockMultipartFile.getOriginalFilename()).thenReturn("testFilename");
-    when(mockMultipartFile.getSize()).thenReturn(MAX_FILE_BYTES + 1);
-    assertBadRequest(mockMultipartFile);
-  }
-
-  @Test
-  void testCannotReadAttachment(@Mock final MultipartFile mockMultipartFile) throws Exception {
-    when(mockMultipartFile.getContentType()).thenReturn("testContentType");
-    when(mockMultipartFile.getOriginalFilename()).thenReturn("testFilename");
-    when(mockMultipartFile.getSize()).thenReturn(MAX_FILE_BYTES);
-    when(mockMultipartFile.getInputStream()).thenThrow(IOException.class);
-    assertBadRequest(mockMultipartFile);
-  }
-
-  private void assertBadRequest(@Mock MultipartFile mockMultipartFile) {
-    assertThrows(
-        ValidationException.class,
-        () -> storeApi.createDataset(STORE_API_VERSION, mockMultipartFile));
+  void testCreateDatasetNotImplemented(@Mock MultipartFile mockMultipartFile) {
+    assertThat(
+        storeApi.createDataset(STORE_API_VERSION, mockMultipartFile).getStatusCode(),
+        is(HttpStatus.NOT_IMPLEMENTED));
   }
 }

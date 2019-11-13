@@ -12,7 +12,6 @@ import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.exceptions.TransformException;
 import java.io.InputStream;
-import java.net.URI;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -30,14 +29,6 @@ public interface StoreService {
       @NotNull @Min(1L) @Max(10737418240L) final Long metacardFileSize,
       @NotNull final InputStream metacardInputStream)
       throws StoreException, TransformException;
-
-  @NotNull
-  URI createDataset(
-      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotBlank final String mediaType,
-      @NotBlank final String fileName,
-      @NotNull final InputStream fileInputStream)
-      throws StoreException;
 
   /**
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
