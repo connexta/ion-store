@@ -12,6 +12,7 @@ import static com.connexta.store.controllers.StoreController.METACARD_MEDIA_TYPE
 import static com.connexta.store.controllers.StoreController.SUPPORTED_METADATA_TYPE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.http.HttpHeaders.LAST_MODIFIED;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -32,9 +33,11 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -470,6 +473,7 @@ public class StoreITests {
 
   @Test
   public void testSuccessfulIngestRequest() throws Exception {
+    AtomicReference<String> metacardId = new AtomicReference<>();
     transformMockRestServiceServer
         .expect(requestTo(endpointUrlTransform))
         .andExpect(method(HttpMethod.POST))
@@ -482,6 +486,7 @@ public class StoreITests {
                           .evaluateJsonPath(
                               ((MockClientHttpRequest) request).getBodyAsString(), String.class)
                       + "/metacard";
+              metacardId.set(metacardLocation);
               webTestClient
                   .get()
                   .uri(metacardLocation)
@@ -516,6 +521,10 @@ public class StoreITests {
         .exchange()
         .expectStatus()
         .isAccepted();
+
+    String id[] = StringUtils.split(metacardId.get(), '/');
+    assertNotNull(amazonS3.getObject(metacardBucket, id[3]));
+    assertNotNull(amazonS3.getObject(fileBucket, id[3]));
   }
 
   /**
