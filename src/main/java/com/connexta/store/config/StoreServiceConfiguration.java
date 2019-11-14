@@ -38,7 +38,6 @@ public class StoreServiceConfiguration {
         fileStorageAdapter,
         irmStorageAdapter,
         indexDatasetClient,
-        statusService,
-        executorService);
+        statusService);
   }
 }

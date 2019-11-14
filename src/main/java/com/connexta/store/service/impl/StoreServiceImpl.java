@@ -6,7 +6,6 @@
  */
 package com.connexta.store.service.impl;
 
-import com.connexta.poller.service.StatusResponse;
 import com.connexta.poller.service.StatusService;
 import com.connexta.store.adaptors.FileRetrieveResponse;
 import com.connexta.store.adaptors.StorageAdaptor;
@@ -21,9 +20,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -46,7 +42,6 @@ public class StoreServiceImpl implements StoreService {
   @NotNull private final StorageAdaptor irmStorageAdaptor;
   @NotNull private final IndexDatasetClient indexDatasetClient;
   @NotNull private final StatusService statusService;
-  @NotNull private final ExecutorService executorService;
 
   @Override
   @NotNull
@@ -108,29 +103,5 @@ public class StoreServiceImpl implements StoreService {
             .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
             .build(datasetId));
     log.info("Successfully indexed datasetId={}", datasetId);
-  }
-
-  /* TODO: Implement the logic call promote/quarantine. Doesn't have to be a lambda. Could be a class the implements Runnable or Callable. */
-  private void poll(URI uri) {
-
-    Future<StatusResponse> pollFuture = statusService.poll(uri);
-
-    // Run on another thread so processing is not blocked
-    executorService.submit(
-        () -> {
-          StatusResponse response;
-          try {
-            response = pollFuture.get();
-          } catch (InterruptedException | ExecutionException e) {
-            // TODO: Follow-on ticket -- Polling failed permanently. Log the failure.
-            // If it is an execution exception, the cause is likely a PollerStoppedException.
-            // PollerStoppedException means retry or wait limits exceeded.
-            Thread.currentThread().interrupt();
-            return;
-          }
-
-          // TODO Follow-on ticket -- Send REST request to Store Service
-          response.getStatus();
-        });
   }
 }

@@ -6,11 +6,20 @@
  */
 package com.connexta.poller.service;
 
-public interface StatusResponse {
+// TODO: Expectation is that this class would be provided by the Transform API
+public class StatusResponseImpl implements StatusResponse {
+
+  private String status;
 
   // TODO: Lombok and Jackson are not playing well together. Had to remove all Lombok annotations.
   // Not sure what I was doing wrong. Solved by creating getter/setter methods.
-  String getStatus();
+  @Override
+  public String getStatus() {
+    return status;
+  }
 
-  void setStatus(String status);
+  @Override
+  public void setStatus(String status) {
+    this.status = status;
+  }
 }
