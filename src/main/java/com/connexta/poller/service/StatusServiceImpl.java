@@ -15,11 +15,12 @@ import com.dyngr.core.AttemptMaker;
 import com.dyngr.core.StopStrategies;
 import com.dyngr.core.WaitStrategies;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -38,23 +39,36 @@ public class StatusServiceImpl implements StatusService {
   private final RestTemplate restTemplate;
 
   public void submit(URI uri) {
-    builder().polling(make(uri)).build().start();
+    Future<StatusResponse> statusFuture = builder().polling(make(uri)).build().start();
+//    StatusResponse response;
+//    try {
+//      response = statusFuture.get();
+//    } catch (InterruptedException | ExecutionException e) {
+//      log.info("Polling task failed for {}", uri);
+//      log.debug("Polling", e);
+//      return;
+//    }
+//    process(response);
+  }
+
+  private void process(StatusResponse response) {
+    // TODO: Handle the transform status
   }
 
   private AttemptMaker<StatusResponse> make(URI uri) {
     return () -> {
       StatusResponse statusResponse = null;
       try {
-        ResponseEntity<StatusResponse> entity =
-            restTemplate.getForEntity(uri, StatusResponse.class);
-        statusResponse = entity.getBody();
+        statusResponse = restTemplate.getForObject(uri, StatusResponse.class);
 
       } catch (HttpStatusCodeException e) {
         // TODO Handle (4XX) and (5XX) responses
+        log.debug("OUCH", e);
 
       } catch (ResourceAccessException e) {
         // ResourceAccessException thrown if host is not available, unreachable, or not
         // listening on the port. Exit this attempt, but try again later.
+        log.debug("OOO", e);
         continueFor(e);
       }
 

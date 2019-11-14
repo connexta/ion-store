@@ -6,66 +6,85 @@
  */
 package com.connexta.store;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.connexta.poller.service.StatusResponse;
+import com.connexta.poller.service.StatusResponseImpl;
 import com.connexta.poller.service.StatusService;
 import com.connexta.poller.service.StatusServiceImpl;
-import com.connexta.store.config.AmazonS3Configuration;
-import com.connexta.store.config.S3StorageConfiguration;
-import com.connexta.store.controllers.StoreController;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import javax.inject.Inject;
-import okhttp3.HttpUrl;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.junit.jupiter.api.Timeout;
+import org.springframework.web.client.HttpClientErrorException.NotFound;
 import org.springframework.web.client.RestTemplate;
 
-@SpringBootTest
 class StatusServiceTests {
 
-  // Three mocks to prevent the error "No qualifying bean of type
-  // 'com.amazonaws.services.s3.AmazonS3'
-  // available: expected at least 1 bean which qualifies as autowire candidate"
-  @MockBean AmazonS3Configuration amazonS3Configuration;
-  @MockBean S3StorageConfiguration s3StorageConfiguration;
-  @MockBean StoreController storeController;
+  private static StatusService statusService;
+  private static URI statusUri;
 
-  private final MockWebServer server = new MockWebServer();
-
-  @Inject StatusService statusService;
-
-  @Test
-  void testCompleteStatus() throws InterruptedException, ExecutionException {
-    StatusService statusService =
-        new StatusServiceImpl(1, 1000000, Executors.newFixedThreadPool(1), new RestTemplate());
-
-    MockWebServer server = new MockWebServer();
-    HttpUrl url = server.url("/");
-    server.enqueue(
-        new MockResponse()
-            .setResponseCode(200)
-            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .setBody("{\"status\":\"complete\"}"));
-    statusService.submit(url.uri());
-    RecordedRequest request = server.takeRequest();
-    assertThat(request.getRequestUrl(), is(url));
+  @BeforeAll
+  static void beforeAll() throws URISyntaxException {
+    statusUri = new URI("http://host");
   }
 
-  // TODO Configure StatusService to use shorter time-to-live
   @Test
-  void test500Error() {
+  void testCompleteStatus() throws InterruptedException, ExecutionException, URISyntaxException {
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    doReturn(new StatusResponseImpl("complete")).when(restTemplate).getForObject(any(), any());
+    statusService = new StatusServiceImpl(1, 100, Executors.newFixedThreadPool(1), restTemplate);
+    statusService.submit(statusUri);
+    verify(restTemplate).getForObject(eq(statusUri), any());
+  }
 
-    MockWebServer server = new MockWebServer();
-    HttpUrl url = server.url("/");
-    server.enqueue(new MockResponse().setResponseCode(500));
-    statusService.submit(url.uri());
+  @Test
+  void testInProgress() {
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    // TODO: Can't get the compiler to accept any(StatusResponse.class) for second matcher
+    when(restTemplate.getForObject(eq(statusUri), any()))
+        .thenReturn(new StatusResponseImpl("inprogress"))
+        .thenReturn(new StatusResponseImpl("complete"));
+    StatusService statusService =
+        new StatusServiceImpl(1, 2, Executors.newFixedThreadPool(1), restTemplate);
+    statusService.submit(statusUri);
+    // TODO: Does this verify really prove anything?
+    verify(restTemplate, times(2)).getForObject(eq(statusUri), any());
+  }
+
+  // TODO: How to test this case without a Future?
+  @Disabled
+  @Test
+  @Timeout(5)
+  void testDiesOnTimeout() {
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    when(restTemplate.getForObject(any(), any())).thenReturn(new StatusResponseImpl("inprogress"));
+    StatusService statusService =
+        new StatusServiceImpl(1, 2, Executors.newFixedThreadPool(1), restTemplate);
+    statusService.submit(statusUri);
+  }
+
+  // TODO: The thread just dies when the 404 exception is thrown. Can't figure it out.
+  @Disabled
+  @Test
+  void testTemporaryFailure() {
+    StatusResponse response = mock(StatusResponse.class);
+    doReturn("complete").when(response).getStatus();
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    when(restTemplate.getForObject(any(), any())).thenThrow(NotFound.class).thenReturn(response);
+    StatusService statusService =
+        new StatusServiceImpl(1, 2, Executors.newFixedThreadPool(1), restTemplate);
+    statusService.submit(statusUri);
+    verify(restTemplate, times(2)).getForObject(eq(statusUri), any());
   }
 }

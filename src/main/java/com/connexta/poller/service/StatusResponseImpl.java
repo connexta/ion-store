@@ -6,7 +6,10 @@
  */
 package com.connexta.poller.service;
 
+import lombok.AllArgsConstructor;
+
 // TODO: Expectation is that this class would be provided by the Transform API
+@AllArgsConstructor
 public class StatusResponseImpl implements StatusResponse {
 
   private String status;
