@@ -119,8 +119,8 @@ docker stack deploy -c docker-compose.yml store-stack
 ### Running in the Cloud
 There are two ways to configure the build system to deploy the service to a cloud:
 - Edit the`deploy.bash` file. Set two variables near the top of the file:
-  - `SET_DOCKER_REG="ip:port"`
-  - `SET_DOCKER_W="/path/to/docker/wrapper/"`
+  - `SET_DOCKER_REG='ip:port`
+  - `SET_DOCKER_W='/path/to/docker/wrapper/'`
 
 OR
 

@@ -14,10 +14,6 @@ class SpotlessConfig {
             trimTrailingWhitespace()
             indentWithSpaces(4)
             endWithNewline()
-
-            //  Replace single quotes with double tickets
-            replace "Consistent quotations", "${(char) 39}", "\""
-
         }
     }
 
