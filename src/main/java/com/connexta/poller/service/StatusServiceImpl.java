@@ -10,7 +10,6 @@ import static com.dyngr.core.AttemptResults.continueFor;
 import static com.dyngr.core.AttemptResults.justContinue;
 import static com.dyngr.core.AttemptResults.justFinish;
 
-import com.connexta.store.exceptions.DetailedResponseStatusException;
 import com.dyngr.PollerBuilder;
 import com.dyngr.core.AttemptMaker;
 import com.dyngr.core.StopStrategies;
@@ -22,9 +21,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * The class's responsibilities are to manage the settings for polling and kick off new polling
@@ -41,34 +38,22 @@ public class StatusServiceImpl implements StatusService {
   private final int secondsToLive;
 
   @NotNull private final ExecutorService executorService;
-  @NotNull private final WebClient webClient;
+  @NotNull private final RestTemplate restTemplate;
 
   @Override
   @SuppressWarnings("unused")
   public void submit(URI uri) {
-    builder().polling(getAtemptMaker(uri)).build().start();
+    builder().polling(getAttemptMaker(uri)).build().start();
   }
 
-  private AttemptMaker<Void> getAtemptMaker(URI uri) {
+  private AttemptMaker<Void> getAttemptMaker(URI uri) {
     return () -> {
       StatusResponse statusResponse = null;
       try {
-        statusResponse =
-            webClient
-                .get()
-                .uri(uri)
-                .retrieve()
-                .onStatus(
-                    httpStatus -> !HttpStatus.OK.equals(httpStatus),
-                    clientResponse ->
-                        Mono.error(
-                            () ->
-                                new DetailedResponseStatusException(
-                                    clientResponse.statusCode(),
-                                    String.format("Could not get status for %s", uri.toString()))))
-                .bodyToMono(StatusResponse.class)
-                .block();
+        statusResponse = restTemplate.getForObject(uri.toString(), StatusResponse.class);
+
       } catch (Exception e) {
+        log.trace("Polling attempt failed {}", e.getMessage());
         continueFor(e);
       }
 

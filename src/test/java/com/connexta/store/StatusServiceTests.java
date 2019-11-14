@@ -10,36 +10,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import com.connexta.poller.service.StatusService;
-import com.connexta.store.config.AmazonS3Configuration;
-import com.connexta.store.config.S3StorageConfiguration;
-import com.connexta.store.controllers.StoreController;
-import javax.inject.Inject;
+import com.connexta.poller.service.StatusServiceImpl;
+import java.util.concurrent.Executors;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.RestTemplate;
 
-@SpringBootTest
 class StatusServiceTests {
-
-  // Three mocks to prevent the error "No qualifying bean of type
-  // 'com.amazonaws.services.s3.AmazonS3'
-  // available: expected at least 1 bean which qualifies as autowire candidate"
-  @MockBean AmazonS3Configuration amazonS3Configuration;
-  @MockBean S3StorageConfiguration s3StorageConfiguration;
-  @MockBean StoreController storeController;
 
   private final MockWebServer server = new MockWebServer();
 
-  @Inject StatusService statusService;
-
   @Test
   void testPoll() throws InterruptedException {
+    StatusService statusService =
+        new StatusServiceImpl(1, 1000000, Executors.newFixedThreadPool(1), new RestTemplate());
     HttpUrl url = server.url("/");
     server.enqueue(
         new MockResponse()

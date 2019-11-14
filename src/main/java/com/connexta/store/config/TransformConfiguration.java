@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class TransformConfiguration {
@@ -37,6 +37,6 @@ public class TransformConfiguration {
 
   @Bean
   public StatusService statusService(@NotNull final ExecutorService executorService) {
-    return new StatusServiceImpl(1, 20, executorService, WebClient.create());
+    return new StatusServiceImpl(1, 20, executorService, new RestTemplate());
   }
 }
