@@ -6,7 +6,10 @@
  */
 package com.connexta.store;
 
-import static com.connexta.store.controllers.StoreController.*;
+import static com.connexta.store.controllers.StoreController.ADD_METADATA_URL_TEMPLATE;
+import static com.connexta.store.controllers.StoreController.CREATE_DATASET_URL_TEMPLATE;
+import static com.connexta.store.controllers.StoreController.METACARD_MEDIA_TYPE;
+import static com.connexta.store.controllers.StoreController.SUPPORTED_METADATA_TYPE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;

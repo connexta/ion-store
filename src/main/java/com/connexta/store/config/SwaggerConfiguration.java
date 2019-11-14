@@ -6,7 +6,7 @@
  */
 package com.connexta.store.config;
 
-import static springfox.documentation.spi.DocumentationType.*;
+import static springfox.documentation.spi.DocumentationType.SWAGGER_2;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
