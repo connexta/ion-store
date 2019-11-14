@@ -21,6 +21,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -52,7 +53,7 @@ public class StatusServiceImpl implements StatusService {
       try {
         statusResponse = restTemplate.getForObject(uri.toString(), StatusResponse.class);
 
-      } catch (Exception e) {
+      } catch (Throwable e) {
         log.trace("Polling attempt failed {}", e.getMessage());
         continueFor(e);
       }

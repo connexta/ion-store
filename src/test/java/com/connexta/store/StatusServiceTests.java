@@ -7,10 +7,11 @@
 package com.connexta.store;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 import com.connexta.poller.service.StatusService;
 import com.connexta.poller.service.StatusServiceImpl;
+import java.io.IOException;
 import java.util.concurrent.Executors;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
@@ -23,12 +24,12 @@ import org.springframework.web.client.RestTemplate;
 
 class StatusServiceTests {
 
-  private final MockWebServer server = new MockWebServer();
+  private final StatusService statusService =
+      new StatusServiceImpl(1, 1000000, Executors.newFixedThreadPool(1), new RestTemplate());
 
   @Test
-  void testPoll() throws InterruptedException {
-    StatusService statusService =
-        new StatusServiceImpl(1, 1000000, Executors.newFixedThreadPool(1), new RestTemplate());
+  void testCompleteStatus() throws InterruptedException, IOException {
+    MockWebServer server = new MockWebServer();
     HttpUrl url = server.url("/");
     server.enqueue(
         new MockResponse()
@@ -38,5 +39,15 @@ class StatusServiceTests {
     statusService.submit(url.uri());
     RecordedRequest request = server.takeRequest();
     assertThat(request.getRequestUrl(), is(url));
+    server.shutdown();
+  }
+
+  @Test
+  void test500Error() {
+
+    MockWebServer server = new MockWebServer();
+    HttpUrl url = server.url("/");
+    server.enqueue(new MockResponse().setResponseCode(500));
+    statusService.submit(url.uri());
   }
 }
