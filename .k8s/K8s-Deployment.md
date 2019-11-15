@@ -10,7 +10,19 @@ By default the deploy-k8s.groovy deployment script will deploy to a local Miniku
 Kubernetes cluster, you will need to add the the Docker registry environment variable `K8S_DOCKER_REGISTRY`. You
 will also need to change `kubectl`'s context to the remote one with `kubectl config use-context <remote-context>`
 
+#### Optional:
+Install MiniKube, a single node Kubernetes cluster that runs locally in a VM or the host machine. Deploys a lightweight single-node k8s cluster.
+Note: Run `eval $(minikube docker-env)` to point to Minikube's docker daemon. You need to do this when you build images
+for local deployment.
+
+When starting up [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/), make sure your vm-driver is the one bundled with
+VirtualBox. Dnsmasq doesn't play nice with the standalone hyperkit.
+
 ### Before Deploying
+
+The following is for informational pruposes only. The `./gradlew deployK8s` gradle task or the `groovy deploy-k8s`
+script will do the following steps automatically.
+
 Kubernetes manifests do not support adding config files directly in the manifest via a file path. Instead we need to use
 a resource called ConfigMaps.
 
@@ -19,6 +31,7 @@ issue is that these can't be created in a manifest based off a file like we used
 to created them manually using the following commands:
 - `kubectl create configmap s3-config-map --from-file=../configs/s3_config.yml`
 - `kubectl create configmap store-config-map --from-file=../configs/store_config.yml`
+- `kubectl create configmap store-config-map --from-file=../configs/transform_config.yml`
 
 Secret files are created in a similar fashion:
 - `kubectl create secret generic s3-access-secret --from-file=../s3_access.sec`
@@ -32,14 +45,6 @@ To remove a deployment and all related pods and containers use:
 `kubectl delete -f store-deployment.yml`
 
 Note: The ConfigMap will not be deleted automatically because it was added to the cluster manually.
-#### Optional:
-Install MiniKube, a single node Kubernetes cluster that runs locally in a VM or the host machine. Deploys a lightweight single-node k8s cluster.
-Note: Run `eval $(minikube docker-env)` to point to Minikube's docker daemon. You need to do this when you build images
-for local deployment.
-
-When starting up [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/), make sure your vm-driver is the one bundled with
-VirtualBox. Dnsmasq doesn't play nice with the standalone hyperkit.
-
 
 ## Command Cheat Sheet
 - `kubectl cluster-info`: View Cluster info
