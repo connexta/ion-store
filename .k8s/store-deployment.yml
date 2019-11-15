@@ -1,6 +1,7 @@
 # Store Service deployment that creates a container for the app. It also mounts volumes for configuration and secret
-# files. The configuration files are created via manually added ConfigMaps called "store-config-map" and "s3-config-map".
-# The secret files are created manually with secret resources called "s3-secret-secret" and "s3-access-secret".
+# files. The configuration files are created via manually added ConfigMaps called "store-config-map", "s3-config-map",
+# and transform_config.yml. The secret files are created manually with secret resources called "s3-secret-secret" and
+# "s3-access-secret".
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +20,7 @@ spec:
       containers:
         - name: store
           image:  registry.default.gsp.test:80/cnxta/ion-store
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           volumeMounts:
             - name: store-configs
               mountPath: /etc/store-configs
