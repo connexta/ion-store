@@ -99,10 +99,6 @@ metadata:
     nginx.ingress.kubernetes.io/server-snippet: |
       proxy_ssl_verify off;
 spec:
-  tls:
-    - hosts:
-        - ion-store.default.gsp.test
-#      secretName: elk-gsp-tls
   rules:
     - host: ion-store.default.gsp.test
       http:
