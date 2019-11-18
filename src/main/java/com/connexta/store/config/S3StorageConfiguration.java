@@ -57,6 +57,13 @@ public class S3StorageConfiguration {
   }
 
   @Bean
+  public S3StorageAdaptor metacardStorageAdaptor(
+      @NotNull final AmazonS3 amazonS3,
+      @Value("${s3.bucket.metacard}") @NotBlank final String bucket) {
+    return new S3StorageAdaptor(amazonS3, bucket);
+  }
+
+  @Bean
   @Profile("production")
   public AmazonS3Configuration amazonS3Configuration(
       @Value("${s3.endpointUrl}") @NotBlank final String endpoint,

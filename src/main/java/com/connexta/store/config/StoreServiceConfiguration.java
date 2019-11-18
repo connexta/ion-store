@@ -7,8 +7,10 @@
 package com.connexta.store.config;
 
 import com.connexta.poller.service.StatusService;
+import com.connexta.store.adaptors.S3StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexDatasetClient;
+import com.connexta.store.clients.TransformClient;
 import com.connexta.store.service.api.StoreService;
 import com.connexta.store.service.impl.StoreServiceImpl;
 import java.net.URI;
@@ -28,14 +30,18 @@ public class StoreServiceConfiguration {
       @NotBlank @Value("${endpointUrl.retrieve}") final String retrieveEndpoint,
       @NotNull @Named("fileStorageAdaptor") final StorageAdaptor fileStorageAdapter,
       @NotNull @Named("irmStorageAdaptor") final StorageAdaptor irmStorageAdapter,
+      @NotNull @Named("metacardStorageAdaptor") final S3StorageAdaptor metacardStorageAdapter,
       @NotNull final IndexDatasetClient indexDatasetClient,
-      @NotNull final StatusService statusService)
+      @NotNull final StatusService statusService,
+      @NotNull final TransformClient transformClient)
       throws URISyntaxException {
     return new StoreServiceImpl(
         new URI(retrieveEndpoint),
         fileStorageAdapter,
         irmStorageAdapter,
+        metacardStorageAdapter,
         indexDatasetClient,
-        statusService);
+        statusService,
+        transformClient);
   }
 }

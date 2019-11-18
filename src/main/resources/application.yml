@@ -22,9 +22,9 @@ endpointUrl:
   index: http://search:8080/index/
 
 endpoints:
+  transform:
+    version: ${transformApiVersion}
   index:
     version: ${indexApiVersion}
   store:
     version: ${storeApiVersion}
-  transform:
-    version: ${transformApiVersion}

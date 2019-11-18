@@ -42,18 +42,22 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
   @Override
   public void store(
-      @NotNull @Min(1L) @Max(10737418240L) final Long size,
-      @NotBlank final String mediaType,
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
+      final String mediaType,
       @NotNull final InputStream inputStream,
       @NotBlank final String key,
-      @NotNull Map<String, String> metadata)
+      Map<String, String> metadata)
       throws StoreException {
     // TODO check if id already exists
 
     final ObjectMetadata objectMetadata = new ObjectMetadata();
-    objectMetadata.setContentType(mediaType);
-    objectMetadata.setContentLength(size);
-    objectMetadata.setUserMetadata(metadata);
+    if (!mediaType.isEmpty()) {
+      objectMetadata.setContentType(mediaType);
+    }
+    if (!metadata.isEmpty()) {
+      objectMetadata.setUserMetadata(metadata);
+    }
+    objectMetadata.setContentLength(fileSize);
 
     log.info("Storing item in bucket \"{}\" with key \"{}\"", bucket, key);
 

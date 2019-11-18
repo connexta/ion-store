@@ -26,10 +26,10 @@ public interface StorageAdaptor {
    */
   void store(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotBlank final String mediaType,
+      final String mediaType,
       @NotNull final InputStream inputStream,
       @NotBlank final String key,
-      @NotNull Map<String, String> metadata)
+      Map<String, String> metadata)
       throws StoreException;
 
   /**

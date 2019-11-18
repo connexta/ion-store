@@ -9,9 +9,10 @@ package com.connexta.store.exceptions;
 import com.connexta.store.exceptions.common.DetailedResponseStatusException;
 import org.springframework.http.HttpStatus;
 
-public class IndexDatasetException extends DetailedResponseStatusException {
+public class TransformException extends DetailedResponseStatusException {
 
-  public IndexDatasetException(String reason, Throwable cause) {
+  public TransformException(String reason, Throwable cause) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, reason, cause);
+    addDetail("Transform service exception caused by " + cause.getMessage());
   }
 }

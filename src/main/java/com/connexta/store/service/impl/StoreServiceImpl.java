@@ -11,13 +11,16 @@ import com.connexta.store.adaptors.FileRetrieveResponse;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptorRetrieveResponse;
 import com.connexta.store.clients.IndexDatasetClient;
+import com.connexta.store.clients.TransformClient;
 import com.connexta.store.controllers.StoreController;
 import com.connexta.store.exceptions.IndexDatasetException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
+import com.connexta.store.exceptions.TransformException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.UUID;
 import javax.validation.constraints.Max;
@@ -28,6 +31,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -40,28 +44,10 @@ public class StoreServiceImpl implements StoreService {
   @NotBlank private final URI retrieveUri;
   @NotNull private final StorageAdaptor fileStorageAdaptor;
   @NotNull private final StorageAdaptor irmStorageAdaptor;
+  @NotNull private final StorageAdaptor metacardStorageAdaptor;
   @NotNull private final IndexDatasetClient indexDatasetClient;
   @NotNull private final StatusService statusService;
-
-  @Override
-  @NotNull
-  public URI createDataset(
-      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotBlank final String mediaType,
-      @NotBlank final String fileName,
-      @NotNull final InputStream fileInputStream)
-      throws StoreException {
-    final String datasetId = UUID.randomUUID().toString().replace("-", "");
-    fileStorageAdaptor.store(
-        fileSize, mediaType, fileInputStream, datasetId, Map.of(FILE_NAME_METADATA_KEY, fileName));
-
-    // TODO: Call the transform status service
-    // statusService.submit(uri);
-
-    return UriComponentsBuilder.fromUri(retrieveUri)
-        .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
-        .build(datasetId);
-  }
+  @NotNull private final TransformClient transformClient;
 
   @Override
   public @NotNull FileRetrieveResponse retrieveFile(
@@ -107,5 +93,47 @@ public class StoreServiceImpl implements StoreService {
             .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
             .build(datasetId));
     log.info("Successfully indexed datasetId={}", datasetId);
+  }
+
+  @Override
+  public void ingest(
+      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
+      @NotBlank final String mimeType,
+      @NotNull final InputStream inputStream,
+      @NotBlank final String fileName,
+      @NotNull @Min(1L) @Max(10737418240L) final Long metacardFileSize,
+      @NotNull final InputStream metacardInputStream)
+      throws StoreException, TransformException {
+
+    final String datasetId = UUID.randomUUID().toString().replace("-", "");
+    fileStorageAdaptor.store(
+        fileSize, mimeType, inputStream, datasetId, Map.of(FILE_NAME_METADATA_KEY, fileName));
+    URI location =
+        UriComponentsBuilder.fromUri(retrieveUri)
+            .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
+            .build(datasetId);
+
+    // TODO verify mimetype of metacard
+    metacardStorageAdaptor.store(
+        metacardFileSize,
+        MediaType.APPLICATION_XML_VALUE,
+        metacardInputStream,
+        datasetId,
+        Map.of());
+    final URI metacardLocation;
+    try {
+      metacardLocation = new URI(retrieveUri.toString() + "/dataset/" + datasetId);
+    } catch (URISyntaxException e) {
+      throw new StoreException("Unable to construct retrieve URI", e);
+    }
+
+    transformClient.requestTransform(location, mimeType, metacardLocation);
+    log.info("Successfully submitted a transform request for {}", fileName);
+  }
+
+  // TODO test this method
+  @Override
+  public InputStream retrieveMetacard(@NotBlank String id) {
+    return metacardStorageAdaptor.retrieve(id).getInputStream();
   }
 }

@@ -10,8 +10,8 @@ import com.connexta.store.adaptors.FileRetrieveResponse;
 import com.connexta.store.exceptions.IndexDatasetException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
+import com.connexta.store.exceptions.TransformException;
 import java.io.InputStream;
-import java.net.URI;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -21,13 +21,14 @@ import javax.validation.constraints.Size;
 
 public interface StoreService {
 
-  @NotNull
-  URI createDataset(
+  void ingest(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotBlank final String mediaType,
+      @NotBlank final String mimeType,
+      @NotNull final InputStream inputStream,
       @NotBlank final String fileName,
-      @NotNull final InputStream fileInputStream)
-      throws StoreException;
+      @NotNull @Min(1L) @Max(10737418240L) final Long metacardFileSize,
+      @NotNull final InputStream metacardInputStream)
+      throws StoreException, TransformException;
 
   /**
    * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
@@ -43,6 +44,10 @@ public interface StoreService {
   InputStream retrieveIrm(
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws RetrieveException;
+
+  /** The caller is responsible for closing the returned {@link java.io.InputStream}. */
+  @NotNull
+  InputStream retrieveMetacard(@NotBlank final String datasetId) throws RetrieveException;
 
   void addIrm(
       @NotNull final InputStream irmInputStream,
