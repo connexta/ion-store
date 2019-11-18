@@ -68,7 +68,7 @@ spec:
           secret:
             secretName: s3-access-secret
 
-# Exposes the store container as a service that can be reached externally
+# Exposes the store container as a service
 ---
 
 apiVersion: v1
@@ -86,7 +86,7 @@ spec:
     - port: 10051
       name: debug
 
-# Adds Ingress for communicating externally and with other services in the namespace
+# Adds Ingress to route external traffic to the store service
 ---
 
 apiVersion: extensions/v1beta1
