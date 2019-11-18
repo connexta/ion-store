@@ -11,8 +11,6 @@ endpoints:
     version: testIndexApiVersion
   store:
     version: testStoreApiVersion
-  transform:
-    version: testTransformApiVersion
 s3:
   bucket:
     metacard: metacard-quarantine

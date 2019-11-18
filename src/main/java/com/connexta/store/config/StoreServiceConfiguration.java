@@ -40,8 +40,8 @@ public class StoreServiceConfiguration {
         fileStorageAdapter,
         irmStorageAdapter,
         metacardStorageAdapter,
-            indexDatasetClient,
-            statusService,
-            transformClient);
+        indexDatasetClient,
+        statusService,
+        transformClient);
   }
 }
