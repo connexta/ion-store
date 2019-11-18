@@ -1,0 +1,115 @@
+# Store Service deployment that creates a container for the app. It also mounts volumes for configuration and secret
+# files. The configuration files are created via manually added ConfigMaps called "store-config-map", "s3-config-map",
+# and transform_config.yml. The secret files are created manually with secret resources called "s3-secret-secret" and
+# "s3-access-secret".
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-deployment
+  labels:
+    app: store
+spec:
+  selector:
+    matchLabels:
+      app: store
+  template:
+    metadata:
+      labels:
+        app: store
+    spec:
+      containers:
+        - name: store
+          image:  registry.default.gsp.test:80/cnxta/ion-store
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: store-configs
+              mountPath: /etc/store-configs
+              readOnly: true
+            - name: s3-configs
+              mountPath: /etc/s3-configs
+              readOnly: true
+            - name: transform-configs
+              mountPath: /etc/transform-configs
+              readOnly: true
+            - name: s3-access
+              mountPath: /etc/access-secret
+              readOnly: true
+            - name: s3-secret
+              mountPath: /etc/secret-secret
+              readOnly: true
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 10051
+              protocol: TCP
+          args:
+            - "--s3.secret.file=/etc/secret-secret/s3_secret.sec"
+            - "--s3.access.file=/etc/access-secret/s3_access.sec"
+            - "--spring.config.additional-location=file:/etc/s3-configs/s3_config.yml"
+            - "--spring.config.additional-location=file:/etc/store-configs/store_config.yml"
+            - "--spring.config.additional-location=file:/etc/transform-configs/transform_config.yml"
+      volumes:
+        - name: store-configs
+          configMap:
+            name: store-config-map
+            defaultMode: 0755
+        - name: s3-configs
+          configMap:
+            name: s3-config-map
+            defaultMode: 0755
+        - name: transform-configs
+          configMap:
+            name: transform-config-map
+            defaultMode: 0755
+        - name: s3-secret
+          secret:
+            secretName: s3-secret-secret
+        - name: s3-access
+          secret:
+            secretName: s3-access-secret
+
+# Exposes the store container as a service
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ion-store
+  labels:
+    app: store
+spec:
+  selector:
+    app: store
+  ports:
+    - port: 8080
+      name: app
+    - port: 10051
+      name: debug
+
+# Adds Ingress to route external traffic to the store service
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ion-store-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  rules:
+    - host: ion-store.default.gsp.test
+      http:
+        paths:
+          - backend:
+              serviceName: ion-store
+              servicePort: app
+    - host: ion-store-debug.default.gsp.test
+      http:
+        paths:
+          - backend:
+              serviceName: ion-store
+              servicePort: debug
