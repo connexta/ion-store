@@ -6,6 +6,7 @@
  */
 package com.connexta.store.service.impl;
 
+import com.connexta.poller.service.StatusService;
 import com.connexta.store.adaptors.FileRetrieveResponse;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptorRetrieveResponse;
@@ -40,6 +41,7 @@ public class StoreServiceImpl implements StoreService {
   @NotNull private final StorageAdaptor fileStorageAdaptor;
   @NotNull private final StorageAdaptor irmStorageAdaptor;
   @NotNull private final IndexDatasetClient indexDatasetClient;
+  @NotNull private final StatusService statusService;
 
   @Override
   @NotNull
@@ -52,6 +54,10 @@ public class StoreServiceImpl implements StoreService {
     final String datasetId = UUID.randomUUID().toString().replace("-", "");
     fileStorageAdaptor.store(
         fileSize, mediaType, fileInputStream, datasetId, Map.of(FILE_NAME_METADATA_KEY, fileName));
+
+    // TODO: Call the transform status service
+    // statusService.submit(uri);
+
     return UriComponentsBuilder.fromUri(retrieveUri)
         .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
         .build(datasetId);
