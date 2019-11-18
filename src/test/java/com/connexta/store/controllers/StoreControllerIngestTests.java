@@ -282,40 +282,6 @@ public class StoreControllerIngestTests {
   }
 
   @Test
-  void testIngestFileTooLarge() {
-    when(mockFile.getContentType()).thenReturn("testContentType");
-    when(mockFile.getOriginalFilename()).thenReturn("testFilename");
-    when(mockFile.getSize()).thenReturn(MAX_FILE_BYTES + 1);
-    assertThat(
-        storeController
-            .ingest(
-                ACCEPT_VERSION,
-                OffsetDateTime.parse(LAST_MODIFIED_DATE),
-                mockFile,
-                CORRELATION_ID,
-                METACARD)
-            .getStatusCode(),
-        is(HttpStatus.ACCEPTED));
-  }
-
-  @Test
-  void testIngestFileTooSmall() {
-    when(mockFile.getContentType()).thenReturn("testContentType");
-    when(mockFile.getOriginalFilename()).thenReturn("testFilename");
-    when(mockFile.getSize()).thenReturn(0L);
-    assertThat(
-        storeController
-            .ingest(
-                ACCEPT_VERSION,
-                OffsetDateTime.parse(LAST_MODIFIED_DATE),
-                mockFile,
-                CORRELATION_ID,
-                METACARD)
-            .getStatusCode(),
-        is(HttpStatus.ACCEPTED));
-  }
-
-  @Test
   void testIngestCannotReadAttachment() throws Exception {
     when(mockFile.getContentType()).thenReturn("testContentType");
     when(mockFile.getOriginalFilename()).thenReturn("testFilename");
