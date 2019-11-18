@@ -473,7 +473,7 @@ public class StoreITests {
 
   @Test
   public void testSuccessfulIngestRequest() throws Exception {
-    AtomicReference<String> metacardId = new AtomicReference<>();
+    AtomicReference<String> datasetUri = new AtomicReference<>();
     transformMockRestServiceServer
         .expect(requestTo(endpointUrlTransform))
         .andExpect(method(HttpMethod.POST))
@@ -486,7 +486,7 @@ public class StoreITests {
                           .evaluateJsonPath(
                               ((MockClientHttpRequest) request).getBodyAsString(), String.class)
                       + "/metacard";
-              metacardId.set(metacardLocation);
+              datasetUri.set(metacardLocation);
               webTestClient
                   .get()
                   .uri(metacardLocation)
@@ -522,9 +522,9 @@ public class StoreITests {
         .expectStatus()
         .isAccepted();
 
-    String id[] = StringUtils.split(metacardId.get(), '/');
-    assertNotNull(amazonS3.getObject(metacardBucket, id[3]));
-    assertNotNull(amazonS3.getObject(fileBucket, id[3]));
+    String datasetId = StringUtils.split(datasetUri.get(), '/')[3];
+    assertNotNull(amazonS3.getObject(metacardBucket, datasetId));
+    assertNotNull(amazonS3.getObject(fileBucket, datasetId));
   }
 
   /**
