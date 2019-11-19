@@ -52,7 +52,7 @@ dependencies {
     implementation "javax.inject:javax.inject:1"
     implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
-    implementation "org.springframework.data:spring-data-solr:4.1.1.RELEASE"
+    implementation "org.springframework.data:spring-data-solr:4.1.2.RELEASE"
     testCompile "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
     testCompile "org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}"
     testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
