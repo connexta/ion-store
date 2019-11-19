@@ -12,7 +12,6 @@ import static com.connexta.store.controllers.StoreController.METACARD_MEDIA_TYPE
 import static com.connexta.store.controllers.StoreController.SUPPORTED_METADATA_TYPE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.http.HttpHeaders.LAST_MODIFIED;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -33,11 +32,9 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -94,8 +91,21 @@ public class StoreITests {
   @Inject private WebTestClient webTestClient;
 
   private static final byte[] TEST_FILE = "some-content".getBytes();
+  private static final Resource TEST_FILE_RESOURCE =
+      new ByteArrayResource(TEST_FILE) {
+
+        @Override
+        public long contentLength() {
+          return TEST_FILE.length;
+        }
+
+        @Override
+        public String getFilename() {
+          return "originalFilename.txt";
+        }
+      };
   private static final byte[] TEST_METACARD = "metacard-content".getBytes();
-  private static final Resource METACARD =
+  private static final Resource TEST_METACARD_RESOURCE =
       new ByteArrayResource(TEST_METACARD) {
 
         @Override
@@ -136,6 +146,7 @@ public class StoreITests {
     }
   }
 
+  // TODO Remove TestRestTemplate and use the WebTestClient that is already injected in this class.
   private TestRestTemplate restTemplate;
   private MockRestServiceServer indexMockRestServiceServer;
   private MockRestServiceServer transformMockRestServiceServer;
@@ -181,21 +192,8 @@ public class StoreITests {
 
   static {
     final MultipartBodyBuilder builder = new MultipartBodyBuilder();
-    builder.part(
-        "file",
-        new ByteArrayResource(TEST_FILE) {
-
-          @Override
-          public long contentLength() {
-            return TEST_FILE.length;
-          }
-
-          @Override
-          public String getFilename() {
-            return "originalFilename.txt";
-          }
-        });
-    builder.part("metacard", METACARD);
+    builder.part("file", TEST_FILE_RESOURCE);
+    builder.part("metacard", TEST_METACARD_RESOURCE);
     builder.part("correlationId", "000f4e4a");
     TEST_INGEST_REQUEST_BODY = builder.build();
   }
@@ -450,43 +448,41 @@ public class StoreITests {
         is(HttpStatus.NOT_FOUND));
   }
 
-  @NotNull
-  private Matcher<URI> getRequestIsSuccessful() {
-    return new TypeSafeMatcher<URI>() {
-      private final HttpStatus EXPECTED_GET_REQUEST_RESPONSE_STATUS = HttpStatus.OK;
-
-      @Override
-      public void describeTo(Description description) {
-        description.appendText(
-            "a URI for which a GET request returns "
-                + EXPECTED_GET_REQUEST_RESPONSE_STATUS
-                + " but the URI");
-      }
-
-      @Override
-      protected boolean matchesSafely(URI uri) {
-        return restTemplate.getForEntity(uri, Resource.class).getStatusCode()
-            == EXPECTED_GET_REQUEST_RESPONSE_STATUS;
-      }
-    };
-  }
-
   @Test
   public void testSuccessfulIngestRequest() throws Exception {
-    AtomicReference<String> datasetUri = new AtomicReference<>();
     transformMockRestServiceServer
         .expect(requestTo(endpointUrlTransform))
         .andExpect(method(HttpMethod.POST))
         .andExpect(header("Accept-Version", endpointsTransformVersion))
+        .andExpect(
+            request -> {
+              final String fileLocation =
+                  (String)
+                      new JsonPathExpectationsHelper("$.location")
+                          .evaluateJsonPath(
+                              ((MockClientHttpRequest) request).getBodyAsString(), String.class);
+
+              // Verify GET request returns file
+              // Retrieve file is tested more thoroughly in other methods in this class.
+              webTestClient
+                  .get()
+                  .uri(fileLocation)
+                  .exchange()
+                  .expectStatus()
+                  .isOk()
+                  .expectBody(Resource.class)
+                  .value(hasContents(TEST_FILE_RESOURCE.getInputStream()));
+            })
         .andExpect(jsonPath("$.mimeType").value(MediaType.TEXT_PLAIN_VALUE))
         .andExpect(
             request -> {
               final String metacardLocation =
-                  (new JsonPathExpectationsHelper("$.metacardLocation"))
+                  (String)
+                      new JsonPathExpectationsHelper("$.metacardLocation")
                           .evaluateJsonPath(
-                              ((MockClientHttpRequest) request).getBodyAsString(), String.class)
-                      + "/metacard";
-              datasetUri.set(metacardLocation);
+                              ((MockClientHttpRequest) request).getBodyAsString(), String.class);
+
+              // Verify retrieve metacard
               webTestClient
                   .get()
                   .uri(metacardLocation)
@@ -497,7 +493,7 @@ public class StoreITests {
                   .contentType(METACARD_MEDIA_TYPE)
                   .expectBody(Resource.class)
                   .value(isReadable())
-                  .value(hasContents(METACARD.getInputStream()));
+                  .value(hasContents(TEST_METACARD_RESOURCE.getInputStream()));
             })
         .andRespond(
             withStatus(HttpStatus.ACCEPTED)
@@ -521,10 +517,6 @@ public class StoreITests {
         .exchange()
         .expectStatus()
         .isAccepted();
-
-    String datasetId = StringUtils.split(datasetUri.get(), '/')[3];
-    assertNotNull(amazonS3.getObject(metacardBucket, datasetId));
-    assertNotNull(amazonS3.getObject(fileBucket, datasetId));
   }
 
   /**
@@ -533,11 +525,11 @@ public class StoreITests {
    */
   @Test
   public void testUnsuccessfulTransformRequest() throws Exception {
-
     transformMockRestServiceServer
         .expect(requestTo(endpointUrlTransform))
         .andExpect(method(HttpMethod.POST))
         .andExpect(header("Accept-Version", endpointsTransformVersion))
+        .andExpect(jsonPath("$.location").isNotEmpty())
         .andExpect(jsonPath("$.mimeType").value(MediaType.TEXT_PLAIN_VALUE))
         .andExpect(jsonPath("$.metacardLocation").isNotEmpty())
         .andRespond(withServerError());
@@ -587,6 +579,27 @@ public class StoreITests {
       @Override
       public void describeTo(Description description) {
         description.appendText("is readable");
+      }
+    };
+  }
+
+  @NotNull
+  private Matcher<URI> getRequestIsSuccessful() {
+    return new TypeSafeMatcher<URI>() {
+      private final HttpStatus EXPECTED_GET_REQUEST_RESPONSE_STATUS = HttpStatus.OK;
+
+      @Override
+      public void describeTo(Description description) {
+        description.appendText(
+            "a URI for which a GET request returns "
+                + EXPECTED_GET_REQUEST_RESPONSE_STATUS
+                + " but the URI");
+      }
+
+      @Override
+      protected boolean matchesSafely(URI uri) {
+        return restTemplate.getForEntity(uri, Resource.class).getStatusCode()
+            == EXPECTED_GET_REQUEST_RESPONSE_STATUS;
       }
     };
   }

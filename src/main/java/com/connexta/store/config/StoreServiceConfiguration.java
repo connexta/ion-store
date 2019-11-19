@@ -6,7 +6,6 @@
  */
 package com.connexta.store.config;
 
-import com.connexta.poller.service.StatusService;
 import com.connexta.store.adaptors.S3StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexDatasetClient;
@@ -32,7 +31,6 @@ public class StoreServiceConfiguration {
       @NotNull @Named("irmStorageAdaptor") final StorageAdaptor irmStorageAdapter,
       @NotNull @Named("metacardStorageAdaptor") final S3StorageAdaptor metacardStorageAdapter,
       @NotNull final IndexDatasetClient indexDatasetClient,
-      @NotNull final StatusService statusService,
       @NotNull final TransformClient transformClient)
       throws URISyntaxException {
     return new StoreServiceImpl(
@@ -41,7 +39,6 @@ public class StoreServiceConfiguration {
         irmStorageAdapter,
         metacardStorageAdapter,
         indexDatasetClient,
-        statusService,
         transformClient);
   }
 }
