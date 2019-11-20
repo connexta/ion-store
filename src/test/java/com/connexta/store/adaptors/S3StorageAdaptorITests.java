@@ -6,24 +6,16 @@
  */
 package com.connexta.store.adaptors;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectTaggingRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.connexta.store.config.AmazonS3Configuration;
 import com.connexta.store.exceptions.DatasetNotFoundException;
 import com.connexta.store.exceptions.StoreException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -35,34 +27,44 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
+import static com.connexta.store.adaptors.StoreStatus.STATUS_KEY;
+import static com.connexta.store.adaptors.StoreStatus.STORED;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 @Testcontainers
-public class S3StorageAdaptorTests {
+public class S3StorageAdaptorITests {
 
   public static final String ASDF = "asdf";
-  private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
-  private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
-  private static final int MINIO_PORT = 9000;
-  public static final String KEY = "1234";
-  private static AmazonS3Configuration configuration;
-  private static AmazonS3 amazonS3;
-  private static StorageAdaptor storageAdaptor;
+  public static final String DATASET_ID = "123e4567e89b12d3a456426655440000";
+  public static final String ACCESS_KEY = "access-key";
+  public static final String SECRET_KEY = "secret-key";
+  private static final String DOCKER_IMAGE_NAME = "localstack/localstack:0.10.5";
+  private static final int LOCALSTACK_PORT = 4572;
   private static String BUCKET = "metacard-quarantine";
+  private static StorageAdaptor storageAdaptor;
+  private static AmazonS3Configuration configuration;
+
+  private static AmazonS3 amazonS3;
 
   @Container
-  public static final GenericContainer minioContainer =
-      new GenericContainer("minio/minio:RELEASE.2019-07-10T00-34-56Z")
-          .withEnv("MINIO_ACCESS_KEY", MINIO_ADMIN_ACCESS_KEY)
-          .withEnv("MINIO_SECRET_KEY", MINIO_ADMIN_SECRET_KEY)
-          .withExposedPorts(MINIO_PORT)
-          .withCommand("server --compat /data/metacard-quarantine")
-          .waitingFor(
-              new HttpWaitStrategy()
-                  .forPath("/minio/health/ready")
-                  .withStartupTimeout(Duration.ofSeconds(30)));
+  public static final GenericContainer s3Container =
+      new GenericContainer(DOCKER_IMAGE_NAME)
+          .withExposedPorts(LOCALSTACK_PORT)
+          .withEnv("SERVICES", "s3")
+          .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Ready\\.\n"));
 
   @BeforeAll
   public static void setUp() {
@@ -70,10 +72,10 @@ public class S3StorageAdaptorTests {
         new AmazonS3Configuration(
             String.format(
                 "http://%s:%d",
-                minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
+                s3Container.getContainerIpAddress(), s3Container.getMappedPort(LOCALSTACK_PORT)),
             "local",
-            MINIO_ADMIN_ACCESS_KEY,
-            MINIO_ADMIN_SECRET_KEY);
+            ACCESS_KEY,
+            SECRET_KEY);
 
     amazonS3 =
         AmazonS3ClientBuilder.standard()
@@ -110,13 +112,15 @@ public class S3StorageAdaptorTests {
         4L,
         MediaType.APPLICATION_XML_VALUE,
         new ByteArrayInputStream(ASDF.getBytes()),
-        KEY,
+        DATASET_ID,
         Map.of());
+
+    assertTrue(amazonS3.doesObjectExist(BUCKET, DATASET_ID));
   }
 
   @Test
   public void testSuccessfulRetrieveRequest() {
-    final String key = KEY;
+    final String key = DATASET_ID;
     final String metacardContents = ASDF;
     storageAdaptor.store(
         4L,
@@ -129,7 +133,7 @@ public class S3StorageAdaptorTests {
 
   @Test
   public void testRetrieveRequestWrongKey() {
-    String key = KEY;
+    String key = DATASET_ID;
     storageAdaptor.store(
         4L,
         MediaType.APPLICATION_XML_VALUE,
@@ -153,9 +157,33 @@ public class S3StorageAdaptorTests {
               10L,
               MediaType.APPLICATION_XML_VALUE,
               new ByteArrayInputStream(ASDF.getBytes()),
-              KEY,
+              DATASET_ID,
               Map.of());
         });
+  }
+
+  @Test
+  void testUpdatingStoreStatus() {
+    // Store a file and set status as staged
+    storageAdaptor.store(
+        4L,
+        MediaType.APPLICATION_XML_VALUE,
+        new ByteArrayInputStream(ASDF.getBytes()),
+        DATASET_ID,
+        Map.of());
+
+    // Promote file to stored status
+    storageAdaptor.updateStatus(DATASET_ID, STORED);
+    assertEquals(STORED, getStatusTag(DATASET_ID));
+  }
+
+  private String getStatusTag(String datasetId) {
+    return amazonS3
+        .getObjectTagging(new GetObjectTaggingRequest(BUCKET, datasetId))
+        .getTagSet()
+        .get(0)
+        .withKey(STATUS_KEY)
+        .getValue();
   }
 
   @NotNull

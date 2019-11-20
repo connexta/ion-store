@@ -39,4 +39,12 @@ public interface StorageAdaptor {
    */
   @NotNull
   StorageAdaptorRetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException;
+
+  /**
+   * Updates the {@link StoreStatus} of {@code dataset} for a given {@code datasetId}
+   *
+   * @param datasetId the Id of a dataset
+   * @param storeStatus the new {@link StoreStatus} for a dataset
+   */
+  void updateStatus(String datasetId, String storeStatus);
 }

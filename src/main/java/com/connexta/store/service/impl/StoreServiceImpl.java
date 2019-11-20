@@ -93,6 +93,9 @@ public class StoreServiceImpl implements StoreService {
   }
 
   @Override
+  public void promote(String datasetId) {}
+
+  @Override
   public void ingest(
       @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
       @NotBlank final String mimeType,

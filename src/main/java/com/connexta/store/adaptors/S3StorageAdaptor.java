@@ -6,17 +6,24 @@
  */
 package com.connexta.store.adaptors;
 
+import static com.connexta.store.adaptors.StoreStatus.STATUS_KEY;
+
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.ObjectTagging;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.SetObjectTaggingRequest;
+import com.amazonaws.services.s3.model.Tag;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.store.exceptions.DatasetNotFoundException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -66,7 +73,11 @@ public class S3StorageAdaptor implements StorageAdaptor {
     }
 
     try {
-      final Upload upload = transferManager.upload(bucket, key, inputStream, objectMetadata);
+      PutObjectRequest putObjectRequest =
+          new PutObjectRequest(bucket, key, inputStream, objectMetadata);
+      putObjectRequest.withTagging(
+          new ObjectTagging(ImmutableList.of(new Tag(STATUS_KEY, StoreStatus.STAGED))));
+      final Upload upload = transferManager.upload(putObjectRequest);
       log.info(String.format("Transfer state: %s", upload.getState()));
       upload.waitForCompletion();
       log.info(String.format("Transfer state: %s", upload.getState()));
@@ -108,6 +119,14 @@ public class S3StorageAdaptor implements StorageAdaptor {
       }
       throw t;
     }
+  }
+
+  @Override
+  public void updateStatus(String datasetId, String storeStatus) {
+    final Tag updatedTag = new Tag(STATUS_KEY, storeStatus);
+    final ObjectTagging objectTagging = new ObjectTagging(ImmutableList.of(updatedTag));
+
+    amazonS3.setObjectTagging(new SetObjectTaggingRequest(bucket, datasetId, objectTagging));
   }
 
   @NotNull
