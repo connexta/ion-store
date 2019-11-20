@@ -6,7 +6,6 @@
  */
 package com.connexta.store.service.impl;
 
-import com.connexta.poller.service.StatusService;
 import com.connexta.store.adaptors.FileRetrieveResponse;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptorRetrieveResponse;
@@ -20,7 +19,6 @@ import com.connexta.store.exceptions.TransformException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.UUID;
 import javax.validation.constraints.Max;
@@ -39,14 +37,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 @AllArgsConstructor
 public class StoreServiceImpl implements StoreService {
 
-  private static final String FILE_NAME_METADATA_KEY = "Filename";
+  public static final String FILE_NAME_METADATA_KEY = "Filename";
 
   @NotBlank private final URI retrieveUri;
   @NotNull private final StorageAdaptor fileStorageAdaptor;
   @NotNull private final StorageAdaptor irmStorageAdaptor;
   @NotNull private final StorageAdaptor metacardStorageAdaptor;
   @NotNull private final IndexDatasetClient indexDatasetClient;
-  @NotNull private final StatusService statusService;
   @NotNull private final TransformClient transformClient;
 
   @Override
@@ -104,14 +101,10 @@ public class StoreServiceImpl implements StoreService {
       @NotNull @Min(1L) @Max(10737418240L) final Long metacardFileSize,
       @NotNull final InputStream metacardInputStream)
       throws StoreException, TransformException {
-
     final String datasetId = UUID.randomUUID().toString().replace("-", "");
+
     fileStorageAdaptor.store(
         fileSize, mimeType, inputStream, datasetId, Map.of(FILE_NAME_METADATA_KEY, fileName));
-    URI location =
-        UriComponentsBuilder.fromUri(retrieveUri)
-            .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
-            .build(datasetId);
 
     // TODO verify mimetype of metacard
     metacardStorageAdaptor.store(
@@ -120,14 +113,15 @@ public class StoreServiceImpl implements StoreService {
         metacardInputStream,
         datasetId,
         Map.of());
-    final URI metacardLocation;
-    try {
-      metacardLocation = new URI(retrieveUri.toString() + "/dataset/" + datasetId);
-    } catch (URISyntaxException e) {
-      throw new StoreException("Unable to construct retrieve URI", e);
-    }
 
-    transformClient.requestTransform(location, mimeType, metacardLocation);
+    transformClient.requestTransform(
+        UriComponentsBuilder.fromUri(retrieveUri)
+            .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
+            .build(datasetId),
+        mimeType,
+        UriComponentsBuilder.fromUri(retrieveUri)
+            .path(StoreController.RETRIEVE_METACARD_URL_TEMPLATE)
+            .build(datasetId));
     log.info("Successfully submitted a transform request for {}", fileName);
   }
 
