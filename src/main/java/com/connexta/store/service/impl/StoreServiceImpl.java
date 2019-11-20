@@ -93,7 +93,7 @@ public class StoreServiceImpl implements StoreService {
   }
 
   @Override
-  public void promote(String datasetId) {}
+  public void unstage(String datasetId) {}
 
   @Override
   public void ingest(

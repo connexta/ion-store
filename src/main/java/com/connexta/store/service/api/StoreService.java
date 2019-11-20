@@ -55,5 +55,5 @@ public interface StoreService {
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws IndexDatasetException;
 
-  void promote(@NotNull String datasetId);
+  void unstage(@NotNull String datasetId);
 }
