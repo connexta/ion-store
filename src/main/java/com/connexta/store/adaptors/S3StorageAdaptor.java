@@ -122,25 +122,24 @@ public class S3StorageAdaptor implements StorageAdaptor {
   }
 
   @Override
-  public void updateStatus(String datasetId, String storeStatus) {
+  public void updateStatus(@NotBlank String key, @NotBlank String storeStatus) {
     final Tag updatedTag = new Tag(STATUS_KEY, storeStatus);
     final ObjectTagging objectTagging = new ObjectTagging(ImmutableList.of(updatedTag));
 
-    amazonS3.setObjectTagging(new SetObjectTaggingRequest(bucket, datasetId, objectTagging));
+    if (s3ObjectExists(bucket, key)) {
+      amazonS3.setObjectTagging(new SetObjectTaggingRequest(bucket, key, objectTagging));
+    } else {
+      throw new DatasetNotFoundException(key);
+    }
   }
 
   @NotNull
   private S3Object getS3Object(@NotBlank final String key) throws RetrieveException {
     final S3Object s3Object;
     try {
-      if (!amazonS3.doesBucketExistV2(bucket)) {
-        throw new RetrieveException(String.format("Bucket %s does not exist", bucket));
-      }
-
-      if (!amazonS3.doesObjectExist(bucket, key)) {
+      if (!s3ObjectExists(bucket, key)) {
         throw new DatasetNotFoundException(key);
       }
-
       s3Object = amazonS3.getObject(new GetObjectRequest(bucket, key));
     } catch (final SdkClientException e) {
       throw new RetrieveException(
@@ -154,5 +153,12 @@ public class S3StorageAdaptor implements StorageAdaptor {
     }
 
     return s3Object;
+  }
+
+  private boolean s3ObjectExists(@NotBlank String bucket, @NotBlank String key) {
+    if (!amazonS3.doesBucketExistV2(bucket)) {
+      throw new RetrieveException(String.format("Bucket %s does not exist", bucket));
+    }
+    return amazonS3.doesObjectExist(bucket, key);
   }
 }

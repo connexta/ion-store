@@ -178,6 +178,12 @@ public class S3StorageAdaptorITests {
     assertEquals(STORED, getStatusTag(DATASET_ID));
   }
 
+  @Test
+  void testUpdatingStoreStatusInvalidDatasetId() {
+    assertThrows(
+        DatasetNotFoundException.class, () -> storageAdaptor.updateStatus(DATASET_ID, STORED));
+  }
+
   private String getStatusTag(String datasetId) {
     return amazonS3
         .getObjectTagging(new GetObjectTaggingRequest(BUCKET, datasetId))
