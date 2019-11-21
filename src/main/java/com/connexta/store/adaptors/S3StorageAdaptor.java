@@ -122,8 +122,8 @@ public class S3StorageAdaptor implements StorageAdaptor {
   }
 
   @Override
-  public void updateStatus(@NotBlank String key, @NotBlank String storeStatus) {
-    final Tag updatedTag = new Tag(STATUS_KEY, storeStatus);
+  public void updateStatus(@NotBlank String key, @NotBlank String status) {
+    final Tag updatedTag = new Tag(STATUS_KEY, status);
     final ObjectTagging objectTagging = new ObjectTagging(ImmutableList.of(updatedTag));
 
     if (s3ObjectExists(bucket, key)) {

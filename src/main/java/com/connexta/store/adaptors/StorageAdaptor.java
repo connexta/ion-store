@@ -45,9 +45,8 @@ public interface StorageAdaptor {
    * Updates the {@link StoreStatus} of {@code dataset} for a given {@code datasetId}
    *
    * @param key the Id of a dataset
-   * @param storeStatus the new {@link StoreStatus} for a dataset
+   * @param status the new {@link StoreStatus} for a dataset
    * @throws DatasetNotFoundException if the key does not exist
    */
-  void updateStatus(@NotBlank String key, @NotBlank String storeStatus)
-      throws DatasetNotFoundException;
+  void updateStatus(@NotBlank String key, @NotBlank String status) throws DatasetNotFoundException;
 }
