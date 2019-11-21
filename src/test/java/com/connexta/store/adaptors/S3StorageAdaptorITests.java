@@ -6,6 +6,7 @@
  */
 package com.connexta.store.adaptors;
 
+import static com.connexta.store.adaptors.StoreStatus.STAGED;
 import static com.connexta.store.adaptors.StoreStatus.STATUS_KEY;
 import static com.connexta.store.adaptors.StoreStatus.STORED;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -170,6 +171,7 @@ public class S3StorageAdaptorITests {
         new ByteArrayInputStream(ASDF.getBytes()),
         DATASET_ID,
         Map.of());
+    assertEquals(STAGED, getStatusTag(DATASET_ID));
 
     // Promote file to stored status
     storageAdaptor.updateStatus(DATASET_ID, STORED);

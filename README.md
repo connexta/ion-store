@@ -61,7 +61,7 @@ For more information about spotless checks see
     Example configs/s3_config.yml:
     ```yaml
     s3:
-      endpointUrl: http://minio:9000
+      endpointUrl: http://localstack:4572
       region: local
       bucket:
         file: ingest-quarantine

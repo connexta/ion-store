@@ -32,4 +32,5 @@ gradle-app.setting
 
 #Do not upload
 *.sec
+.localstack
 /configs

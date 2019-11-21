@@ -94,7 +94,7 @@ function update () {
 }
 
 function print_warning () {
-    printf "====== WARNING: TEST DEPLOYMENT ======\nThis docker deployment will create a local minio server with default secret and key. Make sure this isn't being deployed into production.\n\n"
+    printf "====== WARNING: TEST DEPLOYMENT ======\nThis docker deployment will create a local S3 API implementation. Make sure this isn't being deployed into production.\n\n"
 }
 
 # start of script
