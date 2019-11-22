@@ -1,4 +1,5 @@
 #!/bin/sh
+# This script runs inside the localstack container
 echo "Creating S3 buckets..."
 set -x
 awslocal s3 mb s3://irm
