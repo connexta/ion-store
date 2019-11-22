@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+  store:
+    image: cnxta/ion-store
+    depends_on:
+      - localstack
+  localstack:
+    image: localstack/localstack:0.10.5
+    ports:
+      - 4572:4572
+      - 8055:8080
+    volumes:
+      - ./deployments/local/scripts:/docker-entrypoint-initaws.d
+      - ./.localstack:/tmp/localstack
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+    networks:
+      - cdr
+configs:
+  # Directories are relative to the master compose file
+  s3_config:
+    file: deployments/local/configs/s3_config.yml
+  store_config:
+    file: deployments/local/configs/store_config.yml

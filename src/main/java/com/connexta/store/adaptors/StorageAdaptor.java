@@ -6,6 +6,7 @@
  */
 package com.connexta.store.adaptors;
 
+import com.connexta.store.exceptions.DatasetNotFoundException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import java.io.IOException;
@@ -39,4 +40,21 @@ public interface StorageAdaptor {
    */
   @NotNull
   StorageAdaptorRetrieveResponse retrieve(@NotBlank final String key) throws RetrieveException;
+
+  /**
+   * Updates the {@link StoreStatus} of {@code dataset} for a given {@code datasetId}
+   *
+   * @param key the Id of a dataset
+   * @param status the new {@link StoreStatus} for a dataset
+   * @throws DatasetNotFoundException if the key does not exist
+   */
+  void updateStatus(@NotBlank String key, @NotBlank String status) throws DatasetNotFoundException;
+
+  /**
+   * Retrieves the {@link StoreStatus} of {@code dataset} for a given {@code datasetId}
+   *
+   * @param key the Id of a dataset
+   * @throws DatasetNotFoundException if the key does not exist
+   */
+  String getStatus(@NotBlank String key) throws DatasetNotFoundException;
 }

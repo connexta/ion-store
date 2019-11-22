@@ -6,6 +6,10 @@
  */
 package com.connexta.store.adaptors;
 
+import static com.connexta.store.adaptors.StoreStatus.QUARANTINED;
+import static com.connexta.store.adaptors.StoreStatus.STAGED;
+import static com.connexta.store.adaptors.StoreStatus.STORED;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -22,7 +26,6 @@ import com.connexta.store.exceptions.StoreException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Duration;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
@@ -33,36 +36,32 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
-public class S3StorageAdaptorTests {
+public class S3StorageAdaptorITests {
 
   public static final String ASDF = "asdf";
-  private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
-  private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
-  private static final int MINIO_PORT = 9000;
-  public static final String KEY = "1234";
-  private static AmazonS3Configuration configuration;
-  private static AmazonS3 amazonS3;
-  private static StorageAdaptor storageAdaptor;
+  public static final String DATASET_ID = "123e4567e89b12d3a456426655440000";
+  private static final int LOCALSTACK_PORT = 4572;
   private static String BUCKET = "metacard-quarantine";
+  private static StorageAdaptor storageAdaptor;
+  private static AmazonS3Configuration configuration;
+
+  private static AmazonS3 amazonS3;
 
   @Container
-  public static final GenericContainer minioContainer =
-      new GenericContainer("minio/minio:RELEASE.2019-07-10T00-34-56Z")
-          .withEnv("MINIO_ACCESS_KEY", MINIO_ADMIN_ACCESS_KEY)
-          .withEnv("MINIO_SECRET_KEY", MINIO_ADMIN_SECRET_KEY)
-          .withExposedPorts(MINIO_PORT)
-          .withCommand("server --compat /data/metacard-quarantine")
-          .waitingFor(
-              new HttpWaitStrategy()
-                  .forPath("/minio/health/ready")
-                  .withStartupTimeout(Duration.ofSeconds(30)));
+  public static final GenericContainer s3Container =
+      new GenericContainer("localstack/localstack:0.10.5")
+          .withExposedPorts(LOCALSTACK_PORT)
+          .withEnv("SERVICES", "s3")
+          .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Ready\\.\n"));
 
   @BeforeAll
   public static void setUp() {
@@ -70,10 +69,10 @@ public class S3StorageAdaptorTests {
         new AmazonS3Configuration(
             String.format(
                 "http://%s:%d",
-                minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
+                s3Container.getContainerIpAddress(), s3Container.getMappedPort(LOCALSTACK_PORT)),
             "local",
-            MINIO_ADMIN_ACCESS_KEY,
-            MINIO_ADMIN_SECRET_KEY);
+            "access-key",
+            "secret-key");
 
     amazonS3 =
         AmazonS3ClientBuilder.standard()
@@ -105,18 +104,21 @@ public class S3StorageAdaptorTests {
   }
 
   @Test
-  public void testSuccessfulStoreRequest() {
+  public void testSuccessfulStoreRequest() throws IOException {
     storageAdaptor.store(
         4L,
         MediaType.APPLICATION_XML_VALUE,
         new ByteArrayInputStream(ASDF.getBytes()),
-        KEY,
+        DATASET_ID,
         Map.of());
+
+    assertThat(storageAdaptor.retrieve(DATASET_ID).getInputStream(), hasContents(ASDF));
+    assertThat(storageAdaptor.getStatus(DATASET_ID), equalTo(STAGED));
   }
 
   @Test
   public void testSuccessfulRetrieveRequest() {
-    final String key = KEY;
+    final String key = DATASET_ID;
     final String metacardContents = ASDF;
     storageAdaptor.store(
         4L,
@@ -129,7 +131,7 @@ public class S3StorageAdaptorTests {
 
   @Test
   public void testRetrieveRequestWrongKey() {
-    String key = KEY;
+    String key = DATASET_ID;
     storageAdaptor.store(
         4L,
         MediaType.APPLICATION_XML_VALUE,
@@ -153,9 +155,33 @@ public class S3StorageAdaptorTests {
               10L,
               MediaType.APPLICATION_XML_VALUE,
               new ByteArrayInputStream(ASDF.getBytes()),
-              KEY,
+              DATASET_ID,
               Map.of());
         });
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {STORED, QUARANTINED})
+  void testUpdatingStoreStatus(String status) {
+    // Store a file and set status as staged
+    storageAdaptor.store(
+        4L,
+        MediaType.APPLICATION_XML_VALUE,
+        new ByteArrayInputStream(ASDF.getBytes()),
+        DATASET_ID,
+        Map.of());
+
+    // Promote file to stored status
+    storageAdaptor.updateStatus(DATASET_ID, status);
+
+    // Confirm the new status
+    assertThat(storageAdaptor.getStatus(DATASET_ID), equalTo(status));
+  }
+
+  @Test
+  void testUpdatingStoreStatusInvalidDatasetId() {
+    assertThrows(
+        DatasetNotFoundException.class, () -> storageAdaptor.updateStatus(DATASET_ID, STORED));
   }
 
   @NotNull

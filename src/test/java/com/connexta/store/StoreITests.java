@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
@@ -72,7 +71,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -83,10 +82,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public class StoreITests {
 
   private static final String DATASET_ID = "341d6c1ce5e0403a99fe86edaed66eea";
-  private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
-  private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
   private static final String LAST_MODIFIED_DATE = "2017-06-11T14:32:28Z";
-  private static final int MINIO_PORT = 9000;
+  private static final int LOCALSTACK_PORT = 4572;
 
   @Inject private WebTestClient webTestClient;
 
@@ -120,16 +117,11 @@ public class StoreITests {
       };
 
   @Container
-  public static final GenericContainer minioContainer =
-      new GenericContainer("minio/minio:RELEASE.2019-07-10T00-34-56Z")
-          .withEnv("MINIO_ACCESS_KEY", MINIO_ADMIN_ACCESS_KEY)
-          .withEnv("MINIO_SECRET_KEY", MINIO_ADMIN_SECRET_KEY)
-          .withExposedPorts(MINIO_PORT)
-          .withCommand("server --compat /data")
-          .waitingFor(
-              new HttpWaitStrategy()
-                  .forPath("/minio/health/ready")
-                  .withStartupTimeout(Duration.ofSeconds(30)));
+  public static final GenericContainer s3Container =
+      new GenericContainer("localstack/localstack:0.10.5")
+          .withExposedPorts(LOCALSTACK_PORT)
+          .withEnv("SERVICES", "s3")
+          .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Ready\\.\n"));
 
   @TestConfiguration
   static class Config {
@@ -139,10 +131,10 @@ public class StoreITests {
       return new AmazonS3Configuration(
           String.format(
               "http://%s:%d",
-              minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
+              s3Container.getContainerIpAddress(), s3Container.getMappedPort(LOCALSTACK_PORT)),
           "local",
-          MINIO_ADMIN_ACCESS_KEY,
-          MINIO_ADMIN_SECRET_KEY);
+          "access-key",
+          "secret-key");
     }
   }
 
