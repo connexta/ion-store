@@ -6,11 +6,11 @@
  */
 package com.connexta.store.adaptors;
 
-import static com.connexta.store.adaptors.StoreStatus.STATUS_KEY;
-
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectTaggingRequest;
+import com.amazonaws.services.s3.model.GetObjectTaggingResult;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.ObjectTagging;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -26,16 +26,22 @@ import com.connexta.store.exceptions.StoreException;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.solr.common.StringUtils;
 import org.springframework.http.MediaType;
 
 @Slf4j
 public class S3StorageAdaptor implements StorageAdaptor {
+
+  public static final String STATUS_KEY = "status";
 
   private final String bucket;
   private final AmazonS3 amazonS3;
@@ -123,14 +129,29 @@ public class S3StorageAdaptor implements StorageAdaptor {
 
   @Override
   public void updateStatus(@NotBlank String key, @NotBlank String status) {
-    final Tag updatedTag = new Tag(STATUS_KEY, status);
-    final ObjectTagging objectTagging = new ObjectTagging(ImmutableList.of(updatedTag));
-
     if (s3ObjectExists(bucket, key)) {
+      final Tag updatedTag = new Tag(STATUS_KEY, status);
+      final ObjectTagging objectTagging = new ObjectTagging(ImmutableList.of(updatedTag));
       amazonS3.setObjectTagging(new SetObjectTaggingRequest(bucket, key, objectTagging));
     } else {
       throw new DatasetNotFoundException(key);
     }
+  }
+
+  @Override
+  @Nullable
+  public String getStatus(@NotBlank String key) throws DatasetNotFoundException {
+    String currentStatus = null;
+    if (!s3ObjectExists(bucket, key)) {
+      throw new DatasetNotFoundException(key);
+    }
+    GetObjectTaggingResult taggingResult =
+        amazonS3.getObjectTagging(new GetObjectTaggingRequest(bucket, key));
+    List<Tag> tags = taggingResult.getTagSet();
+
+    Optional<Tag> statusTag =
+        tags.stream().filter(tag -> StringUtils.equals(tag.getKey(), STATUS_KEY)).findFirst();
+    return statusTag.get().getValue();
   }
 
   @NotNull

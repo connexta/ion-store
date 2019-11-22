@@ -49,4 +49,12 @@ public interface StorageAdaptor {
    * @throws DatasetNotFoundException if the key does not exist
    */
   void updateStatus(@NotBlank String key, @NotBlank String status) throws DatasetNotFoundException;
+
+  /**
+   * Retrieves the {@link StoreStatus} of {@code dataset} for a given {@code datasetId}
+   *
+   * @param key the Id of a dataset
+   * @throws DatasetNotFoundException if the key does not exist
+   */
+  String getStatus(@NotBlank String key) throws DatasetNotFoundException;
 }

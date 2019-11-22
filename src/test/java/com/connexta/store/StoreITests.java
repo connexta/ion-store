@@ -83,9 +83,6 @@ public class StoreITests {
 
   private static final String DATASET_ID = "341d6c1ce5e0403a99fe86edaed66eea";
   private static final String LAST_MODIFIED_DATE = "2017-06-11T14:32:28Z";
-  public static final String ACCESS_KEY = "access-key";
-  public static final String SECRET_KEY = "secret-key";
-  private static final String DOCKER_IMAGE_NAME = "localstack/localstack:0.10.5";
   private static final int LOCALSTACK_PORT = 4572;
 
   @Inject private WebTestClient webTestClient;
@@ -121,7 +118,7 @@ public class StoreITests {
 
   @Container
   public static final GenericContainer s3Container =
-      new GenericContainer(DOCKER_IMAGE_NAME)
+      new GenericContainer("localstack/localstack:0.10.5")
           .withExposedPorts(LOCALSTACK_PORT)
           .withEnv("SERVICES", "s3")
           .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Ready\\.\n"));
@@ -136,8 +133,8 @@ public class StoreITests {
               "http://%s:%d",
               s3Container.getContainerIpAddress(), s3Container.getMappedPort(LOCALSTACK_PORT)),
           "local",
-          ACCESS_KEY,
-          SECRET_KEY);
+          "access-key",
+          "secret-key");
     }
   }
 
