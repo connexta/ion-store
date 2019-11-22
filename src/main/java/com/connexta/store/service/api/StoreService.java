@@ -8,6 +8,7 @@ package com.connexta.store.service.api;
 
 import com.connexta.store.adaptors.FileRetrieveResponse;
 import com.connexta.store.exceptions.IndexDatasetException;
+import com.connexta.store.exceptions.QuarantineException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.exceptions.TransformException;
@@ -54,4 +55,6 @@ public interface StoreService {
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws IndexDatasetException;
+
+  void quarantine(String datasetId) throws QuarantineException;
 }

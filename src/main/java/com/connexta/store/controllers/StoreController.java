@@ -70,6 +70,16 @@ public class StoreController implements StoreApi, IngestApi {
     return Optional.empty();
   }
 
+  public ResponseEntity<Void> quarantine(
+      @Pattern(regexp = "^[0-9a-zA-Z]+$")
+          @Size(min = 32, max = 32)
+          @ApiParam(value = "The ID of the dataset. ", required = true)
+          final String datasetId) {
+    storeService.quarantine(datasetId);
+
+    return ResponseEntity.accepted().build();
+  }
+
   @Override
   public ResponseEntity<Void> addMetadata(
       final String acceptVersion,

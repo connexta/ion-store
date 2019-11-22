@@ -13,7 +13,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -22,6 +26,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.connexta.store.config.AmazonS3Configuration;
 import com.connexta.store.exceptions.DatasetNotFoundException;
+import com.connexta.store.exceptions.QuarantineException;
 import com.connexta.store.exceptions.StoreException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -51,6 +56,7 @@ public class S3StorageAdaptorITests {
   public static final String DATASET_ID = "123e4567e89b12d3a456426655440000";
   private static final int LOCALSTACK_PORT = 4572;
   private static String BUCKET = "metacard-quarantine";
+  public static final String KEY = "1234";
   private static StorageAdaptor storageAdaptor;
   private static AmazonS3Configuration configuration;
 
@@ -182,6 +188,36 @@ public class S3StorageAdaptorITests {
   void testUpdatingStoreStatusInvalidDatasetId() {
     assertThrows(
         DatasetNotFoundException.class, () -> storageAdaptor.updateStatus(DATASET_ID, STORED));
+  }
+
+  @Test
+  void testDeleteSuccess() {
+    storageAdaptor.store(
+        4L,
+        MediaType.APPLICATION_XML_VALUE,
+        new ByteArrayInputStream(ASDF.getBytes()),
+        KEY,
+        Map.of());
+    assertThat(storageAdaptor.retrieve(KEY).getInputStream(), hasContents(ASDF));
+    storageAdaptor.delete(KEY);
+    assertThrows(DatasetNotFoundException.class, () -> storageAdaptor.retrieve(KEY));
+  }
+
+  @Test
+  void testDeleteBucketDoesNotExist() {
+    amazonS3.deleteBucket(BUCKET);
+    assertThrows(QuarantineException.class, () -> storageAdaptor.delete(KEY));
+    amazonS3.createBucket(BUCKET);
+  }
+
+  @Test
+  void testDeleteSdkException() {
+    AmazonS3 mockS3 = mock(AmazonS3.class);
+    when(mockS3.doesBucketExistV2(BUCKET)).thenReturn(true);
+    when(mockS3.doesObjectExist(BUCKET, KEY)).thenReturn(true);
+    doThrow(new SdkClientException("test exception")).when(mockS3).deleteObject(BUCKET, KEY);
+    StorageAdaptor sdkExceptionStorageAdaptor = new S3StorageAdaptor(mockS3, BUCKET);
+    assertThrows(QuarantineException.class, () -> sdkExceptionStorageAdaptor.delete(KEY));
   }
 
   @NotNull

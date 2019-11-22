@@ -7,6 +7,7 @@
 package com.connexta.store.adaptors;
 
 import com.connexta.store.exceptions.DatasetNotFoundException;
+import com.connexta.store.exceptions.QuarantineException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import java.io.IOException;
@@ -57,4 +58,12 @@ public interface StorageAdaptor {
    * @throws DatasetNotFoundException if the key does not exist
    */
   String getStatus(@NotBlank String key) throws DatasetNotFoundException;
+
+  /**
+   * Removes entry from a blob store using the given {@code key}.
+   *
+   * @param key the key used to reference the stored object
+   * @throws QuarantineException if there is an error when attempting to delete
+   */
+  void delete(@NotBlank final String key) throws QuarantineException;
 }
