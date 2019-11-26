@@ -13,12 +13,14 @@ import com.connexta.store.clients.IndexDatasetClient;
 import com.connexta.store.clients.TransformClient;
 import com.connexta.store.controllers.StoreController;
 import com.connexta.store.exceptions.IndexDatasetException;
+import com.connexta.store.exceptions.QuarantineException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import com.connexta.store.exceptions.TransformException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.validation.constraints.Max;
@@ -90,6 +92,16 @@ public class StoreServiceImpl implements StoreService {
             .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
             .build(datasetId));
     log.info("Successfully indexed datasetId={}", datasetId);
+  }
+
+  @Override
+  public void quarantine(
+      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
+      throws QuarantineException {
+    for (StorageAdaptor adaptor :
+        List.of(fileStorageAdaptor, irmStorageAdaptor, metacardStorageAdaptor)) {
+      adaptor.delete(datasetId);
+    }
   }
 
   @Override

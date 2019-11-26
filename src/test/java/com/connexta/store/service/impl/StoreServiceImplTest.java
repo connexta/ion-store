@@ -10,9 +10,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -20,11 +24,15 @@ import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexDatasetClient;
 import com.connexta.store.clients.TransformClient;
 import com.connexta.store.controllers.StoreController;
+import com.connexta.store.exceptions.QuarantineException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -35,6 +43,36 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class StoreServiceImplTest {
+  StoreService storeService;
+  URI retreiveUri;
+  @Mock StorageAdaptor fileStorageAdaptor;
+  @Mock StorageAdaptor irmStorageAdaptor;
+  @Mock StorageAdaptor metacardStorageAdaptor;
+  @Mock IndexDatasetClient indexDatasetClient;
+  @Mock TransformClient transformClient;
+
+  @BeforeEach
+  void setUp() throws Exception {
+    retreiveUri = new URI("test");
+    storeService =
+        new StoreServiceImpl(
+            retreiveUri,
+            fileStorageAdaptor,
+            irmStorageAdaptor,
+            metacardStorageAdaptor,
+            indexDatasetClient,
+            transformClient);
+  }
+
+  @AfterEach
+  void after() {
+    verifyNoMoreInteractions(
+        fileStorageAdaptor,
+        irmStorageAdaptor,
+        metacardStorageAdaptor,
+        indexDatasetClient,
+        transformClient);
+  }
 
   @Test
   @Ignore("TODO")
@@ -50,24 +88,18 @@ class StoreServiceImplTest {
 
   @Test
   void testSuccessfulIngest(
-      @Mock final StorageAdaptor mockFileStorageAdaptor,
-      @Mock final StorageAdaptor mockIrmStorageAdaptor,
-      @Mock final StorageAdaptor mockMetacardStorageAdaptor,
-      @Mock final IndexDatasetClient mockIndexDatasetClient,
-      @Mock final TransformClient mockTransformClient,
-      @Mock final InputStream mockFileInputStream,
-      @Mock final InputStream mockMetacardInputStream)
+      @Mock final InputStream mockFileInputStream, @Mock final InputStream mockMetacardInputStream)
       throws Exception {
     // given
     final URI retrieveUri = new URI("http://store:8080");
     final StoreService storeService =
         new StoreServiceImpl(
             retrieveUri,
-            mockFileStorageAdaptor,
-            mockIrmStorageAdaptor,
-            mockMetacardStorageAdaptor,
-            mockIndexDatasetClient,
-            mockTransformClient);
+            fileStorageAdaptor,
+            irmStorageAdaptor,
+            metacardStorageAdaptor,
+            indexDatasetClient,
+            transformClient);
 
     final long fileSize = 1L;
     final String mimeType = "mimeType";
@@ -80,7 +112,7 @@ class StoreServiceImplTest {
 
     // then
     final ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
-    verify(mockFileStorageAdaptor)
+    verify(fileStorageAdaptor)
         .store(
             eq(fileSize),
             eq(mimeType),
@@ -92,14 +124,14 @@ class StoreServiceImplTest {
                         map.get(StoreServiceImpl.FILE_NAME_METADATA_KEY), filename)));
     final String datasetId = argumentCaptor.getValue();
     assertThat(datasetId, is(not(emptyString())));
-    verify(mockMetacardStorageAdaptor)
+    verify(metacardStorageAdaptor)
         .store(
             eq(metacardSize),
             eq(MediaType.APPLICATION_XML_VALUE),
             eq(mockMetacardInputStream),
             eq(datasetId),
             anyMap());
-    verify(mockTransformClient)
+    verify(transformClient)
         .requestTransform(
             UriComponentsBuilder.fromUri(retrieveUri)
                 .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
@@ -108,13 +140,6 @@ class StoreServiceImplTest {
             UriComponentsBuilder.fromUri(retrieveUri)
                 .path(StoreController.RETRIEVE_METACARD_URL_TEMPLATE)
                 .build(datasetId));
-
-    verifyNoMoreInteractions(
-        mockFileStorageAdaptor,
-        mockIrmStorageAdaptor,
-        mockMetacardStorageAdaptor,
-        mockIndexDatasetClient,
-        mockTransformClient);
   }
 
   @Test
@@ -124,4 +149,38 @@ class StoreServiceImplTest {
   @Test
   @Ignore("TODO")
   void testRetrieveMetacard() {}
+
+  @Test
+  void testSuccessfulQuarantine() {
+    String datasetId = "x";
+    storeService.quarantine(datasetId);
+    for (StorageAdaptor adaptor :
+        List.of(fileStorageAdaptor, irmStorageAdaptor, metacardStorageAdaptor)) {
+      verify(adaptor, times(1)).delete(datasetId);
+    }
+  }
+
+  @Test
+  void testFileQuarantineException() {
+    String datasetId = "x";
+    doThrow(new QuarantineException(" ")).when(fileStorageAdaptor).delete(datasetId);
+    assertThrows(QuarantineException.class, () -> storeService.quarantine(datasetId));
+  }
+
+  @Test
+  void testIrmQuarantineException() {
+    String datasetId = "x";
+    doNothing().when(fileStorageAdaptor).delete(datasetId);
+    doThrow(new QuarantineException(" ")).when(irmStorageAdaptor).delete(datasetId);
+    assertThrows(QuarantineException.class, () -> storeService.quarantine(datasetId));
+  }
+
+  @Test
+  void testMetacardQuarantineException() {
+    String datasetId = "x";
+    doNothing().when(fileStorageAdaptor).delete(datasetId);
+    doNothing().when(irmStorageAdaptor).delete(datasetId);
+    doThrow(new QuarantineException(" ")).when(metacardStorageAdaptor).delete(datasetId);
+    assertThrows(QuarantineException.class, () -> storeService.quarantine(datasetId));
+  }
 }

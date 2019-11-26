@@ -21,6 +21,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.connexta.store.exceptions.DatasetNotFoundException;
+import com.connexta.store.exceptions.QuarantineException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import com.google.common.collect.ImmutableList;
@@ -152,6 +153,19 @@ public class S3StorageAdaptor implements StorageAdaptor {
     Optional<Tag> statusTag =
         tags.stream().filter(tag -> StringUtils.equals(tag.getKey(), STATUS_KEY)).findFirst();
     return statusTag.get().getValue();
+  }
+
+  public void delete(@NotBlank String key) {
+    log.info("Deleting item in bucket \"{}\" with key \"{}\"", bucket, key);
+    try {
+      if (!s3ObjectExists(bucket, key)) {
+        throw new QuarantineException(String.format("Bucket %s does not exist", bucket));
+      }
+      amazonS3.deleteObject(bucket, key);
+    } catch (final SdkClientException e) {
+      throw new QuarantineException(
+          String.format("Unable to delete item with key %s: %s", key, e.getMessage()), e);
+    }
   }
 
   @NotNull

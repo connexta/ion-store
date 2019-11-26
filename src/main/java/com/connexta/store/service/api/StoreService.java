@@ -54,4 +54,6 @@ public interface StoreService {
       @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
       @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
       throws IndexDatasetException;
+
+  void quarantine(String datasetId);
 }
