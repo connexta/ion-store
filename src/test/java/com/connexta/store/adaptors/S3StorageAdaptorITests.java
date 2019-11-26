@@ -27,6 +27,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.connexta.store.config.AmazonS3Configuration;
 import com.connexta.store.exceptions.DatasetNotFoundException;
 import com.connexta.store.exceptions.QuarantineException;
+import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -206,7 +207,7 @@ public class S3StorageAdaptorITests {
   @Test
   void testDeleteBucketDoesNotExist() {
     amazonS3.deleteBucket(BUCKET);
-    assertThrows(QuarantineException.class, () -> storageAdaptor.delete(KEY));
+    assertThrows(RetrieveException.class, () -> storageAdaptor.delete(KEY));
     amazonS3.createBucket(BUCKET);
   }
 

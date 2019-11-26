@@ -10,9 +10,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -21,6 +24,7 @@ import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexDatasetClient;
 import com.connexta.store.clients.TransformClient;
 import com.connexta.store.controllers.StoreController;
+import com.connexta.store.exceptions.QuarantineException;
 import com.connexta.store.service.api.StoreService;
 import java.io.InputStream;
 import java.net.URI;
@@ -147,12 +151,36 @@ class StoreServiceImplTest {
   void testRetrieveMetacard() {}
 
   @Test
-  void quarantine() {
+  void testSuccessfulQuarantine() {
     String datasetId = "x";
     storeService.quarantine(datasetId);
     for (StorageAdaptor adaptor :
         List.of(fileStorageAdaptor, irmStorageAdaptor, metacardStorageAdaptor)) {
       verify(adaptor, times(1)).delete(datasetId);
     }
+  }
+
+  @Test
+  void testFileQuarantineException() {
+    String datasetId = "x";
+    doThrow(new QuarantineException(" ")).when(fileStorageAdaptor).delete(datasetId);
+    assertThrows(QuarantineException.class, () -> storeService.quarantine(datasetId));
+  }
+
+  @Test
+  void testIrmQuarantineException() {
+    String datasetId = "x";
+    doNothing().when(fileStorageAdaptor).delete(datasetId);
+    doThrow(new QuarantineException(" ")).when(irmStorageAdaptor).delete(datasetId);
+    assertThrows(QuarantineException.class, () -> storeService.quarantine(datasetId));
+  }
+
+  @Test
+  void testMetacardQuarantineException() {
+    String datasetId = "x";
+    doNothing().when(fileStorageAdaptor).delete(datasetId);
+    doNothing().when(irmStorageAdaptor).delete(datasetId);
+    doThrow(new QuarantineException(" ")).when(metacardStorageAdaptor).delete(datasetId);
+    assertThrows(QuarantineException.class, () -> storeService.quarantine(datasetId));
   }
 }
