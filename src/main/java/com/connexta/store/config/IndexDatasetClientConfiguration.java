@@ -30,7 +30,7 @@ public class IndexDatasetClientConfiguration {
   @Bean
   public IndexDatasetClient indexDatasetClient(
       @NotNull @Named("nonBufferingRestTemplate") final RestTemplate restTemplate,
-      @NotBlank @Value("${endpointUrl.index}") final String indexEndpoint,
+      @NotBlank @Value("${endpoints.index.url}") final String indexEndpoint,
       @NotBlank @Value("${endpoints.index.version}") final String indexApiVersion) {
     return new IndexDatasetClientImpl(restTemplate, indexEndpoint, indexApiVersion);
   }

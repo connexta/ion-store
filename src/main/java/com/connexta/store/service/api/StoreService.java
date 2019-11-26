@@ -6,54 +6,50 @@
  */
 package com.connexta.store.service.api;
 
-import com.connexta.store.adaptors.FileRetrieveResponse;
-import com.connexta.store.exceptions.IndexDatasetException;
-import com.connexta.store.exceptions.RetrieveException;
-import com.connexta.store.exceptions.StoreException;
-import com.connexta.store.exceptions.TransformException;
+import com.connexta.store.rest.models.MetadataInfo;
+import java.io.IOException;
 import java.io.InputStream;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import java.util.List;
 
+/** Provides operations to take on Datasets. */
 public interface StoreService {
 
+  /**
+   * Ingests a file and metacard.
+   *
+   * @param fileSize the size of the file
+   * @param mimeType the type of the file
+   * @param inputStream the contents of the file
+   * @param fileName the file's name
+   * @param metacardFileSize the metacard's size
+   * @param metacardInputStream the xml content of the metacard
+   */
   void ingest(
-      @NotNull @Min(1L) @Max(10737418240L) final Long fileSize,
-      @NotBlank final String mimeType,
-      @NotNull final InputStream inputStream,
-      @NotBlank final String fileName,
-      @NotNull @Min(1L) @Max(10737418240L) final Long metacardFileSize,
-      @NotNull final InputStream metacardInputStream)
-      throws StoreException, TransformException;
+      final long fileSize,
+      final String mimeType,
+      final InputStream inputStream,
+      final String fileName,
+      final long metacardFileSize,
+      final InputStream metacardInputStream);
 
   /**
-   * The caller is responsible for closing the {@link java.io.InputStream} in the returned {@link
-   * FileRetrieveResponse}.
+   * Retrieves a Data from a Dataset.
+   *
+   * @param datasetId id of the Dataset to fetch the Data from
+   * @param dataType the type of the Data to fetch
+   * @return the {@link IonData}
+   * @throws IOException if there was an error reading the Data
    */
-  @NotNull
-  FileRetrieveResponse retrieveFile(
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
-      throws RetrieveException;
+  IonData getData(String datasetId, String dataType) throws IOException;
 
-  /** The caller is responsible for closing the returned {@link java.io.InputStream}. */
-  @NotNull
-  InputStream retrieveIrm(
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
-      throws RetrieveException;
-
-  /** The caller is responsible for closing the returned {@link java.io.InputStream}. */
-  @NotNull
-  InputStream retrieveMetacard(@NotBlank final String datasetId) throws RetrieveException;
-
-  void addIrm(
-      @NotNull final InputStream irmInputStream,
-      @NotNull @Min(1L) @Max(10737418240L) final long fileSize,
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId)
-      throws IndexDatasetException;
+  /**
+   * Adds a set of Data to a Dataset.
+   *
+   * @param datasetId id of the Dataset to add Data to
+   * @param metadataInfos list of Metadata info to add
+   * @throws IOException if there was an error reading one of the Metadatas
+   */
+  void addMetadata(String datasetId, List<MetadataInfo> metadataInfos) throws IOException;
 
   void quarantine(String datasetId);
 }

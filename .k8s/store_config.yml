@@ -1,2 +1,5 @@
-endpointUrl:
-  retrieve: http://ion-store.default.gsp.test
+endpoints:
+  store:
+    url: http://ion-store.default.gsp.test/
+  transform:
+    url: http://ion-transform.default.gsp.test/

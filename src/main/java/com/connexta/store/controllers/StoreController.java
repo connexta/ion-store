@@ -10,10 +10,11 @@ import static org.springframework.http.HttpHeaders.LAST_MODIFIED;
 import static org.springframework.http.ResponseEntity.ok;
 
 import com.connexta.ingest.rest.spring.IngestApi;
-import com.connexta.store.adaptors.FileRetrieveResponse;
-import com.connexta.store.exceptions.StoreException;
+import com.connexta.store.exceptions.common.DetailedResponseStatusException;
+import com.connexta.store.rest.models.AddMetadataRequest;
 import com.connexta.store.rest.models.ErrorMessage;
 import com.connexta.store.rest.spring.StoreApi;
+import com.connexta.store.service.api.IonData;
 import com.connexta.store.service.api.StoreService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -22,8 +23,7 @@ import io.swagger.annotations.ApiResponses;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
-import java.util.Optional;
-import javax.validation.Valid;
+import java.util.UUID;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -37,38 +37,28 @@ import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ServerWebInputException;
 
 @Slf4j
 @AllArgsConstructor
 @RestController
 public class StoreController implements StoreApi, IngestApi {
 
-  public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
-  public static final String SUPPORTED_METADATA_TYPE = "irm";
-  public static final String CREATE_DATASET_URL_TEMPLATE = "/dataset";
-  public static final String ADD_METADATA_URL_TEMPLATE = "/dataset/{datasetId}/{metadataType}";
-  public static final String RETRIEVE_FILE_URL_TEMPLATE = "/dataset/{datasetId}";
-  public static final String RETRIEVE_IRM_URL_TEMPLATE = "/dataset/{datasetId}/irm";
-  public static final String RETRIEVE_METACARD_URL_TEMPLATE = "/dataset/{datasetId}/metacard";
-  public static final MediaType IRM_MEDIA_TYPE = new MediaType("application", "dni-tdf+xml");
+  public static final String RETRIEVE_DATA_URL_TEMPLATE = "/dataset/{datasetId}/{dataType}";
+  public static final String QUARANTINE_URL_TEMPALTE = "/dataset/{datasetId}/quarantine";
+  public static final String ADD_METADATA_URL_TEMPLATE = "/dataset/{datasetId}";
   public static final String IRM_MEDIA_TYPE_VALUE = "application/dni-tdf+xml";
-  public static final MediaType METACARD_MEDIA_TYPE = MediaType.APPLICATION_XML;
-  @NotNull private final StoreService storeService;
-  @NotBlank private final String storeApiVersion;
 
-  @Override
-  public Optional<NativeWebRequest> getRequest() {
-    return Optional.empty();
-  }
+  @NotNull private StoreService storeService;
+  @NotBlank private String storeApiVersion;
+  private static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
 
   public ResponseEntity<Void> quarantine(
       @Pattern(regexp = "^[0-9a-zA-Z]+$")
@@ -82,40 +72,20 @@ public class StoreController implements StoreApi, IngestApi {
 
   @Override
   public ResponseEntity<Void> addMetadata(
-      final String acceptVersion,
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 32, max = 32) final String datasetId,
-      @Pattern(regexp = "^[0-9a-zA-Z\\-]+$") @Size(min = 1, max = 32) final String metadataType,
-      @Valid final MultipartFile file) {
-    final String expectedAcceptVersion = storeApiVersion;
-    if (!StringUtils.equals(acceptVersion, expectedAcceptVersion)) {
+      final String acceptVersion, final UUID datasetId, AddMetadataRequest addMetadataRequest) {
+    if (!StringUtils.equals(acceptVersion, storeApiVersion)) {
       throw new UnsupportedOperationException(
           String.format(
               "%s was \"%s\", but only \"%s\" is currently supported.",
-              ACCEPT_VERSION_HEADER_NAME, acceptVersion, expectedAcceptVersion));
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, storeApiVersion));
     }
 
-    // TODO Validate other params.
-
-    if (!StringUtils.equals(metadataType, SUPPORTED_METADATA_TYPE)) {
-      throw new UnsupportedOperationException(
-          String.format("Metadata type %s is not yet supported", metadataType));
-    }
-
-    final Long fileSize = file.getSize();
-    // TODO validate that fileSize is (0 GB, 10 GB]
-
-    // TODO Verify InputStream is closed in tests
-    try (final InputStream inputStream = file.getInputStream()) {
-      storeService.addIrm(inputStream, fileSize, datasetId);
+    try {
+      storeService.addMetadata(datasetId.toString(), addMetadataRequest.getMetadataInfos());
     } catch (IOException e) {
-      throw new ValidationException(
-          String.format(
-              String.format(
-                  "Unable to read file for addMetadata request for metadataType=%s, id=%s",
-                  metadataType, datasetId),
-              e));
+      throw new DetailedResponseStatusException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving the Metadata.");
     }
-
     return ok().build();
   }
 
@@ -126,20 +96,38 @@ public class StoreController implements StoreApi, IngestApi {
       MultipartFile file,
       String correlationId,
       MultipartFile metacard) {
-    if (lastModified == null || lastModified.toString().isBlank()) {
-      throw new ServerWebInputException(
-          String.format("%s is missing or blank", LAST_MODIFIED)); // TODO Replace this exception
+    if (!StringUtils.equals(acceptVersion, storeApiVersion)) {
+      throw new UnsupportedOperationException(
+          String.format(
+              "%s was \"%s\", but only \"%s\" is currently supported.",
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, storeApiVersion));
     }
+
+    MultipartFileValidator.validate(file);
+
+    if (lastModified == null) {
+      throw new DetailedResponseStatusException(
+          HttpStatus.BAD_REQUEST, String.format("%s is missing.", LAST_MODIFIED));
+    }
+
     String fileName = file.getOriginalFilename();
     log.info("Ingest request received fileName={}", fileName);
     InputStream inputStream;
-    InputStream metacardInputStream;
     try {
       inputStream = file.getInputStream();
+
+    } catch (IOException e) {
+      throw new ValidationException("Unable to open file attachment.", e);
+    }
+
+    InputStream metacardInputStream;
+    try {
       metacardInputStream = metacard.getInputStream();
     } catch (IOException e) {
-      throw new ValidationException("Could not open attachment"); // TODO Replace this exception
+      throw new DetailedResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Unable to open metacard attachment.");
     }
+
     storeService.ingest(
         file.getSize(),
         file.getContentType(),
@@ -152,200 +140,73 @@ public class StoreController implements StoreApi, IngestApi {
   }
 
   @ApiOperation(
-      value = "Get a metacard for a dataset.",
-      nickname = "retrieveMetacard",
+      value = "Retrieve a Data (file or metadata) from a Dataset.",
+      nickname = "retrieveData",
       response = Resource.class,
-      tags = {"store"})
+      tags = {"store, retrieve, irm, metacard, file"})
   @ApiResponses(
       value = {
-        @ApiResponse(code = 200, message = "Get Metacard", response = Resource.class),
+        @ApiResponse(
+            code = 200,
+            message = "Successfully retrieved the data.",
+            response = Resource.class),
         @ApiResponse(
             code = 401,
-            message = "The client could not be authenticated. ",
+            message = "The client could not be authenticated.",
             response = ErrorMessage.class),
         @ApiResponse(
             code = 400,
             message =
-                "The client message could not be understood by the server due to invalid format or syntax. ",
+                "The client message could not be understood by the server due to invalid format or syntax.",
             response = ErrorMessage.class),
         @ApiResponse(
             code = 403,
-            message = "The client does not have permission. ",
+            message = "The client does not have permission.",
             response = ErrorMessage.class),
         @ApiResponse(
-            code = 501,
-            message = "The requested API version is not supported and therefore not implemented. ",
-            response = ErrorMessage.class)
-      })
-  @RequestMapping(
-      value = RETRIEVE_METACARD_URL_TEMPLATE,
-      produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_XML_VALUE},
-      method = RequestMethod.GET)
-  public ResponseEntity<Resource> retrieveMetacard(
-      @Pattern(regexp = "^[0-9a-zA-Z]+$")
-          @Size(min = 32, max = 32)
-          @ApiParam(value = "The ID of the dataset. ", required = true)
-          @PathVariable("datasetId")
-          final String datasetId) {
-    InputStream inputStream = null;
-    try {
-      // TODO return 404 if key doesn't exist
-      inputStream = storeService.retrieveMetacard(datasetId);
-      log.info("Successfully retrieved metacard from datasetId={}", datasetId);
-      return ResponseEntity.ok()
-          .contentType(METACARD_MEDIA_TYPE)
-          .body(new InputStreamResource(inputStream));
-    } catch (RuntimeException e) {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException ioe) {
-          log.warn(
-              "Unable to close InputStream when retrieving metacard from datasetId={}",
-              datasetId,
-              ioe);
-        }
-      }
-
-      log.warn("Unable to retrieve metacard datasetId={}", datasetId, e);
-      throw new StoreException(String.format("Unable to retrieve metacard: %s", e.getMessage()), e);
-    } catch (Throwable t) {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          log.warn(
-              "Unable to close InputStream when retrieving metacard from datasetId={}",
-              datasetId,
-              e);
-        }
-      }
-      throw t;
-    }
-  }
-
-  @ApiOperation(
-      value = "Get a file for a dataset.",
-      nickname = "retrieveFile",
-      response = Resource.class,
-      tags = {"store"})
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "Get File", response = Resource.class),
-        @ApiResponse(
-            code = 401,
-            message = "The client could not be authenticated. ",
-            response = ErrorMessage.class),
-        @ApiResponse(
-            code = 400,
+            code = 404,
             message =
-                "The client message could not be understood by the server due to invalid format or syntax. ",
-            response = ErrorMessage.class),
-        @ApiResponse(
-            code = 403,
-            message = "The client does not have permission. ",
+                "The Dataset identified by the id does not exist, or the data type does not exist within the Dataset.",
             response = ErrorMessage.class),
         @ApiResponse(
             code = 501,
-            message = "The requested API version is not supported and therefore not implemented. ",
+            message = "The requested API version is not supported and therefore not implemented.",
             response = ErrorMessage.class)
       })
   @RequestMapping(
-      value = RETRIEVE_FILE_URL_TEMPLATE,
+      value = StoreController.RETRIEVE_DATA_URL_TEMPLATE,
       produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_JSON_VALUE},
       method = RequestMethod.GET)
-  public ResponseEntity<Resource> retrieveFile(
-      @Pattern(regexp = "^[0-9a-zA-Z]+$")
-          @Size(min = 32, max = 32)
-          @ApiParam(value = "The ID of the dataset. ", required = true)
+  public ResponseEntity<Resource> retrieveData(
+      @Pattern(
+              regexp =
+                  "([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}")
+          @Size(min = 36, max = 36)
+          @ApiParam(value = "The ID of the Dataset to retrieve the Data from.", required = true)
           @PathVariable("datasetId")
-          final String datasetId) {
-    InputStream inputStream = null;
+          String datasetId,
+      @ApiParam(value = "The type of the Data.", required = true) @PathVariable("dataType")
+          String dataType) {
+    IonData ionData;
     try {
-      final FileRetrieveResponse fileRetrieveResponse = storeService.retrieveFile(datasetId);
-      log.info("Successfully retrieved file for datasetId={}", datasetId);
+      ionData = storeService.getData(datasetId, dataType);
+    } catch (IOException e) {
+      throw new DetailedResponseStatusException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving the requested Data.");
+    }
 
+    ResponseEntity.BodyBuilder bodyBuilder =
+        ResponseEntity.ok().contentType(MediaType.parseMediaType(ionData.getMediaType()));
+
+    final String fileName = ionData.getFileName();
+    if (fileName != null && !fileName.isBlank()) {
       final HttpHeaders httpHeaders = new HttpHeaders();
       httpHeaders.setContentDisposition(
-          ContentDisposition.builder("attachment")
-              .filename(fileRetrieveResponse.getFileName())
-              .build());
-      inputStream = fileRetrieveResponse.getInputStream();
-      return ResponseEntity.ok()
-          .contentType(fileRetrieveResponse.getMediaType())
-          .headers(httpHeaders)
-          .body(new InputStreamResource(inputStream));
-    } catch (Throwable t) {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          log.warn(
-              "Unable to close InputStream when retrieving file for datasetId={}", datasetId, e);
-        }
-      }
-      throw t;
-    }
-  }
+          ContentDisposition.builder("attachment").filename(fileName).build());
 
-  @ApiOperation(
-      value = "Get a IRM for a dataset.",
-      nickname = "retrieveIrm",
-      response = Resource.class,
-      tags = {"store"})
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "Get IRM", response = Resource.class),
-        @ApiResponse(
-            code = 401,
-            message = "The client could not be authenticated. ",
-            response = ErrorMessage.class),
-        @ApiResponse(
-            code = 400,
-            message =
-                "The client message could not be understood by the server due to invalid format or syntax. ",
-            response = ErrorMessage.class),
-        @ApiResponse(
-            code = 403,
-            message = "The client does not have permission. ",
-            response = ErrorMessage.class),
-        @ApiResponse(
-            code = 501,
-            message = "The requested API version is not supported and therefore not implemented. ",
-            response = ErrorMessage.class)
-      })
-  @RequestMapping(
-      value = RETRIEVE_IRM_URL_TEMPLATE,
-      produces = {IRM_MEDIA_TYPE_VALUE, MediaType.APPLICATION_JSON_VALUE},
-      method = RequestMethod.GET)
-  public ResponseEntity<Resource> retrieveIrm(
-      @Pattern(regexp = "^[0-9a-zA-Z]+$")
-          @Size(min = 32, max = 32)
-          @ApiParam(value = "The ID of the dataset. ", required = true)
-          @PathVariable("datasetId")
-          final String datasetId) {
-    InputStream inputStream = null;
-    try {
-      inputStream = storeService.retrieveIrm(datasetId);
-      log.info("Successfully retrieved irm for datasetId={}", datasetId);
-
-      final HttpHeaders httpHeaders = new HttpHeaders();
-      httpHeaders.setContentDisposition(
-          ContentDisposition.builder("attachment").filename("irm-" + datasetId + ".xml").build());
-      return ResponseEntity.ok()
-          .contentType(IRM_MEDIA_TYPE)
-          .headers(httpHeaders)
-          .body(new InputStreamResource(inputStream));
-    } catch (Throwable t) {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          log.warn(
-              "Unable to close InputStream when retrieving irm for datasetId={}", datasetId, e);
-        }
-      }
-      throw t;
+      bodyBuilder.headers(httpHeaders);
     }
+
+    return bodyBuilder.body(new InputStreamResource(ionData.getInputStream()));
   }
 }

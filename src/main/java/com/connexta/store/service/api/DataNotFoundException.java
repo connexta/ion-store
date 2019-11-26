@@ -4,12 +4,6 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.poller.service;
+package com.connexta.store.service.api;
 
-import lombok.Data;
-
-@Data
-public class StatusResponseImpl implements StatusResponse {
-
-  private final String status;
-}
+public class DataNotFoundException extends Exception {}
