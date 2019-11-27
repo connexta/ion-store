@@ -42,7 +42,7 @@ import org.springframework.http.MediaType;
 @Slf4j
 public class S3StorageAdaptor implements StorageAdaptor {
 
-  public static final String STATUS_KEY = "status";
+  private static final String STATUS_KEY = "status";
 
   private final String bucket;
   private final AmazonS3 amazonS3;
@@ -142,7 +142,6 @@ public class S3StorageAdaptor implements StorageAdaptor {
   @Override
   @Nullable
   public String getStatus(@NotBlank String key) throws DatasetNotFoundException {
-    String currentStatus = null;
     if (!s3ObjectExists(bucket, key)) {
       throw new DatasetNotFoundException(key);
     }

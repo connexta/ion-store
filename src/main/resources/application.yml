@@ -17,14 +17,13 @@ spring:
       max-file-size: 10GB
       max-request-size: 11GB
 
-# The index endpoint should be deployed in the same network, so we don't need a config.yml file for it.
-endpointUrl:
-  index: http://search:8080/index/
-
 endpoints:
   transform:
     version: ${transformApiVersion}
+    url: http://transform:9090/
   index:
     version: ${indexApiVersion}
+    # The index endpoint should be deployed in the same network, so we don't need a config.yml file for it.
+    url: http://search:8080/
   store:
     version: ${storeApiVersion}

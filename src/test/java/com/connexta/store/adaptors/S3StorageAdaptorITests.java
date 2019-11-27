@@ -53,8 +53,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class S3StorageAdaptorITests {
 
-  public static final String ASDF = "asdf";
-  public static final String DATASET_ID = "123e4567e89b12d3a456426655440000";
+  private static final String ASDF = "asdf";
+  private static final String DATASET_ID = "123e4567e89b12d3a456426655440000";
   private static final int LOCALSTACK_PORT = 4572;
   private static String BUCKET = "metacard-quarantine";
   public static final String KEY = "1234";
@@ -64,14 +64,14 @@ public class S3StorageAdaptorITests {
   private static AmazonS3 amazonS3;
 
   @Container
-  public static final GenericContainer s3Container =
+  private static final GenericContainer s3Container =
       new GenericContainer("localstack/localstack:0.10.5")
           .withExposedPorts(LOCALSTACK_PORT)
           .withEnv("SERVICES", "s3")
           .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Ready\\.\n"));
 
   @BeforeAll
-  public static void setUp() {
+  static void setUp() {
     configuration =
         new AmazonS3Configuration(
             String.format(
@@ -97,12 +97,12 @@ public class S3StorageAdaptorITests {
   }
 
   @BeforeEach
-  public void beforeEach() {
+  void beforeEach() {
     amazonS3.createBucket(BUCKET);
   }
 
   @AfterEach
-  public void afterEach() {
+  void afterEach() {
     // Clear out S3
     amazonS3.listObjects(BUCKET).getObjectSummaries().stream()
         .map(S3ObjectSummary::getKey)
@@ -111,7 +111,7 @@ public class S3StorageAdaptorITests {
   }
 
   @Test
-  public void testSuccessfulStoreRequest() throws IOException {
+  void testSuccessfulStoreRequest() {
     storageAdaptor.store(
         4L,
         MediaType.APPLICATION_XML_VALUE,
@@ -124,7 +124,7 @@ public class S3StorageAdaptorITests {
   }
 
   @Test
-  public void testSuccessfulRetrieveRequest() {
+  void testSuccessfulRetrieveRequest() {
     final String key = DATASET_ID;
     final String metacardContents = ASDF;
     storageAdaptor.store(
@@ -137,7 +137,7 @@ public class S3StorageAdaptorITests {
   }
 
   @Test
-  public void testRetrieveRequestWrongKey() {
+  void testRetrieveRequestWrongKey() {
     String key = DATASET_ID;
     storageAdaptor.store(
         4L,
@@ -149,12 +149,12 @@ public class S3StorageAdaptorITests {
   }
 
   @Test
-  public void testStoringDuplicateKey() {
+  void testStoringDuplicateKey() {
     // TODO add code for checking duplicate products.
   }
 
   @Test
-  public void testStoreWithContentLengthNotMatching() {
+  void testStoreWithContentLengthNotMatching() {
     assertThrows(
         StoreException.class,
         () -> {

@@ -19,6 +19,7 @@ public class MultipartFileValidator {
 
   private static final long GIGABYTE = 1 << 30;
   public static final long MAX_FILE_BYTES = 10 * GIGABYTE;
+  private static final long MIN_FILE_BYTES = 1;
 
   private MultipartFileValidator() {}
 
@@ -36,12 +37,14 @@ public class MultipartFileValidator {
   }
 
   private static void validateSize(final MultipartFile file) {
-    final Long fileSize = file.getSize();
-    if (fileSize > MAX_FILE_BYTES) {
+    final long fileSize = file.getSize();
+    if (fileSize < MIN_FILE_BYTES) {
       throw new ValidationException(
-          String.format(
-              "File size is %d bytes. File size cannot be greater than %d bytes",
-              fileSize, MAX_FILE_BYTES));
+          String.format("File size must be larger than %d MB", MIN_FILE_BYTES));
+    }
+
+    if (fileSize > MAX_FILE_BYTES) {
+      throw new ValidationException(String.format("File exceeded maximum size of %d GB", GIGABYTE));
     }
   }
 }

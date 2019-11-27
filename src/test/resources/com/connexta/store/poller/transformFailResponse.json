@@ -1,0 +1,13 @@
+{
+  "transformationStatus": "Failed",
+  "metadataInformations": [
+    {
+      "metadataType": "irm",
+      "transformationStatus": "Failed",
+      "failureReason": "it failed ya dummy",
+      "failureMessage": "it failed ya dummy",
+      "location": "http://transformation-api:9091/transform/bec7c5df-7d83-4f49-893d-9b93bc2140ce/irm",
+      "transformedTimestamp": "2019-11-25T19:27:53.555Z"
+    }
+  ]
+}

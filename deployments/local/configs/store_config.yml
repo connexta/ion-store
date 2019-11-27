@@ -1,3 +1,7 @@
-endpointUrl:
-  retrieve: http://store:8080
-  transform: http://localhost:9090/transform/
+endpoints:
+  store:
+    url: http://store:8080/
+  transform:
+    url: http://transformation-api:9091/
+  search:
+    url: http://search:8080/

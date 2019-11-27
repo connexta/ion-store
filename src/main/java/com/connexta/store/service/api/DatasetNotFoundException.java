@@ -4,11 +4,6 @@
  * Released under the GNU Lesser General Public License version 3; see
  * https://www.gnu.org/licenses/lgpl-3.0.html
  */
-package com.connexta.poller.service;
+package com.connexta.store.service.api;
 
-import java.net.URI;
-
-public interface StatusService {
-
-  void submit(URI uri);
-}
+public class DatasetNotFoundException extends Exception {}

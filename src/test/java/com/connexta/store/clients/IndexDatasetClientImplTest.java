@@ -32,7 +32,7 @@ import org.springframework.web.client.RestTemplate;
 @ExtendWith(MockitoExtension.class)
 class IndexDatasetClientImplTest {
 
-  private static final String INDEX_ENDPOINT = "http://search:8080/index/";
+  private static final String INDEX_ENDPOINT = "http://search:8080/";
   private static final String INDEX_API_VERSION = "testIndexApiVersion";
 
   @Mock private RestTemplate mockRestTemplate;
@@ -60,7 +60,7 @@ class IndexDatasetClientImplTest {
     doThrow(runtimeException)
         .when(mockRestTemplate)
         .put(
-            eq(INDEX_ENDPOINT + datasetId),
+            eq(INDEX_ENDPOINT + "index/" + datasetId),
             argThat(
                 (ArgumentMatcher<HttpEntity>)
                     argument -> {
@@ -91,7 +91,7 @@ class IndexDatasetClientImplTest {
     // then
     verify(mockRestTemplate)
         .put(
-            eq(INDEX_ENDPOINT + datasetId),
+            eq(INDEX_ENDPOINT + "index/" + datasetId),
             argThat(
                 (ArgumentMatcher<HttpEntity>)
                     argument -> {

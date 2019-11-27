@@ -7,30 +7,34 @@
 package com.connexta.store.service.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.clients.IndexDatasetClient;
 import com.connexta.store.clients.TransformClient;
-import com.connexta.store.controllers.StoreController;
 import com.connexta.store.exceptions.QuarantineException;
+import com.connexta.store.poller.TransformStatusTask;
 import com.connexta.store.service.api.StoreService;
+import com.google.common.collect.Queues;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Ignore;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,29 +43,33 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
 class StoreServiceImplTest {
-  StoreService storeService;
-  URI retreiveUri;
+  private StoreService storeService;
+  private URI storeUrl;
   @Mock StorageAdaptor fileStorageAdaptor;
   @Mock StorageAdaptor irmStorageAdaptor;
   @Mock StorageAdaptor metacardStorageAdaptor;
   @Mock IndexDatasetClient indexDatasetClient;
   @Mock TransformClient transformClient;
+  private BlockingQueue<TransformStatusTask> taskQueue;
 
   @BeforeEach
   void setUp() throws Exception {
-    retreiveUri = new URI("test");
+    storeUrl = new URI("http://test:1234");
+    taskQueue = Queues.newLinkedBlockingQueue();
     storeService =
         new StoreServiceImpl(
-            retreiveUri,
+            storeUrl,
             fileStorageAdaptor,
             irmStorageAdaptor,
             metacardStorageAdaptor,
             indexDatasetClient,
-            transformClient);
+            transformClient,
+            taskQueue,
+            mock(WebClient.class));
   }
 
   @AfterEach
@@ -75,36 +83,37 @@ class StoreServiceImplTest {
   }
 
   @Test
-  @Ignore("TODO")
-  void testRetrieveFile() {}
-
-  @Test
-  @Ignore("TODO")
-  void testRetrieveIrm() {}
-
-  @Test
-  @Ignore("TODO")
-  void testAddIrm() {}
-
-  @Test
   void testSuccessfulIngest(
-      @Mock final InputStream mockFileInputStream, @Mock final InputStream mockMetacardInputStream)
+      @Mock final StorageAdaptor mockFileStorageAdaptor,
+      @Mock final StorageAdaptor mockIrmStorageAdaptor,
+      @Mock final StorageAdaptor mockMetacardStorageAdaptor,
+      @Mock final IndexDatasetClient mockIndexDatasetClient,
+      @Mock final TransformClient mockTransformClient,
+      @Mock final InputStream mockFileInputStream,
+      @Mock final InputStream mockMetacardInputStream,
+      @Mock final WebClient transformWebClient)
       throws Exception {
     // given
-    final URI retrieveUri = new URI("http://store:8080");
     final StoreService storeService =
         new StoreServiceImpl(
-            retrieveUri,
-            fileStorageAdaptor,
-            irmStorageAdaptor,
-            metacardStorageAdaptor,
-            indexDatasetClient,
-            transformClient);
+            storeUrl,
+            mockFileStorageAdaptor,
+            mockIrmStorageAdaptor,
+            mockMetacardStorageAdaptor,
+            mockIndexDatasetClient,
+            mockTransformClient,
+            taskQueue,
+            transformWebClient);
 
     final long fileSize = 1L;
     final String mimeType = "mimeType";
     final String filename = "filename";
     final long metacardSize = 1L;
+
+    final URL transformUrl = new URL("http://someurl:8080/abcwee");
+    when(mockTransformClient.requestTransform(
+            anyString(), any(URL.class), any(URL.class), any(URL.class)))
+        .thenReturn(transformUrl);
 
     // when
     storeService.ingest(
@@ -112,7 +121,7 @@ class StoreServiceImplTest {
 
     // then
     final ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
-    verify(fileStorageAdaptor)
+    verify(mockFileStorageAdaptor)
         .store(
             eq(fileSize),
             eq(mimeType),
@@ -122,33 +131,26 @@ class StoreServiceImplTest {
                 map ->
                     StringUtils.equals(
                         map.get(StoreServiceImpl.FILE_NAME_METADATA_KEY), filename)));
+
     final String datasetId = argumentCaptor.getValue();
-    assertThat(datasetId, is(not(emptyString())));
-    verify(metacardStorageAdaptor)
+    verify(mockMetacardStorageAdaptor)
         .store(
             eq(metacardSize),
             eq(MediaType.APPLICATION_XML_VALUE),
             eq(mockMetacardInputStream),
             eq(datasetId),
-            anyMap());
-    verify(transformClient)
-        .requestTransform(
-            UriComponentsBuilder.fromUri(retrieveUri)
-                .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
-                .build(datasetId),
-            mimeType,
-            UriComponentsBuilder.fromUri(retrieveUri)
-                .path(StoreController.RETRIEVE_METACARD_URL_TEMPLATE)
-                .build(datasetId));
+            eq(Map.of()));
+
+    final URL fileUrl = new URL(storeUrl.toASCIIString() + "/dataset/" + datasetId + "/file");
+    final URL metacardUrl =
+        new URL(storeUrl.toASCIIString() + "/dataset/" + datasetId + "/metacard");
+    verify(mockTransformClient).requestTransform(datasetId, fileUrl, fileUrl, metacardUrl);
+
+    assertThat(taskQueue.size(), Matchers.is(1));
+    final TransformStatusTask task = taskQueue.take();
+    assertThat(task.getDatasetId(), Matchers.is((datasetId)));
+    assertThat(task.getTransformStatusUrl(), Matchers.is(transformUrl));
   }
-
-  @Test
-  @Ignore("TODO")
-  void testUnsuccessfulIngest() {}
-
-  @Test
-  @Ignore("TODO")
-  void testRetrieveMetacard() {}
 
   @Test
   void testSuccessfulQuarantine() {
