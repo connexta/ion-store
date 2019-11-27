@@ -13,6 +13,7 @@ import com.connexta.ingest.rest.spring.IngestApi;
 import com.connexta.store.exceptions.common.DetailedResponseStatusException;
 import com.connexta.store.rest.models.AddMetadataRequest;
 import com.connexta.store.rest.models.ErrorMessage;
+import com.connexta.store.rest.models.QuarantineRequest;
 import com.connexta.store.rest.spring.StoreApi;
 import com.connexta.store.service.api.IonData;
 import com.connexta.store.service.api.StoreService;
@@ -60,13 +61,10 @@ public class StoreController implements StoreApi, IngestApi {
   @NotBlank private String storeApiVersion;
   private static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
 
+  @Override
   public ResponseEntity<Void> quarantine(
-      @Pattern(regexp = "^[0-9a-zA-Z]+$")
-          @Size(min = 32, max = 32)
-          @ApiParam(value = "The ID of the dataset. ", required = true)
-          final String datasetId) {
-    storeService.quarantine(datasetId);
-
+      final String acceptVersion, final UUID datasetId, QuarantineRequest quarantineRequest) {
+    storeService.quarantine(datasetId.toString());
     return ResponseEntity.accepted().build();
   }
 
