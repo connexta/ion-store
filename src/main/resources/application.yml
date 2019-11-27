@@ -24,6 +24,6 @@ endpoints:
   index:
     version: ${indexApiVersion}
     # The index endpoint should be deployed in the same network, so we don't need a config.yml file for it.
-    url: http://search:8080/index/
+    url: http://search:8080/
   store:
     version: ${storeApiVersion}

@@ -31,6 +31,12 @@ public class S3StorageConfiguration {
 
   @Bean
   public AmazonS3 amazonS3(@NotNull final AmazonS3Configuration configuration) {
+    // see: https://github.com/localstack/localstack/issues/1037
+    // see:
+    // https://github.com/aws/aws-sdk-java/blob/master/aws-java-sdk-s3/src/main/java/com/amazonaws/services/s3/internal/SkipMd5CheckStrategy.java#L32-L42
+    System.setProperty("com.amazonaws.services.s3.disableGetObjectMD5Validation", "doesntMatter");
+    System.setProperty("com.amazonaws.services.s3.disablePutObjectMD5Validation", "doesntMatter");
+
     return AmazonS3ClientBuilder.standard()
         .withEndpointConfiguration(
             new EndpointConfiguration(configuration.getEndpoint(), configuration.getRegion()))
