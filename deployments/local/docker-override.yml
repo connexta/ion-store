@@ -7,7 +7,12 @@ version: '3.7'
 services:
   store:
     image: cnxta/ion-store
-    entrypoint: "/store -Dcom.amazonaws.services.s3.disablePutObjectMD5Validation=true -Dcom.amazonaws.services.s3.disableGetObjectMD5Validation=true"
+    entrypoint:
+      - java
+      - -Dcom.amazonaws.services.s3.disablePutObjectMD5Validation=true
+      - -Dcom.amazonaws.services.s3.disableGetObjectMD5Validation=true
+      - -jar
+      - /store
     depends_on:
       - localstack
   localstack:
