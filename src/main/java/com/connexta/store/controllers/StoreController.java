@@ -41,9 +41,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -171,10 +170,9 @@ public class StoreController implements StoreApi, IngestApi {
             message = "The requested API version is not supported and therefore not implemented.",
             response = ErrorMessage.class)
       })
-  @RequestMapping(
+  @GetMapping(
       value = StoreController.RETRIEVE_DATA_URL_TEMPLATE,
-      produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_JSON_VALUE},
-      method = RequestMethod.GET)
+      produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resource> retrieveData(
       @Pattern(
               regexp =
