@@ -51,6 +51,9 @@ For more information about spotless checks see
 * The integration tests require a Docker daemon.
 * To skip integration tests, add `-PskipITests`.
 
+##### Code Coverage
+Jacoco provides code coverage under `build/reports/jacoco`. Jacoco tasks are run as part of the test task.
+
 ## Running
 ### Configuring
 1. The service can be configured with an external configuration file that will be applied to the docker container during deployment.

@@ -22,6 +22,7 @@ buildscript {
 
 plugins {
     id "com.diffplug.gradle.spotless" version "3.26.0"
+    id "jacoco"
     id "java"
     id "com.palantir.docker" version "0.22.1"
     id "maven"
@@ -84,6 +85,31 @@ spotless {
 
 test {
     useJUnitPlatform()
+    finalizedBy(['jacocoTestReport', 'jacocoTestCoverageVerification'])
+}
+
+jacoco {
+    toolVersion = "0.8.5"
+    reportsDir = file("$buildDir/reports/jacoco")
+}
+
+jacocoTestReport {
+
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/reports/jacoco")
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.39
+            }
+        }
+    }
 }
 
 ext.configArgs = [
@@ -156,5 +182,5 @@ task deployK8s(type: Exec) {
 }
 
 assemble.finalizedBy("docker")
-build.finalizedBy("docker")
+build.finalizedBy(['docker'])
 bootRun.dependsOn(build)
