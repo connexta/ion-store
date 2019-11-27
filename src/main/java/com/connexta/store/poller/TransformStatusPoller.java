@@ -103,9 +103,11 @@ public class TransformStatusPoller {
         logFailedTransformation(datasetId, transformationPollResponse.getMetadataInformations());
         return quarantine(datasetId, transformationPollResponse.getMetadataInformations());
       case IN_PROGRESS:
-      default:
         log.debug("Transformation in progress for Dataset {}", datasetId);
         return true;
+      default:
+        throw new IllegalArgumentException(
+            String.format("Invalid transform status received: %s", transformationStatus));
     }
   }
 

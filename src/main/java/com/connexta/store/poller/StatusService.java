@@ -13,39 +13,70 @@ import com.dyngr.PollerBuilder;
 import com.dyngr.core.AttemptMaker;
 import com.dyngr.core.StopStrategies;
 import com.dyngr.core.WaitStrategies;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The class's responsibilities are to manage the settings for polling and kick off new polling
  * tasks. Other responsibilities include settings the wait and retry behavior.
  */
-@Component
 public class StatusService {
 
+  private final AtomicBoolean running = new AtomicBoolean(false);
+  private final ExecutorService queueTakeService;
   private final ExecutorService executorService = Executors.newFixedThreadPool(64);
   private final TransformPollerFactory transformPollerFactory;
+  private final BlockingQueue<TransformStatusTask> transformStatusQueue;
+  private final long attemptInterval;
+  private final int attemptCount;
 
   public StatusService(
-      @Autowired BlockingQueue<TransformStatusTask> transformStatusQueue,
-      @Autowired TransformPollerFactory transformPollerFactory) {
-    this.transformPollerFactory = transformPollerFactory;
-    Executors.newSingleThreadExecutor()
-        .submit(
-            () -> {
-              try {
-                submit(transformStatusQueue.take());
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-              }
-            });
+      BlockingQueue<TransformStatusTask> transformStatusQueue,
+      TransformPollerFactory transformPollerFactory) {
+    this(transformStatusQueue, transformPollerFactory, Executors.newSingleThreadExecutor(), 5L, 12);
   }
 
-  private void submit(TransformStatusTask task) {
+  @VisibleForTesting
+  StatusService(
+      BlockingQueue<TransformStatusTask> transformStatusQueue,
+      TransformPollerFactory transformPollerFactory,
+      ExecutorService queueTakeService,
+      long attemptInterval,
+      int attemptCount) {
+    this.transformStatusQueue = transformStatusQueue;
+    this.transformPollerFactory = transformPollerFactory;
+    this.queueTakeService = queueTakeService;
+    this.attemptInterval = attemptInterval;
+    this.attemptCount = attemptCount;
+  }
+
+  /** Stats a single thread that takes from the transformStatusQueue and runs pollers. */
+  public void init() {
+    running.set(true);
+    this.queueTakeService.submit(
+        () -> {
+          while (running.get()) {
+            try {
+              submit(transformStatusQueue.take());
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
+          }
+        });
+  }
+
+  /** Destroy this status service. Shuts down the thread taking from the transformStatusQueue. */
+  public void destroy() {
+    running.set(false);
+    queueTakeService.shutdownNow();
+  }
+
+  @VisibleForTesting
+  void submit(TransformStatusTask task) {
     builder().polling(getAttemptMaker(task)).build().start();
   }
 
@@ -61,7 +92,7 @@ public class StatusService {
     return PollerBuilder.newBuilder()
         .withExecutorService(executorService)
         .stopIfException(false)
-        .withWaitStrategy(WaitStrategies.fixedWait(5L, TimeUnit.SECONDS))
-        .withStopStrategy(StopStrategies.stopAfterAttempt(12));
+        .withWaitStrategy(WaitStrategies.fixedWait(attemptInterval, TimeUnit.SECONDS))
+        .withStopStrategy(StopStrategies.stopAfterAttempt(attemptCount));
   }
 }

@@ -102,9 +102,11 @@ class TransformStatusPollerTest {
         new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.run();
+    boolean tryAgain = poller.run();
 
     // then
+    assertThat(tryAgain, is(false));
+
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
         ArgumentCaptor.forClass(ClientRequest.class);
     ArgumentCaptor<ClientRequest> addMetadataRequestCaptor =
@@ -151,9 +153,11 @@ class TransformStatusPollerTest {
         new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.run();
+    boolean tryAgain = poller.run();
 
     // then
+    assertThat(tryAgain, is(true));
+
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
         ArgumentCaptor.forClass(ClientRequest.class);
     ArgumentCaptor<ClientRequest> addMetadataRequestCaptor =
@@ -187,9 +191,11 @@ class TransformStatusPollerTest {
         new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.run();
+    boolean tryAgain = poller.run();
 
     // then
+    assertThat(tryAgain, is(false));
+
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
         ArgumentCaptor.forClass(ClientRequest.class);
     ArgumentCaptor<ClientRequest> addMetadataRequestCaptor =
@@ -228,9 +234,11 @@ class TransformStatusPollerTest {
         new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.run();
+    boolean tryAgain = poller.run();
 
     // then
+    assertThat(tryAgain, is(false));
+
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
         ArgumentCaptor.forClass(ClientRequest.class);
     ArgumentCaptor<ClientRequest> quarantineRequestCaptor =
@@ -269,9 +277,11 @@ class TransformStatusPollerTest {
         new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.run();
+    boolean tryAgain = poller.run();
 
     // then
+    assertThat(tryAgain, is(false));
+
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
         ArgumentCaptor.forClass(ClientRequest.class);
     ArgumentCaptor<ClientRequest> quarantineRequestCaptor =
@@ -315,9 +325,11 @@ class TransformStatusPollerTest {
         new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.run();
+    boolean tryAgain = poller.run();
 
     // then
+    assertThat(tryAgain, is(true));
+
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
         ArgumentCaptor.forClass(ClientRequest.class);
     ArgumentCaptor<ClientRequest> quarantineRequestCaptor =
