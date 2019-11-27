@@ -7,7 +7,7 @@
 package com.connexta.store.config;
 
 import com.connexta.store.clients.TransformClient;
-import com.connexta.store.poller.TransformStatusPoller;
+import com.connexta.store.poller.TransformPollerFactory;
 import com.connexta.store.poller.TransformStatusTask;
 import com.google.common.collect.Queues;
 import java.util.concurrent.BlockingQueue;
@@ -50,14 +50,10 @@ public class TransformConfiguration {
   }
 
   @Bean
-  public TransformStatusPoller transformStatusPoller(
-      BlockingQueue<TransformStatusTask> transformStatusQueue,
+  public TransformPollerFactory pollerFactory(
       @Qualifier(TransformConfiguration.TRANSFORM_CLIENT_BEAN) WebClient transformWebClient,
       @Qualifier(TransformConfiguration.STORE_CLIENT_BEAN) WebClient storeWebClient) {
-    TransformStatusPoller poller =
-        new TransformStatusPoller(transformStatusQueue, transformWebClient, storeWebClient);
-    poller.start();
-    return poller;
+    return new TransformPollerFactory(transformWebClient, storeWebClient);
   }
 
   @Bean(name = "storeWebClient")

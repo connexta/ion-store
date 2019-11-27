@@ -114,10 +114,9 @@ public class StoreServiceImpl implements StoreService {
       case METACARD_TYPE:
         InputStream metacardInputStream =
             metacardStorageAdaptor.retrieve(datasetId).getInputStream();
+
         return new IonData(
-            MediaType.APPLICATION_XML.toString(),
-            metacardInputStream,
-            "metacard-" + datasetId + ".xml");
+            MediaType.APPLICATION_XML_VALUE, metacardInputStream, "metacard-" + datasetId + ".xml");
       case IRM_TYPE:
         InputStream irmInputStream = irmStorageAdaptor.retrieve(datasetId).getInputStream();
         return new IonData("application/dni-tdf+xml", irmInputStream, "irm-" + datasetId + ".xml");

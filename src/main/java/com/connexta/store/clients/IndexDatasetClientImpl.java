@@ -37,7 +37,7 @@ public class IndexDatasetClientImpl implements IndexDatasetClient {
 
     try {
       restTemplate.put(
-          indexEndpoint + datasetId,
+          indexEndpoint + "index/" + datasetId.replace("-", ""),
           new HttpEntity<>(new IndexRequest().irmLocation(irmUri), headers));
     } catch (Exception e) {
       throw new IndexDatasetException(

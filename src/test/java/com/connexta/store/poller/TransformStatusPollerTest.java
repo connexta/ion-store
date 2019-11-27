@@ -82,19 +82,6 @@ class TransformStatusPollerTest {
     taskQueue.clear();
   }
 
-  @Test
-  void testInterruptedWhileTaking() {
-    // setup
-    TransformStatusPoller poller = new TransformStatusPoller(taskQueue, null, null);
-    Thread.currentThread().interrupt();
-
-    // when
-    poller.run();
-
-    // then
-    assertThat(Thread.currentThread().isInterrupted(), is(true));
-  }
-
   private static Stream<Arguments> testAddMetadataNonRetryableResponses() {
     return Stream.of(Arguments.of(HttpStatus.OK), Arguments.of(HttpStatus.NOT_FOUND));
   }
@@ -112,10 +99,10 @@ class TransformStatusPollerTest {
         mockWebClient(EMPTY_RESPONSE, httpStatus, storeWebClientExchangeFunc);
 
     TransformStatusPoller poller =
-        new TransformStatusPoller(taskQueue, transformWebClient, storeWebClient);
+        new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.doRun();
+    poller.run();
 
     // then
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
@@ -138,8 +125,6 @@ class TransformStatusPollerTest {
     assertThat(addMetadataRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID));
     assertThat(
         getRequestBodyAsString(addMetadataRequest), is(readResourceAsString(ADD_METADATA_REQUEST)));
-
-    assertThat(taskQueue.size(), is(0));
   }
 
   private static Stream<Arguments> testAddMetadataRetryableResponses() {
@@ -163,10 +148,10 @@ class TransformStatusPollerTest {
         mockWebClient(EMPTY_RESPONSE, httpStatus, storeWebClientExchangeFunc);
 
     TransformStatusPoller poller =
-        new TransformStatusPoller(taskQueue, transformWebClient, storeWebClient);
+        new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.doRun();
+    poller.run();
 
     // then
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
@@ -185,8 +170,6 @@ class TransformStatusPollerTest {
     assertThat(addMetadataRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID));
     assertThat(
         getRequestBodyAsString(addMetadataRequest), is(readResourceAsString(ADD_METADATA_REQUEST)));
-
-    assertThat(taskQueue.size(), is(1));
   }
 
   @Test
@@ -201,10 +184,10 @@ class TransformStatusPollerTest {
         mockWebClient(EMPTY_RESPONSE, HttpStatus.BAD_REQUEST, storeWebClientExchangeFunc);
 
     TransformStatusPoller poller =
-        new TransformStatusPoller(taskQueue, transformWebClient, storeWebClient);
+        new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.doRun();
+    poller.run();
 
     // then
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
@@ -223,8 +206,6 @@ class TransformStatusPollerTest {
     assertThat(addMetadataRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID));
     assertThat(
         getRequestBodyAsString(addMetadataRequest), is(readResourceAsString(ADD_METADATA_REQUEST)));
-
-    assertThat(taskQueue.size(), is(0));
   }
 
   private static Stream<Arguments> testQuarantineNonRetryableResponses() {
@@ -244,10 +225,10 @@ class TransformStatusPollerTest {
         mockWebClient(EMPTY_RESPONSE, httpStatus, storeWebClientExchangeFunc);
 
     TransformStatusPoller poller =
-        new TransformStatusPoller(taskQueue, transformWebClient, storeWebClient);
+        new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.doRun();
+    poller.run();
 
     // then
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
@@ -271,8 +252,6 @@ class TransformStatusPollerTest {
         quarantineRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID + "/quarantine"));
     assertThat(
         getRequestBodyAsString(quarantineRequest), is(readResourceAsString(QUARANTINE_REQUEST)));
-
-    assertThat(taskQueue.size(), is(0));
   }
 
   @Test
@@ -287,10 +266,10 @@ class TransformStatusPollerTest {
         mockWebClient(EMPTY_RESPONSE, HttpStatus.BAD_REQUEST, storeWebClientExchangeFunc);
 
     TransformStatusPoller poller =
-        new TransformStatusPoller(taskQueue, transformWebClient, storeWebClient);
+        new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.doRun();
+    poller.run();
 
     // then
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
@@ -310,8 +289,6 @@ class TransformStatusPollerTest {
         quarantineRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID + "/quarantine"));
     assertThat(
         getRequestBodyAsString(quarantineRequest), is(readResourceAsString(QUARANTINE_REQUEST)));
-
-    assertThat(taskQueue.size(), is(0));
   }
 
   private static Stream<Arguments> testQuarantineRetryableResponses() {
@@ -335,10 +312,10 @@ class TransformStatusPollerTest {
         mockWebClient(EMPTY_RESPONSE, httpStatus, storeWebClientExchangeFunc);
 
     TransformStatusPoller poller =
-        new TransformStatusPoller(taskQueue, transformWebClient, storeWebClient);
+        new TransformStatusPoller(task, transformWebClient, storeWebClient);
 
     // when
-    poller.doRun();
+    poller.run();
 
     // then
     ArgumentCaptor<ClientRequest> transformRequestsCaptor =
@@ -358,12 +335,10 @@ class TransformStatusPollerTest {
         quarantineRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID + "/quarantine"));
     assertThat(
         getRequestBodyAsString(quarantineRequest), is(readResourceAsString(QUARANTINE_REQUEST)));
-
-    assertThat(taskQueue.size(), is(1));
   }
 
   @Test
-  void testTransformInProgressPutsBackInQueue() throws Exception {
+  void testTransformInProgress() {
     // setup
     ExchangeFunction transformWebClientExchangeFunc = mock(ExchangeFunction.class);
     WebClient transformWebClient =
@@ -371,13 +346,10 @@ class TransformStatusPollerTest {
             TRANSFORM_IN_PROGRESS_RESPONSE, HttpStatus.OK, transformWebClientExchangeFunc);
 
     TransformStatusPoller poller =
-        new TransformStatusPoller(taskQueue, transformWebClient, mock(WebClient.class));
+        new TransformStatusPoller(task, transformWebClient, mock(WebClient.class));
 
-    // when
-    poller.doRun();
-
-    // then
-    assertThat(taskQueue.size(), is(1));
+    // expect
+    assertThat(poller.run(), is(true));
   }
 
   private String getRequestBodyAsString(ClientRequest clientRequest) {

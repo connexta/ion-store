@@ -14,10 +14,7 @@ import com.connexta.store.rest.models.QuarantineRequest;
 import com.connexta.transformation.rest.models.MetadataInformation;
 import com.connexta.transformation.rest.models.Status;
 import com.connexta.transformation.rest.models.TransformationPollResponse;
-import com.google.common.annotations.VisibleForTesting;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,56 +25,26 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /** Class capable of polling the transformation poll endpoint. */
 @Slf4j
-public class TransformStatusPoller extends Thread {
+public class TransformStatusPoller {
 
   private final WebClient storeWebClient;
 
   private final WebClient transformWebClient;
 
-  private final BlockingQueue<TransformStatusTask> transformStatusQueue;
+  private final TransformStatusTask transformStatusTask;
 
   /** Creates a new TransformStatusPoller. */
   public TransformStatusPoller(
-      BlockingQueue<TransformStatusTask> transformStatusQueue,
+      TransformStatusTask transformStatusTask,
       WebClient transformWebClient,
       WebClient storeWebClient) {
-    this.transformStatusQueue = transformStatusQueue;
+    this.transformStatusTask = transformStatusTask;
     this.transformWebClient = transformWebClient;
     this.storeWebClient = storeWebClient;
   }
 
-  // TODO 11/20/2019 PeterHuffer: This class should be managed and be able to be properly destroyed
-  @SuppressWarnings("squid:S2189" /* Run forever by design */)
-  @Override
-  public void run() {
-    while (true) {
-      try {
-        doRun();
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return;
-      }
-    }
-  }
-
-  @VisibleForTesting
-  void doRun() throws InterruptedException {
-    TransformStatusTask transformStatusTask = transformStatusQueue.take();
-    boolean shouldRetry = handleTask(transformStatusTask);
-    if (shouldRetry) {
-      boolean resubmitted = transformStatusQueue.offer(transformStatusTask, 10, TimeUnit.SECONDS);
-      if (resubmitted) {
-        log.debug(
-            "Transform status {} will be tried again for dataset {}.",
-            transformStatusTask.getTransformStatusUrl(),
-            transformStatusTask.getDatasetId());
-      } else {
-        log.debug(
-            "Timed out trying to resubmit transform status {} for dataset {}. The file corresponding to this dataset should be re-ingsted.",
-            transformStatusTask.getTransformStatusUrl(),
-            transformStatusTask.getDatasetId());
-      }
-    }
+  public boolean run() {
+    return handleTask(transformStatusTask);
   }
 
   /** @return {@code true} if the task should be retried, otherwise {@code false} */
