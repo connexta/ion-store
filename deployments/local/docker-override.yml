@@ -1,8 +1,13 @@
+# See the following discussions for the reason behind the JVM properties in the Store entrypoint:
+#   see: https://github.com/localstack/localstack/issues/1037
+#   see: https://github.com/aws/aws-sdk-java/blob/master/aws-java-sdk-s3/src/main/java/com/amazonaws/services/s3/internal/SkipMd5CheckStrategy.java#L32-L42
+
 version: '3.7'
 
 services:
   store:
     image: cnxta/ion-store
+    entrypoint: "/store -Dcom.amazonaws.services.s3.disablePutObjectMD5Validation=true -Dcom.amazonaws.services.s3.disableGetObjectMD5Validation=true"
     depends_on:
       - localstack
   localstack:
