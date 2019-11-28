@@ -53,7 +53,7 @@ dependencies {
     implementation "com.connexta.store:store-api-rest-spring-stubs:${storeApiVersion}"
     implementation "io.springfox:springfox-swagger2:${springfoxSwaggerVersion}"
     implementation "io.springfox:springfox-swagger-ui:${springfoxSwaggerVersion}"
-    implementation "javax.inject:javax.inject:1"
+    implementation "javax.inject:javax.inject:1.0-PFD-1"
     implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
     implementation "org.springframework.data:spring-data-solr:4.1.2.RELEASE"
