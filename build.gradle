@@ -68,7 +68,7 @@ dependencies {
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}") {
         exclude group: "junit", module: "junit" // excludes JUnit 4
     }
-    testCompile "org.testcontainers:junit-jupiter:1.12.3"
+    testCompile "org.testcontainers:junit-jupiter:1.12.4"
     testImplementation "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
 }
