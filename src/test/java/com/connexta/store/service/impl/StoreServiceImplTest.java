@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptorRetrieveResponse;
 import com.connexta.store.adaptors.StoreStatus;
-import com.connexta.store.clients.IndexDatasetClient;
+import com.connexta.store.clients.IndexClient;
 import com.connexta.store.clients.TransformClient;
 import com.connexta.store.controllers.StoreController;
 import com.connexta.store.exceptions.DatasetNotFoundException;
@@ -77,7 +77,7 @@ class StoreServiceImplTest {
   @Mock StorageAdaptor fileStorageAdaptor;
   @Mock StorageAdaptor irmStorageAdaptor;
   @Mock StorageAdaptor metacardStorageAdaptor;
-  @Mock IndexDatasetClient indexDatasetClient;
+  @Mock IndexClient indexClient;
   @Mock TransformClient transformClient;
   private BlockingQueue<TransformStatusTask> taskQueue;
 
@@ -91,7 +91,7 @@ class StoreServiceImplTest {
             fileStorageAdaptor,
             irmStorageAdaptor,
             metacardStorageAdaptor,
-            indexDatasetClient,
+            indexClient,
             transformClient,
             taskQueue,
             mock(WebClient.class));
@@ -103,7 +103,7 @@ class StoreServiceImplTest {
         fileStorageAdaptor,
         irmStorageAdaptor,
         metacardStorageAdaptor,
-        indexDatasetClient,
+        indexClient,
         transformClient);
   }
 
@@ -112,7 +112,7 @@ class StoreServiceImplTest {
       @Mock final StorageAdaptor mockFileStorageAdaptor,
       @Mock final StorageAdaptor mockIrmStorageAdaptor,
       @Mock final StorageAdaptor mockMetacardStorageAdaptor,
-      @Mock final IndexDatasetClient mockIndexDatasetClient,
+      @Mock final IndexClient mockIndexClient,
       @Mock final TransformClient mockTransformClient,
       @Mock final InputStream mockFileInputStream,
       @Mock final InputStream mockMetacardInputStream,
@@ -125,7 +125,7 @@ class StoreServiceImplTest {
             mockFileStorageAdaptor,
             mockIrmStorageAdaptor,
             mockMetacardStorageAdaptor,
-            mockIndexDatasetClient,
+            mockIndexClient,
             mockTransformClient,
             taskQueue,
             transformWebClient);
@@ -192,7 +192,7 @@ class StoreServiceImplTest {
             fileStorageAdaptor,
             irmStorageAdaptor,
             metacardStorageAdaptor,
-            indexDatasetClient,
+            indexClient,
             transformClient,
             taskQueue,
             mockTransformWebClient);
@@ -214,7 +214,7 @@ class StoreServiceImplTest {
     verify(fileStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
     verify(metacardStorageAdaptor).delete(eq(DATASET_ID));
     verify(irmStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
-    verify(indexDatasetClient).indexDataset(DATASET_ID, resourceUri);
+    verify(indexClient).indexDataset(DATASET_ID, resourceUri);
   }
 
   @Test
@@ -232,7 +232,7 @@ class StoreServiceImplTest {
             fileStorageAdaptor,
             irmStorageAdaptor,
             metacardStorageAdaptor,
-            indexDatasetClient,
+            indexClient,
             transformClient,
             taskQueue,
             mockTransformWebClient);
@@ -254,7 +254,7 @@ class StoreServiceImplTest {
     verify(fileStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
     verify(metacardStorageAdaptor).delete(eq(DATASET_ID));
     verify(metacardStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
-    verify(indexDatasetClient).indexDataset(DATASET_ID, resourceUri);
+    verify(indexClient).indexDataset(DATASET_ID, resourceUri);
   }
 
   @Test
@@ -268,7 +268,7 @@ class StoreServiceImplTest {
             fileStorageAdaptor,
             irmStorageAdaptor,
             metacardStorageAdaptor,
-            indexDatasetClient,
+            indexClient,
             transformClient,
             taskQueue,
             mockTransformWebClient);
@@ -338,7 +338,7 @@ class StoreServiceImplTest {
     when(metacardStorageAdaptor.getStatus(eq(DATASET_ID))).thenReturn(QUARANTINED);
 
     assertThrows(RetrieveException.class, () -> storeService.getData(DATASET_ID, "metacard"));
-    verifyNoInteractions(indexDatasetClient);
+    verifyNoInteractions(indexClient);
   }
 
   @Test
@@ -346,7 +346,7 @@ class StoreServiceImplTest {
     when(metacardStorageAdaptor.getStatus(eq(DATASET_ID))).thenReturn(null);
 
     assertThrows(RetrieveException.class, () -> storeService.getData(DATASET_ID, "metacard"));
-    verifyNoInteractions(indexDatasetClient);
+    verifyNoInteractions(indexClient);
   }
 
   @Test

@@ -6,32 +6,32 @@
  */
 package com.connexta.store.config;
 
-import com.connexta.store.clients.IndexDatasetClient;
-import com.connexta.store.clients.IndexDatasetClientImpl;
+import com.connexta.store.clients.IndexClient;
+import com.connexta.store.clients.IndexClientImpl;
 import javax.inject.Named;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class IndexDatasetClientConfiguration {
 
-  @Bean("nonBufferingRestTemplate")
-  public RestTemplate nonBufferingRestTemplate() {
-    final SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-    requestFactory.setBufferRequestBody(false);
-    return new RestTemplate(requestFactory);
+  @Bean("indexWebClient")
+  public WebClient indexWebClient(
+      @NotBlank @Value("${endpoints.index.url}") final String indexEndpoint,
+      @NotBlank @Value("${endpoints.index.version}") final String indexApiVersion) {
+    return WebClient.builder()
+        .baseUrl(indexEndpoint)
+        .defaultHeader("Accept-Version", indexApiVersion)
+        .build();
   }
 
   @Bean
-  public IndexDatasetClient indexDatasetClient(
-      @NotNull @Named("nonBufferingRestTemplate") final RestTemplate restTemplate,
-      @NotBlank @Value("${endpoints.index.url}") final String indexEndpoint,
-      @NotBlank @Value("${endpoints.index.version}") final String indexApiVersion) {
-    return new IndexDatasetClientImpl(restTemplate, indexEndpoint, indexApiVersion);
+  public IndexClient indexDatasetClient(
+      @NotNull @Named("indexWebClient") final WebClient indexWebClient) {
+    return new IndexClientImpl(indexWebClient);
   }
 }

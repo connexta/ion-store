@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.util.IOUtils;
+import com.connexta.store.WebClientTestUtils;
 import com.google.common.collect.Queues;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -33,11 +34,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.mock.http.client.reactive.MockClientHttpRequest;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -126,7 +125,8 @@ class TransformStatusPollerTest {
     ClientRequest addMetadataRequest = addMetadataRequestCaptor.getValue();
     assertThat(addMetadataRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID));
     assertThat(
-        getRequestBodyAsString(addMetadataRequest), is(readResourceAsString(ADD_METADATA_REQUEST)));
+        WebClientTestUtils.getRequestBodyAsString(addMetadataRequest),
+        is(readResourceAsString(ADD_METADATA_REQUEST)));
   }
 
   private static Stream<Arguments> testAddMetadataRetryableResponses() {
@@ -173,7 +173,8 @@ class TransformStatusPollerTest {
     ClientRequest addMetadataRequest = addMetadataRequestCaptor.getValue();
     assertThat(addMetadataRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID));
     assertThat(
-        getRequestBodyAsString(addMetadataRequest), is(readResourceAsString(ADD_METADATA_REQUEST)));
+        WebClientTestUtils.getRequestBodyAsString(addMetadataRequest),
+        is(readResourceAsString(ADD_METADATA_REQUEST)));
   }
 
   @Test
@@ -211,7 +212,8 @@ class TransformStatusPollerTest {
     ClientRequest addMetadataRequest = addMetadataRequestCaptor.getValue();
     assertThat(addMetadataRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID));
     assertThat(
-        getRequestBodyAsString(addMetadataRequest), is(readResourceAsString(ADD_METADATA_REQUEST)));
+        WebClientTestUtils.getRequestBodyAsString(addMetadataRequest),
+        is(readResourceAsString(ADD_METADATA_REQUEST)));
   }
 
   private static Stream<Arguments> testQuarantineNonRetryableResponses() {
@@ -259,7 +261,8 @@ class TransformStatusPollerTest {
     assertThat(
         quarantineRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID + "/quarantine"));
     assertThat(
-        getRequestBodyAsString(quarantineRequest), is(readResourceAsString(QUARANTINE_REQUEST)));
+        WebClientTestUtils.getRequestBodyAsString(quarantineRequest),
+        is(readResourceAsString(QUARANTINE_REQUEST)));
   }
 
   @Test
@@ -298,7 +301,8 @@ class TransformStatusPollerTest {
     assertThat(
         quarantineRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID + "/quarantine"));
     assertThat(
-        getRequestBodyAsString(quarantineRequest), is(readResourceAsString(QUARANTINE_REQUEST)));
+        WebClientTestUtils.getRequestBodyAsString(quarantineRequest),
+        is(readResourceAsString(QUARANTINE_REQUEST)));
   }
 
   private static Stream<Arguments> testQuarantineRetryableResponses() {
@@ -346,7 +350,8 @@ class TransformStatusPollerTest {
     assertThat(
         quarantineRequest.url().toASCIIString(), is("/dataset/" + DATASET_ID + "/quarantine"));
     assertThat(
-        getRequestBodyAsString(quarantineRequest), is(readResourceAsString(QUARANTINE_REQUEST)));
+        WebClientTestUtils.getRequestBodyAsString(quarantineRequest),
+        is(readResourceAsString(QUARANTINE_REQUEST)));
   }
 
   @Test
@@ -362,13 +367,6 @@ class TransformStatusPollerTest {
 
     // expect
     assertThat(poller.run(), is(true));
-  }
-
-  private String getRequestBodyAsString(ClientRequest clientRequest) {
-    MockClientHttpRequest mockClientHttpRequest =
-        new MockClientHttpRequest(HttpMethod.PUT, "doesntMatter");
-    clientRequest.writeTo(mockClientHttpRequest, ExchangeStrategies.withDefaults()).block();
-    return mockClientHttpRequest.getBodyAsString().block();
   }
 
   private WebClient mockWebClient(

@@ -11,7 +11,7 @@ import static com.connexta.store.adaptors.StoreStatus.STORED;
 
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptorRetrieveResponse;
-import com.connexta.store.clients.IndexDatasetClient;
+import com.connexta.store.clients.IndexClient;
 import com.connexta.store.clients.TransformClient;
 import com.connexta.store.controllers.StoreController;
 import com.connexta.store.exceptions.DatasetNotFoundException;
@@ -35,8 +35,6 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -59,7 +57,7 @@ public class StoreServiceImpl implements StoreService {
   @NotNull private final StorageAdaptor fileStorageAdaptor;
   @NotNull private final StorageAdaptor irmStorageAdaptor;
   @NotNull private final StorageAdaptor metacardStorageAdaptor;
-  @NotNull private final IndexDatasetClient indexDatasetClient;
+  @NotNull private final IndexClient indexClient;
   @NotNull private final TransformClient transformClient;
   @NotNull private final BlockingQueue<TransformStatusTask> transformStatusQueue;
   private final WebClient transformWebClient;
@@ -180,11 +178,6 @@ public class StoreServiceImpl implements StoreService {
               datasetId,
               Map.of());
           metacardStorageAdaptor.updateStatus(datasetId, STORED);
-          indexDatasetClient.indexDataset(
-              datasetId,
-              UriComponentsBuilder.fromUri(storeUrl)
-                  .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
-                  .build(datasetId, METACARD_TYPE));
           break;
         case IRM_TYPE:
           irmStorageAdaptor.store(
@@ -194,23 +187,31 @@ public class StoreServiceImpl implements StoreService {
               datasetId,
               Map.of());
           irmStorageAdaptor.updateStatus(datasetId, STORED);
-          indexDatasetClient.indexDataset(
-              datasetId,
-              UriComponentsBuilder.fromUri(storeUrl)
-                  .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
-                  .build(datasetId, IRM_TYPE));
           break;
         default:
           throw new IllegalArgumentException(
               String.format("Received unsupported dataType {%s}", dataType));
       }
     }
+
+    indexClient.indexDataset(
+        UUID.fromString(datasetId),
+        UriComponentsBuilder.fromUri(storeUrl)
+            .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
+            .build(datasetId, FILE_TYPE)
+            .toURL(),
+        UriComponentsBuilder.fromUri(storeUrl)
+            .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
+            .build(datasetId, IRM_TYPE)
+            .toURL(),
+        UriComponentsBuilder.fromUri(storeUrl)
+            .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
+            .build(datasetId, METACARD_TYPE)
+            .toURL());
   }
 
   @Override
-  public void quarantine(
-      @Pattern(regexp = "^[0-9a-zA-Z]+$") @Size(min = 36, max = 36) final String datasetId)
-      throws QuarantineException {
+  public void quarantine(final String datasetId) throws QuarantineException {
     for (StorageAdaptor adaptor :
         List.of(fileStorageAdaptor, irmStorageAdaptor, metacardStorageAdaptor)) {
       adaptor.delete(datasetId);
