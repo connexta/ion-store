@@ -227,6 +227,8 @@ public class StoreServiceImpl implements StoreService {
 
   private void verifyStoreStatus(String datasetId, StorageAdaptor adaptor) {
     String status = adaptor.getStatus(datasetId);
+    // Todo: This should also fail for "staged" statuses once staged retrieval can be locked down to
+    // only the Transformation Service
     if (!(StringUtils.equals(status, STORED) || StringUtils.equals(status, STAGED))) {
       log.info("Retrieval failed. Status for datasetId={{}} is not \"stored\".", datasetId);
       throw new RetrieveException(

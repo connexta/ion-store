@@ -177,7 +177,6 @@ class StoreServiceImplTest {
     assertThat(task.getTransformStatusUrl(), Matchers.is(transformUrl));
   }
 
-  // Todo: Tests for adding metadata
   @Test
   void testAddingIrm() throws IOException {
     var mockInputStream = mock(InputStream.class);
@@ -287,7 +286,6 @@ class StoreServiceImplTest {
     assertThrows(IllegalArgumentException.class, () -> storeService.getData(DATASET_ID, "badType"));
   }
 
-  // Todo: Parameterize these tests
   @Test
   void testGettingIrm(
       @Mock StorageAdaptorRetrieveResponse mockRetrieveResponse, @Mock InputStream mockInputStream)
