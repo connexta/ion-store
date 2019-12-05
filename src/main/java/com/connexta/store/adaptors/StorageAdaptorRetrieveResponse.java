@@ -10,9 +10,11 @@ import java.io.InputStream;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.Generated;
 import org.springframework.http.MediaType;
 
 @Data
+@Generated
 public class StorageAdaptorRetrieveResponse {
 
   @NotNull private final MediaType mediaType;

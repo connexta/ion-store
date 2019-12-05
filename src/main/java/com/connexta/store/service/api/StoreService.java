@@ -51,5 +51,17 @@ public interface StoreService {
    */
   void addMetadata(String datasetId, List<MetadataInfo> metadataInfos) throws IOException;
 
+  /**
+   * Quarantines a Dataset and prevents it from being retrieved.
+   *
+   * @param datasetId id of the Dataset
+   */
   void quarantine(String datasetId);
+
+  /**
+   * Unstages a Dataset and makes it retrievable.
+   *
+   * @param datasetId id of the Dataset
+   */
+  void unstage(String datasetId);
 }

@@ -82,8 +82,6 @@ public class S3StorageAdaptor implements StorageAdaptor {
     try {
       PutObjectRequest putObjectRequest =
           new PutObjectRequest(bucket, key, inputStream, objectMetadata);
-      putObjectRequest.withTagging(
-          new ObjectTagging(ImmutableList.of(new Tag(STATUS_KEY, StoreStatus.STAGED))));
       final Upload upload = transferManager.upload(putObjectRequest);
       log.info(String.format("Transfer state: %s", upload.getState()));
       upload.waitForCompletion();
@@ -116,15 +114,16 @@ public class S3StorageAdaptor implements StorageAdaptor {
           MediaType.valueOf(objectMetadata.getContentType()),
           inputStream,
           objectMetadata.getUserMetadata());
-    } catch (final Throwable t) {
+    } catch (final Exception e) {
       if (inputStream != null) {
         try {
           inputStream.close();
-        } catch (final IOException e) {
-          log.warn("Unable to close InputStream when retrieving key \"{}\".", key, e);
+        } catch (final IOException ioe) {
+          log.warn("Unable to close InputStream when retrieving key \"{}\".", key, ioe);
         }
       }
-      throw t;
+      throw new RetrieveException(
+          String.format("Unable to retrieve Data for datasetId:{%s}", key), e);
     }
   }
 
@@ -134,7 +133,9 @@ public class S3StorageAdaptor implements StorageAdaptor {
       final Tag updatedTag = new Tag(STATUS_KEY, status);
       final ObjectTagging objectTagging = new ObjectTagging(ImmutableList.of(updatedTag));
       amazonS3.setObjectTagging(new SetObjectTaggingRequest(bucket, key, objectTagging));
+      log.info("Updated Data with datasetId={} in bucket={} with status={}", key, bucket, status);
     } else {
+      log.warn("Dataset for datasetId={} does not exist", key);
       throw new DatasetNotFoundException(key);
     }
   }
@@ -154,6 +155,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
     return statusTag.get().getValue();
   }
 
+  @Override
   public void delete(@NotBlank String key) {
     log.info("Deleting item in bucket \"{}\" with key \"{}\"", bucket, key);
     try {
