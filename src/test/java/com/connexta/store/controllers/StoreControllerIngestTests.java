@@ -60,7 +60,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StoreControllerIngestTests {
 
   private StoreController storeController;
-  private static final String ACCEPT_VERSION = "0.1.0";
+  private static final String INGEST_VERSION = "1.1.1";
   private static final String CORRELATION_ID = "90210";
   private static final String LAST_MODIFIED_DATE = "1984-04-20T08:08:08Z";
   private static final MockMultipartFile FILE =
@@ -77,7 +77,7 @@ public class StoreControllerIngestTests {
   @BeforeEach
   public void beforeEach() {
     mockFile = mock(MultipartFile.class);
-    storeController = new StoreController(mockStoreService, ACCEPT_VERSION);
+    storeController = new StoreController(mockStoreService, "0.1.0", INGEST_VERSION);
   }
 
   @Disabled
@@ -96,7 +96,7 @@ public class StoreControllerIngestTests {
                 .file(METACARD)
                 .param("correlationId", CORRELATION_ID)
                 .header(LAST_MODIFIED, lastModified)
-                .header("Accept-Version", ACCEPT_VERSION))
+                .header("Accept-Version", INGEST_VERSION))
         .andExpect(status().isAccepted());
 
     verify(mockStoreService)
@@ -118,7 +118,7 @@ public class StoreControllerIngestTests {
                 .file(METACARD)
                 .param("correlationId", CORRELATION_ID)
                 .header(LAST_MODIFIED, LAST_MODIFIED_DATE)
-                .header("Accept-Version", ACCEPT_VERSION))
+                .header("Accept-Version", INGEST_VERSION))
         .andExpect(status().isBadRequest());
 
     verifyNoInteractions(mockStoreService);
@@ -132,7 +132,7 @@ public class StoreControllerIngestTests {
                 .file(FILE)
                 .param("correlationId", CORRELATION_ID)
                 .header(LAST_MODIFIED, LAST_MODIFIED_DATE)
-                .header("Accept-Version", ACCEPT_VERSION))
+                .header("Accept-Version", INGEST_VERSION))
         .andExpect(status().isBadRequest());
 
     verifyNoInteractions(mockStoreService);
@@ -146,7 +146,7 @@ public class StoreControllerIngestTests {
                 .file(FILE)
                 .file(METACARD)
                 .header(LAST_MODIFIED, LAST_MODIFIED_DATE)
-                .header("Accept-Version", ACCEPT_VERSION))
+                .header("Accept-Version", INGEST_VERSION))
         .andExpect(status().isBadRequest());
 
     verifyNoInteractions(mockStoreService);
@@ -173,7 +173,7 @@ public class StoreControllerIngestTests {
             multipart("/ingest")
                 .file(FILE)
                 .file(METACARD)
-                .header("Accept-Version", ACCEPT_VERSION)
+                .header("Accept-Version", INGEST_VERSION)
                 .param("correlationId", CORRELATION_ID))
         .andExpect(status().isBadRequest());
 
@@ -203,7 +203,7 @@ public class StoreControllerIngestTests {
             multipart("/ingest")
                 .file(FILE)
                 .file(METACARD)
-                .header("Accept-Version", ACCEPT_VERSION)
+                .header("Accept-Version", INGEST_VERSION)
                 .header(LAST_MODIFIED, badDate)
                 .param("correlationId", CORRELATION_ID))
         .andExpect(status().isBadRequest());
@@ -225,7 +225,7 @@ public class StoreControllerIngestTests {
                 .file(METACARD)
                 .param("correlationId", CORRELATION_ID)
                 .header(LAST_MODIFIED, LAST_MODIFIED_DATE)
-                .header("Accept-Version", ACCEPT_VERSION))
+                .header("Accept-Version", INGEST_VERSION))
         .andExpect(status().is(expectedResponseStatus.value()));
   }
 
@@ -257,7 +257,7 @@ public class StoreControllerIngestTests {
     assertThat(
         storeController
             .ingest(
-                ACCEPT_VERSION,
+                INGEST_VERSION,
                 OffsetDateTime.parse(LAST_MODIFIED_DATE),
                 mockFile,
                 CORRELATION_ID,
@@ -276,7 +276,7 @@ public class StoreControllerIngestTests {
     assertThat(
         storeController
             .ingest(
-                ACCEPT_VERSION,
+                INGEST_VERSION,
                 OffsetDateTime.parse(LAST_MODIFIED_DATE),
                 mockFile,
                 CORRELATION_ID,
@@ -295,7 +295,7 @@ public class StoreControllerIngestTests {
         ValidationException.class,
         () ->
             storeController.ingest(
-                ACCEPT_VERSION,
+                INGEST_VERSION,
                 OffsetDateTime.parse(LAST_MODIFIED_DATE),
                 mockFile,
                 CORRELATION_ID,

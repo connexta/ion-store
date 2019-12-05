@@ -27,3 +27,5 @@ endpoints:
     url: http://search:8080/
   store:
     version: ${storeApiVersion}
+  ingest:
+    version: ${ingestApiVersion}

@@ -1,16 +1,17 @@
 server:
   port: 8080
-endpointUrl:
-  retrieve: http://localhost:${server.port}
-  transform: http://localhost:9090/transform
-  index: http://search:8080/index
 endpoints:
   transform:
-    version: testTransformApiVersion
+    version: 1.1.1
+    url: http://localhost:9090/
   index:
-    version: testIndexApiVersion
+    version: 2.2.2
+    url: http://localhost:12345/
   store:
-    version: testStoreApiVersion
+    version: 3.3.3
+    url: http://localhost:${server.port}/
+  ingest:
+    version: 4.4.4
 s3:
   bucket:
     metacard: metacard-quarantine

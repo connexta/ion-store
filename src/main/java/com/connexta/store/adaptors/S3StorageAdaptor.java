@@ -159,10 +159,9 @@ public class S3StorageAdaptor implements StorageAdaptor {
   public void delete(@NotBlank String key) {
     log.info("Deleting item in bucket \"{}\" with key \"{}\"", bucket, key);
     try {
-      if (!s3ObjectExists(bucket, key)) {
-        throw new QuarantineException(String.format("Bucket %s does not exist", bucket));
+      if (s3ObjectExists(bucket, key)) {
+        amazonS3.deleteObject(bucket, key);
       }
-      amazonS3.deleteObject(bucket, key);
     } catch (final SdkClientException e) {
       throw new QuarantineException(
           String.format("Unable to delete item with key %s: %s", key, e.getMessage()), e);

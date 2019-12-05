@@ -58,13 +58,14 @@ public class StoreController implements StoreApi, IngestApi {
 
   @NotNull private StoreService storeService;
   @NotBlank private String storeApiVersion;
+  @NotBlank private String ingestApiVersion;
   private static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
 
   @Override
   public ResponseEntity<Void> quarantine(
       final String acceptVersion, final UUID datasetId, QuarantineRequest quarantineRequest) {
     storeService.quarantine(datasetId.toString());
-    return ResponseEntity.accepted().build();
+    return ok().build();
   }
 
   @Override
@@ -93,11 +94,11 @@ public class StoreController implements StoreApi, IngestApi {
       MultipartFile file,
       String correlationId,
       MultipartFile metacard) {
-    if (!StringUtils.equals(acceptVersion, storeApiVersion)) {
+    if (!StringUtils.equals(acceptVersion, ingestApiVersion)) {
       throw new UnsupportedOperationException(
           String.format(
               "%s was \"%s\", but only \"%s\" is currently supported.",
-              ACCEPT_VERSION_HEADER_NAME, acceptVersion, storeApiVersion));
+              ACCEPT_VERSION_HEADER_NAME, acceptVersion, ingestApiVersion));
     }
 
     MultipartFileValidator.validate(file);

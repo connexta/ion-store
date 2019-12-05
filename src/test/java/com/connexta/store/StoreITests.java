@@ -6,541 +6,426 @@
  */
 package com.connexta.store;
 
+import static org.awaitility.Awaitility.await;
+
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.connexta.store.config.AmazonS3Configuration;
+import com.connexta.store.config.TransformConfiguration;
+import com.connexta.store.rest.models.QuarantineRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import javax.inject.Inject;
+import javax.inject.Named;
+import junit.framework.AssertionFailedError;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.mock.http.client.MockClientHttpResponse;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
-@DirtiesContext
 @Testcontainers
 @AutoConfigureWebTestClient
-public class StoreITests {
+class StoreITests {
 
-  //  private static final String DATASET_ID = "341d6c1ce5e0403a99fe86edaed66eea";
-  //  private static final String MINIO_ADMIN_ACCESS_KEY = "admin";
-  //  private static final String MINIO_ADMIN_SECRET_KEY = "12345678";
-  //  private static final String LAST_MODIFIED_DATE = "2017-06-11T14:32:28Z";
-  //  private static final int MINIO_PORT = 9000;
-  //
-  //  @Inject private WebTestClient webTestClient;
-  //
-  //  private static final byte[] TEST_FILE = "some-content".getBytes();
-  //  private static final Resource TEST_FILE_RESOURCE =
-  //      new ByteArrayResource(TEST_FILE) {
-  //
-  //        @Override
-  //        public long contentLength() {
-  //          return TEST_FILE.length;
-  //        }
-  //
-  //        @Override
-  //        public String getFilename() {
-  //          return "originalFilename.txt";
-  //        }
-  //      };
-  //  private static final byte[] TEST_METACARD = "metacard-content".getBytes();
-  //  private static final Resource TEST_METACARD_RESOURCE =
-  //      new ByteArrayResource(TEST_METACARD) {
-  //
-  //        @Override
-  //        public long contentLength() {
-  //          return TEST_METACARD.length;
-  //        }
-  //
-  //        @Override
-  //        public String getFilename() {
-  //          return "metacard.xml";
-  //        }
-  //      };
-  //
-  //  @Container
-  //  public static final GenericContainer minioContainer =
-  //      new GenericContainer("minio/minio:RELEASE.2019-07-10T00-34-56Z")
-  //          .withEnv("MINIO_ACCESS_KEY", MINIO_ADMIN_ACCESS_KEY)
-  //          .withEnv("MINIO_SECRET_KEY", MINIO_ADMIN_SECRET_KEY)
-  //          .withExposedPorts(MINIO_PORT)
-  //          .withCommand("server --compat /data")
-  //          .waitingFor(
-  //              new HttpWaitStrategy()
-  //                  .forPath("/minio/health/ready")
-  //                  .withStartupTimeout(Duration.ofSeconds(30)));
-  //
-  //  @TestConfiguration
-  //  static class Config {
-  //
-  //    @Bean
-  //    public AmazonS3Configuration testAmazonS3Configuration() {
-  //      return new AmazonS3Configuration(
-  //          String.format(
-  //              "http://%s:%d",
-  //              minioContainer.getContainerIpAddress(), minioContainer.getMappedPort(MINIO_PORT)),
-  //          "local",
-  //          MINIO_ADMIN_ACCESS_KEY,
-  //          MINIO_ADMIN_SECRET_KEY);
-  //    }
-  //  }
-  //
-  //  // TODO Remove TestRestTemplate and use the WebTestClient that is already injected in this
-  // class.
-  //  private TestRestTemplate restTemplate;
-  //  private MockRestServiceServer indexMockRestServiceServer;
-  //  private MockRestServiceServer transformMockRestServiceServer;
-  //  @Autowired private ApplicationContext applicationContext;
-  //  @Inject private AmazonS3 amazonS3;
-  //
-  //  @Inject
-  //  @Named("nonBufferingRestTemplate")
-  //  private RestTemplate nonBufferingRestTemplate;
-  //
-  //  @Inject
-  //  @Named("transformClientRestTemplate")
-  //  private RestTemplate transformClientRestTemplate;
-  //
-  //  @Value("${endpoints.store.version}")
-  //  private String storeApiVersion;
-  //
-  //  @Value("${endpointUrl.retrieve}")
-  //  private String endpointUrlRetrieve;
-  //
-  //  @Value("${endpointUrl.index}")
-  //  private String endpointUrlIndex;
-  //
-  //  @Value("${endpoints.index.version}")
-  //  private String indexApiVersion;
-  //
-  //  @Value("${endpointUrl.transform}")
-  //  private String endpointUrlTransform;
-  //
-  //  @Value("${endpoints.transform.version}")
-  //  private String endpointsTransformVersion;
-  //
-  //  @Value("${s3.bucket.file}")
-  //  private String fileBucket;
-  //
-  //  @Value("${s3.bucket.irm}")
-  //  private String irmBucket;
-  //
-  //  @Value("${s3.bucket.metacard}")
-  //  private String metacardBucket;
-  //
-  //  private static final MultiValueMap<String, HttpEntity<?>> TEST_INGEST_REQUEST_BODY;
-  //
-  //  static {
-  //    final MultipartBodyBuilder builder = new MultipartBodyBuilder();
-  //    builder.part("file", TEST_FILE_RESOURCE);
-  //    builder.part("metacard", TEST_METACARD_RESOURCE);
-  //    builder.part("correlationId", "000f4e4a");
-  //    TEST_INGEST_REQUEST_BODY = builder.build();
-  //  }
-  //
-  //  @BeforeEach
-  //  public void beforeEach() {
-  //    restTemplate =
-  //        new CustomTestRestTemplate(applicationContext)
-  //            .addRequestHeader(StoreController.ACCEPT_VERSION_HEADER_NAME, storeApiVersion);
-  //
-  //    indexMockRestServiceServer = MockRestServiceServer.createServer(nonBufferingRestTemplate);
-  //    transformMockRestServiceServer =
-  //        MockRestServiceServer.createServer(transformClientRestTemplate);
-  //
-  //    amazonS3.createBucket(fileBucket);
-  //    amazonS3.createBucket(irmBucket);
-  //    amazonS3.createBucket(metacardBucket);
-  //  }
-  //
-  //  @AfterEach
-  //  public void afterEach() {
-  //    indexMockRestServiceServer.verify();
-  //    transformMockRestServiceServer.verify();
-  //    transformMockRestServiceServer.reset();
-  //
-  //    cleanBucket(fileBucket);
-  //    cleanBucket(irmBucket);
-  //    cleanBucket(metacardBucket);
-  //  }
-  //
-  //  private void cleanBucket(String bucket) {
-  //    amazonS3.listObjects(bucket).getObjectSummaries().stream()
-  //        .map(S3ObjectSummary::getKey)
-  //        .forEach(key -> amazonS3.deleteObject(bucket, key));
-  //    amazonS3.deleteBucket(bucket);
-  //  }
-  //
-  //  @Test
-  //  public void testContextLoads() {}
-  //
-  //  /**
-  //   * @see #testRetrieveFileWhenS3IsEmpty()
-  //   * @see StoreControllerRetrieveFileComponentTest#testS3KeyDoesNotExist()
-  //   */
-  //  @Test
-  //  public void testRetrieveFileNotFound() throws Exception {
-  //    // given
-  //    final InputStream inputStream =
-  //        IOUtils.toInputStream(
-  //            "All the color had been leached from Winterfell until only grey and white remained",
-  //            StandardCharsets.UTF_8);
-  //    final long fileSize = inputStream.available();
-  //    final MultiValueMap<String, Object> multipartBodyBuilder = new LinkedMultiValueMap<>();
-  //    multipartBodyBuilder.add(
-  //        "file",
-  //        new InputStreamResource(inputStream) {
-  //
-  //          @Override
-  //          public long contentLength() {
-  //            return fileSize;
-  //          }
-  //
-  //          @Override
-  //          public String getFilename() {
-  //            return "test_file_name.txt";
-  //          }
-  //        });
-  //
-  //    restTemplate.postForEntity(CREATE_DATASET_URL_TEMPLATE, multipartBodyBuilder, Void.class);
-  //
-  //    // verify
-  //    assertThat(
-  //        restTemplate
-  //            .getForEntity(
-  //                UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
-  //                    .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
-  //                    .build(DATASET_ID),
-  //                Resource.class)
-  //            .getStatusCode(),
-  //        is(HttpStatus.NOT_FOUND));
-  //  }
-  //
-  //  /**
-  //   * @see #testRetrieveFileNotFound()
-  //   * @see StoreControllerRetrieveFileComponentTest#testS3KeyDoesNotExist()
-  //   */
-  //  @Test
-  //  public void testRetrieveFileWhenS3IsEmpty() throws Exception {
-  //    assertThat(
-  //        restTemplate
-  //            .getForEntity(
-  //                UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
-  //                    .path(StoreController.RETRIEVE_FILE_URL_TEMPLATE)
-  //                    .build(DATASET_ID),
-  //                Resource.class)
-  //            .getStatusCode(),
-  //        is(HttpStatus.NOT_FOUND));
-  //  }
-  //
-  //  @Test
-  //  public void testAddMetadata() throws Exception {
-  //    // given
-  //    final String datasetId = "00067360b70e4acfab561fe593ad3f7a";
-  //    final URI irmUri =
-  //        UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
-  //            .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
-  //            .build(datasetId);
-  //
-  //    // and stub index server
-  //    indexMockRestServiceServer
-  //        .expect(requestTo(String.format("%s%s", endpointUrlIndex, datasetId)))
-  //        .andExpect(method(HttpMethod.PUT))
-  //        .andExpect(header("Accept-Version", indexApiVersion))
-  //        .andExpect(jsonPath("$.irmLocation").value(irmUri.toString()))
-  //        .andRespond(withStatus(HttpStatus.OK));
-  //
-  //    // when add metadata
-  //    final Charset encoding = StandardCharsets.UTF_8;
-  //    final String irm = "<?xml version=\"1.0\" ?><metadata></metadata>";
-  //    final InputStream inputStream = IOUtils.toInputStream(irm, encoding);
-  //    final long fileSize = inputStream.available();
-  //    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-  //    body.add(
-  //        "file",
-  //        new InputStreamResource(inputStream) {
-  //
-  //          @Override
-  //          public long contentLength() {
-  //            return fileSize;
-  //          }
-  //
-  //          @Override
-  //          public String getFilename() {
-  //            return "test_file_name.xml";
-  //          }
-  //        });
-  //    restTemplate.put(ADD_METADATA_URL_TEMPLATE, body, datasetId, SUPPORTED_METADATA_TYPE);
-  //
-  //    // then
-  //    assertThat(irmUri, getRequestIsSuccessful());
-  //  }
-  //
-  //  @Test
-  //  public void testRetrieveIrm() throws Exception {
-  //    // given
-  //    final String datasetId = "00067360b70e4acfab561fe593ad3f7a";
-  //    final URI irmUri =
-  //        UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
-  //            .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
-  //            .build(datasetId);
-  //
-  //    // and stub index server
-  //    indexMockRestServiceServer
-  //        .expect(requestTo(String.format("%s%s", endpointUrlIndex, datasetId)))
-  //        .andExpect(method(HttpMethod.PUT))
-  //        .andExpect(header("Accept-Version", indexApiVersion))
-  //        .andExpect(jsonPath("$.irmLocation").value(irmUri.toString()))
-  //        .andRespond(withStatus(HttpStatus.OK));
-  //
-  //    // and add metadata
-  //    final Charset encoding = StandardCharsets.UTF_8;
-  //    final String irm = "<?xml version=\"1.0\" ?><metadata></metadata>";
-  //    final InputStream inputStream = IOUtils.toInputStream(irm, encoding);
-  //    final long fileSize = inputStream.available();
-  //    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-  //    body.add(
-  //        "file",
-  //        new InputStreamResource(inputStream) {
-  //
-  //          @Override
-  //          public long contentLength() {
-  //            return fileSize;
-  //          }
-  //
-  //          @Override
-  //          public String getFilename() {
-  //            return "test_file_name.xml";
-  //          }
-  //        });
-  //    restTemplate.put(ADD_METADATA_URL_TEMPLATE, body, datasetId, SUPPORTED_METADATA_TYPE);
-  //
-  //    // when
-  //    final ResponseEntity<Resource> response = restTemplate.getForEntity(irmUri, Resource.class);
-  //
-  //    // then
-  //    assertThat(response.getStatusCode(), is(HttpStatus.OK));
-  //    final Resource retrievedFile = response.getBody();
-  //    assertThat(retrievedFile.contentLength(), is(fileSize));
-  //    assertThat(retrievedFile.isReadable(), is(true));
-  //    final HttpHeaders responseHeaders = response.getHeaders();
-  //    assertThat(responseHeaders.getContentType(), is(StoreController.IRM_MEDIA_TYPE));
-  //    assertThat(IOUtils.toString(retrievedFile.getInputStream(), encoding), is(irm));
-  //  }
-  //
-  //  @Test
-  //  public void testRetrieveIrmNotFound() throws Exception {
-  //    // given
-  //    final String datasetId = "00067360b70e4acfab561fe593ad3f7a";
-  //    final URI irmUri =
-  //        UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
-  //            .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
-  //            .build(datasetId);
-  //    indexMockRestServiceServer
-  //        .expect(requestTo(String.format("%s%s", endpointUrlIndex, datasetId)))
-  //        .andExpect(method(HttpMethod.PUT))
-  //        .andExpect(header("Accept-Version", indexApiVersion))
-  //        .andExpect(jsonPath("$.irmLocation").value(irmUri.toString()))
-  //        .andRespond(withStatus(HttpStatus.OK));
-  //    final Charset encoding = StandardCharsets.UTF_8;
-  //    final String irm = "<?xml version=\"1.0\" ?><metadata></metadata>";
-  //    final InputStream inputStream = IOUtils.toInputStream(irm, encoding);
-  //    final long fileSize = inputStream.available();
-  //    final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-  //    body.add(
-  //        "file",
-  //        new InputStreamResource(inputStream) {
-  //
-  //          @Override
-  //          public long contentLength() {
-  //            return fileSize;
-  //          }
-  //
-  //          @Override
-  //          public String getFilename() {
-  //            return "test_file_name.xml";
-  //          }
-  //        });
-  //    restTemplate.put(ADD_METADATA_URL_TEMPLATE, body, datasetId, SUPPORTED_METADATA_TYPE);
-  //
-  //    // verify
-  //    assertThat(
-  //        restTemplate
-  //            .getForEntity(
-  //                UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
-  //                    .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
-  //                    .build(DATASET_ID),
-  //                Resource.class)
-  //            .getStatusCode(),
-  //        is(HttpStatus.NOT_FOUND));
-  //  }
-  //
-  //  @Test
-  //  public void testRetrieveIrmWhenS3IsEmpty() {
-  //    assertThat(
-  //        restTemplate
-  //            .getForEntity(
-  //                UriComponentsBuilder.fromUriString(endpointUrlRetrieve)
-  //                    .path(StoreController.RETRIEVE_IRM_URL_TEMPLATE)
-  //                    .build(DATASET_ID),
-  //                Resource.class)
-  //            .getStatusCode(),
-  //        is(HttpStatus.NOT_FOUND));
-  //  }
-  //
-  //  @Test
-  //  public void testSuccessfulIngestRequest() throws Exception {
-  //    transformMockRestServiceServer
-  //        .expect(requestTo(endpointUrlTransform))
-  //        .andExpect(method(HttpMethod.POST))
-  //        .andExpect(header("Accept-Version", endpointsTransformVersion))
-  //        .andExpect(
-  //            request -> {
-  //              final String fileLocation =
-  //                  (String)
-  //                      new JsonPathExpectationsHelper("$.location")
-  //                          .evaluateJsonPath(
-  //                              ((MockClientHttpRequest) request).getBodyAsString(),
-  // String.class);
-  //
-  //              // Verify GET request returns file
-  //              // Retrieve file is tested more thoroughly in other methods in this class.
-  //              webTestClient
-  //                  .get()
-  //                  .uri(fileLocation)
-  //                  .exchange()
-  //                  .expectStatus()
-  //                  .isOk()
-  //                  .expectBody(Resource.class)
-  //                  .value(hasContents(TEST_FILE_RESOURCE.getInputStream()));
-  //            })
-  //        .andExpect(jsonPath("$.mimeType").value(MediaType.TEXT_PLAIN_VALUE))
-  //        .andExpect(
-  //            request -> {
-  //              final String metacardLocation =
-  //                  (String)
-  //                      new JsonPathExpectationsHelper("$.metacardLocation")
-  //                          .evaluateJsonPath(
-  //                              ((MockClientHttpRequest) request).getBodyAsString(),
-  // String.class);
-  //
-  //              // Verify retrieve metacard
-  //              webTestClient
-  //                  .get()
-  //                  .uri(metacardLocation)
-  //                  .exchange()
-  //                  .expectStatus()
-  //                  .isOk()
-  //                  .expectHeader()
-  //                  .contentType(METACARD_MEDIA_TYPE)
-  //                  .expectBody(Resource.class)
-  //                  .value(isReadable())
-  //                  .value(hasContents(TEST_METACARD_RESOURCE.getInputStream()));
-  //            })
-  //        .andRespond(
-  //            withStatus(HttpStatus.ACCEPTED)
-  //                .contentType(MediaType.APPLICATION_JSON)
-  //                .body(
-  //                    new JSONObject()
-  //                        .put("id", "asdf")
-  //                        .put("message", "The ID asdf has been accepted")
-  //                        .toString()));
-  //
-  //    // when
-  //    webTestClient
-  //        .post()
-  //        .uri("/ingest")
-  //        .contentType(MediaType.MULTIPART_FORM_DATA)
-  //        .syncBody(TEST_INGEST_REQUEST_BODY)
-  //        .header(
-  //            "Accept-Version",
-  //            "0.5.0") // TODO inject this like we do for the transformApiVersion in
-  // TransformClient
-  //        .header(LAST_MODIFIED, LAST_MODIFIED_DATE)
-  //        .exchange()
-  //        .expectStatus()
-  //        .isAccepted();
-  //  }
-  //
-  //  /**
-  //   * The error handler throws the same exception for all non-202 status codes returned by the
-  //   * transformation endpoint.
-  //   */
-  //  @Test
-  //  public void testUnsuccessfulTransformRequest() throws Exception {
-  //    transformMockRestServiceServer
-  //        .expect(requestTo(endpointUrlTransform))
-  //        .andExpect(method(HttpMethod.POST))
-  //        .andExpect(header("Accept-Version", endpointsTransformVersion))
-  //        .andExpect(jsonPath("$.location").isNotEmpty())
-  //        .andExpect(jsonPath("$.mimeType").value(MediaType.TEXT_PLAIN_VALUE))
-  //        .andExpect(jsonPath("$.metacardLocation").isNotEmpty())
-  //        .andRespond(withServerError());
-  //
-  //    webTestClient
-  //        .post()
-  //        .uri("/ingest")
-  //        .header("Accept-Version", "1.1.1")
-  //        .header(LAST_MODIFIED, LAST_MODIFIED_DATE)
-  //        .contentType(MediaType.MULTIPART_FORM_DATA)
-  //        .accept(MediaType.APPLICATION_JSON)
-  //        .syncBody(TEST_INGEST_REQUEST_BODY)
-  //        .exchange()
-  //        .expectStatus()
-  //        .is5xxServerError();
-  //  }
-  //
-  //  @NotNull
-  //  private static Matcher<Resource> hasContents(final InputStream expected) {
-  //    return new TypeSafeMatcher<>() {
-  //
-  //      @Override
-  //      protected boolean matchesSafely(Resource resource) {
-  //        try {
-  //          return IOUtils.contentEquals(resource.getInputStream(), expected);
-  //        } catch (IOException e) {
-  //          fail("Unable to compare input streams", e);
-  //          return false;
-  //        }
-  //      }
-  //
-  //      @Override
-  //      public void describeTo(Description description) {
-  //        description.appendText("has the expected contents");
-  //      }
-  //    };
-  //  }
-  //
-  //  @NotNull
-  //  private static Matcher<Resource> isReadable() {
-  //    return new TypeSafeMatcher<>() {
-  //      @Override
-  //      protected boolean matchesSafely(Resource resource) {
-  //        return resource.isReadable();
-  //      }
-  //
-  //      @Override
-  //      public void describeTo(Description description) {
-  //        description.appendText("is readable");
-  //      }
-  //    };
-  //  }
-  //
-  //  @NotNull
-  //  private Matcher<URI> getRequestIsSuccessful() {
-  //    return new TypeSafeMatcher<URI>() {
-  //      private final HttpStatus EXPECTED_GET_REQUEST_RESPONSE_STATUS = HttpStatus.OK;
-  //
-  //      @Override
-  //      public void describeTo(Description description) {
-  //        description.appendText(
-  //            "a URI for which a GET request returns "
-  //                + EXPECTED_GET_REQUEST_RESPONSE_STATUS
-  //                + " but the URI");
-  //      }
-  //
-  //      @Override
-  //      protected boolean matchesSafely(URI uri) {
-  //        return restTemplate.getForEntity(uri, Resource.class).getStatusCode()
-  //            == EXPECTED_GET_REQUEST_RESPONSE_STATUS;
-  //      }
-  //    };
-  //  }
+  private static final String TEST_FILE_PATH = "com/connexta/store/testFile.txt";
+  private static final String TRANSFORM_DONE_RESPONSE_FILE =
+      "com/connexta/store/transformDone.json";
+
+  private static final String DATASET_ID = UUID.randomUUID().toString();
+  private static final String ADMIN_ACCESS_KEY = "admin";
+  private static final String ADMIN_SECRET_KEY = "12345678";
+  private static final String LAST_MODIFIED_DATE = "2017-06-11T14:32:28Z";
+  private static final int LOCALSTACK_PORT = 4572;
+  private static final String ACCEPT_VERSION = "Accept-Version";
+  private static final String APPLICATION_DNI_TDF_XML = "application/dni-tdf+xml";
+  private static final String ORIGINAL_FILENAME = "originalFilename.txt";
+
+  @Autowired private WebTestClient storeTestClient;
+
+  private static final String TEST_FILE_CONTENT = "some-content";
+  private static final Resource TEST_FILE_RESOURCE =
+      new ByteArrayResource(TEST_FILE_CONTENT.getBytes()) {
+
+        @Override
+        public long contentLength() {
+          return TEST_FILE_CONTENT.getBytes().length;
+        }
+
+        @Override
+        public String getFilename() {
+          return ORIGINAL_FILENAME;
+        }
+      };
+  private static final String TEST_METACARD_CONTENT = "metacard-content";
+  private static final Resource TEST_METACARD_RESOURCE =
+      new ByteArrayResource(TEST_METACARD_CONTENT.getBytes()) {
+
+        @Override
+        public long contentLength() {
+          return TEST_METACARD_CONTENT.getBytes().length;
+        }
+
+        @Override
+        public String getFilename() {
+          return "metacard.xml";
+        }
+      };
+
+  @Container
+  private static final GenericContainer s3Container =
+      new GenericContainer("localstack/localstack:0.10.5")
+          .withExposedPorts(LOCALSTACK_PORT)
+          .withEnv("SERVICES", "s3")
+          .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Ready\\.\n"));
+
+  @TestConfiguration
+  static class Config {
+
+    @Bean
+    public AmazonS3Configuration testAmazonS3Configuration() {
+      return new AmazonS3Configuration(
+          String.format(
+              "http://%s:%d",
+              s3Container.getContainerIpAddress(), s3Container.getMappedPort(LOCALSTACK_PORT)),
+          "local",
+          ADMIN_ACCESS_KEY,
+          ADMIN_SECRET_KEY);
+    }
+  }
+
+  private MockRestServiceServer indexMockRestServiceServer;
+
+  @Inject private AmazonS3 amazonS3;
+
+  @Inject
+  @Named("nonBufferingRestTemplate")
+  private RestTemplate nonBufferingRestTemplate;
+
+  @Inject
+  @Named(TransformConfiguration.TRANSFORM_CLIENT_BEAN)
+  private WebClient transformWebClient;
+
+  @Value("${endpoints.store.version}")
+  private String storeApiVersion;
+
+  @Value("${endpoints.store.url}")
+  private String storeUrl;
+
+  @Value("${endpoints.transform.url}")
+  private String transformUrl;
+
+  @Value("${endpoints.ingest.version}")
+  private String ingestVersion;
+
+  @Value("${s3.bucket.file}")
+  private String fileBucket;
+
+  @Value("${s3.bucket.irm}")
+  private String irmBucket;
+
+  @Value("${s3.bucket.metacard}")
+  private String metacardBucket;
+
+  private static final MultiValueMap<String, HttpEntity<?>> TEST_INGEST_REQUEST_BODY;
+
+  static {
+    final MultipartBodyBuilder builder = new MultipartBodyBuilder();
+    builder.part("file", TEST_FILE_RESOURCE);
+    builder.part("metacard", TEST_METACARD_RESOURCE);
+    builder.part("correlationId", "000f4e4a");
+    TEST_INGEST_REQUEST_BODY = builder.build();
+  }
+
+  private MockWebServer mockTransformServer;
+  private MockWebServer mockFileServer;
+
+  @BeforeEach
+  void beforeEach() throws Exception {
+    mockTransformServer = new MockWebServer();
+    mockTransformServer.start(9090);
+
+    mockFileServer = new MockWebServer();
+    mockFileServer.start();
+
+    indexMockRestServiceServer = MockRestServiceServer.createServer(nonBufferingRestTemplate);
+
+    amazonS3.createBucket(fileBucket);
+    amazonS3.createBucket(irmBucket);
+    amazonS3.createBucket(metacardBucket);
+  }
+
+  @AfterEach
+  void afterEach() throws Exception {
+    indexMockRestServiceServer.verify();
+
+    cleanBucket(fileBucket);
+    cleanBucket(irmBucket);
+    cleanBucket(metacardBucket);
+
+    mockTransformServer.shutdown();
+  }
+
+  private void cleanBucket(String bucket) {
+    amazonS3.listObjects(bucket).getObjectSummaries().stream()
+        .map(S3ObjectSummary::getKey)
+        .forEach(key -> amazonS3.deleteObject(bucket, key));
+    amazonS3.deleteBucket(bucket);
+  }
+
+  @Test
+  void testRetrieveDataNotFound() {
+    storeTestClient
+        .get()
+        .uri(
+            UriComponentsBuilder.fromUriString(storeUrl)
+                .path("/dataset/{datasetId}/{dataType}")
+                .build(DATASET_ID, "file")
+                .toASCIIString())
+        .exchange()
+        .expectStatus()
+        .isNotFound();
+  }
+
+  @Test
+  void testIngestRequest() throws Exception {
+    // setup
+    indexMockRestServiceServer
+        .expect(request -> {})
+        .andRespond(
+            request -> new MockClientHttpResponse("doesntMatter".getBytes(), HttpStatus.OK));
+
+    final String transformStatusUrl = transformUrl + "some/location";
+    MockResponse transformRequestResponse =
+        new MockResponse()
+            .setResponseCode(HttpStatus.CREATED.value())
+            .setHeader("Location", transformStatusUrl);
+    MockResponse transformPollDoneResponse =
+        new MockResponse()
+            .setResponseCode(200)
+            .setBody(getResourceAsString(TRANSFORM_DONE_RESPONSE_FILE))
+            .setHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+
+    mockTransformServer.enqueue(transformRequestResponse);
+    mockTransformServer.enqueue(transformPollDoneResponse);
+
+    final String testFileContent = getResourceAsString(TEST_FILE_PATH);
+    mockTransformServer.enqueue(new MockResponse().setResponseCode(200).setBody(testFileContent));
+
+    // when
+    storeTestClient
+        .post()
+        .uri("/ingest")
+        .contentType(MediaType.MULTIPART_FORM_DATA)
+        .body(BodyInserters.fromValue(TEST_INGEST_REQUEST_BODY))
+        .header(ACCEPT_VERSION, ingestVersion)
+        .header("Last-Modified", LAST_MODIFIED_DATE)
+        .exchange();
+
+    RecordedRequest transformRequest = mockTransformServer.takeRequest();
+    final String datasetId =
+        (String) new JSONObject(transformRequest.getBody().readUtf8()).get("datasetId");
+
+    final String expectedIrmFileName = "irm-" + datasetId + ".xml";
+
+    await()
+        .atMost(10, TimeUnit.SECONDS)
+        .until(
+            () ->
+                dataIsAvailable(
+                    datasetId,
+                    "irm",
+                    APPLICATION_DNI_TDF_XML,
+                    expectedIrmFileName,
+                    testFileContent));
+
+    await()
+        .atMost(10, TimeUnit.SECONDS)
+        .until(
+            () ->
+                dataIsAvailable(
+                    datasetId,
+                    "file",
+                    MediaType.TEXT_PLAIN_VALUE,
+                    ORIGINAL_FILENAME,
+                    TEST_FILE_CONTENT));
+  }
+
+  @Test
+  void testQuarantine() throws Exception {
+    // setup
+    indexMockRestServiceServer
+        .expect(request -> {})
+        .andRespond(
+            request -> new MockClientHttpResponse("doesntMatter".getBytes(), HttpStatus.OK));
+
+    final String transformStatusUrl = transformUrl + "some/location";
+    MockResponse transformRequestResponse =
+        new MockResponse()
+            .setResponseCode(HttpStatus.CREATED.value())
+            .setHeader("Location", transformStatusUrl);
+    MockResponse transformPollDoneResponse =
+        new MockResponse()
+            .setResponseCode(200)
+            .setBody(getResourceAsString(TRANSFORM_DONE_RESPONSE_FILE))
+            .setHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+
+    mockTransformServer.enqueue(transformRequestResponse);
+    mockTransformServer.enqueue(transformPollDoneResponse);
+
+    final String testFileContent = getResourceAsString(TEST_FILE_PATH);
+    mockTransformServer.enqueue(new MockResponse().setResponseCode(200).setBody(testFileContent));
+
+    // when ingested
+    storeTestClient
+        .post()
+        .uri("/ingest")
+        .contentType(MediaType.MULTIPART_FORM_DATA)
+        .body(BodyInserters.fromValue(TEST_INGEST_REQUEST_BODY))
+        .header(ACCEPT_VERSION, ingestVersion)
+        .header("Last-Modified", LAST_MODIFIED_DATE)
+        .exchange();
+
+    // then data is available
+    RecordedRequest transformRequest = mockTransformServer.takeRequest();
+    final String datasetId =
+        (String) new JSONObject(transformRequest.getBody().readUtf8()).get("datasetId");
+
+    final String expectedIrmFileName = "irm-" + datasetId + ".xml";
+
+    await()
+        .atMost(10, TimeUnit.SECONDS)
+        .until(
+            () ->
+                dataIsAvailable(
+                    datasetId,
+                    "irm",
+                    APPLICATION_DNI_TDF_XML,
+                    expectedIrmFileName,
+                    testFileContent));
+
+    await()
+        .atMost(10, TimeUnit.SECONDS)
+        .until(
+            () ->
+                dataIsAvailable(
+                    datasetId,
+                    "file",
+                    MediaType.TEXT_PLAIN_VALUE,
+                    ORIGINAL_FILENAME,
+                    TEST_FILE_CONTENT));
+
+    // and when quarantined
+    storeTestClient
+        .post()
+        .uri(
+            UriComponentsBuilder.fromUriString(storeUrl)
+                .path("/dataset/{datasetId}/quarantine")
+                .build(datasetId)
+                .toASCIIString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue(new QuarantineRequest()))
+        .header(ACCEPT_VERSION, storeApiVersion)
+        .exchange()
+        .expectStatus()
+        .isOk();
+
+    // then data is no longer found
+    storeTestClient
+        .get()
+        .uri(
+            UriComponentsBuilder.fromUriString(storeUrl)
+                .path("/dataset/{datasetId}/{dataType}")
+                .build(datasetId, "irm")
+                .toASCIIString())
+        .exchange()
+        .expectStatus()
+        .isNotFound();
+
+    storeTestClient
+        .get()
+        .uri(
+            UriComponentsBuilder.fromUriString(storeUrl)
+                .path("/dataset/{datasetId}/{dataType}")
+                .build(datasetId, "file")
+                .toASCIIString())
+        .exchange()
+        .expectStatus()
+        .isNotFound();
+  }
+
+  private boolean dataIsAvailable(
+      String datasetId,
+      String dataType,
+      String expectedContentType,
+      String expectedFilename,
+      String expectedContent) {
+    try {
+      storeTestClient
+          .get()
+          .uri(
+              UriComponentsBuilder.fromUriString(storeUrl)
+                  .path("/dataset/{datasetId}/{dataType}")
+                  .build(datasetId, dataType)
+                  .toASCIIString())
+          .exchange()
+          .expectStatus()
+          .isOk()
+          .expectHeader()
+          .contentType(expectedContentType)
+          .expectHeader()
+          .contentDisposition(
+              ContentDisposition.builder("attachment").filename(expectedFilename).build())
+          .expectBody(String.class)
+          .isEqualTo(expectedContent);
+    } catch (AssertionError e) {
+      return false;
+    }
+    return true;
+  }
+
+  private String getResourceAsString(String testResourcePath) throws IOException {
+    InputStream inputStream =
+        this.getClass().getClassLoader().getResourceAsStream(testResourcePath);
+
+    if (inputStream != null) {
+      return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+    }
+
+    throw new AssertionFailedError(
+        String.format("No test resource found for path %s", testResourcePath));
+  }
 }

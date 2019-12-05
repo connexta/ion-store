@@ -30,9 +30,8 @@ public class StoreControllerTest {
   void testQuarantineSuccess() {
     UUID datasetId = UUID.randomUUID();
     StoreService mockStoreService = mock(StoreService.class);
-    StoreController storeController = new StoreController(mockStoreService, "0.x.0");
-    assertThat(
-        storeController.quarantine(null, datasetId, null), is(ResponseEntity.accepted().build()));
+    StoreController storeController = new StoreController(mockStoreService, "0.x.0", "0.w.0");
+    assertThat(storeController.quarantine(null, datasetId, null), is(ResponseEntity.ok().build()));
     verify(mockStoreService, times(1)).quarantine(datasetId.toString());
   }
 
@@ -40,7 +39,7 @@ public class StoreControllerTest {
   void testQuarantineException() {
     UUID datasetId = UUID.randomUUID();
     StoreService mockStoreService = mock(StoreService.class);
-    StoreController storeController = new StoreController(mockStoreService, "0.x.0");
+    StoreController storeController = new StoreController(mockStoreService, "0.x.0", "0.w.0");
     doThrow(new QuarantineException(" ")).when(mockStoreService).quarantine(datasetId.toString());
     assertThrows(
         QuarantineException.class, () -> storeController.quarantine(null, datasetId, null));
