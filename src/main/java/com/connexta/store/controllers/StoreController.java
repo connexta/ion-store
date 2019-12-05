@@ -32,7 +32,6 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -71,7 +70,7 @@ public class StoreController implements StoreApi, IngestApi {
   @Override
   public ResponseEntity<Void> addMetadata(
       final String acceptVersion, final UUID datasetId, AddMetadataRequest addMetadataRequest) {
-    if (!StringUtils.equals(acceptVersion, storeApiVersion)) {
+    if (!storeApiVersion.equals(acceptVersion)) {
       throw new UnsupportedOperationException(
           String.format(
               "%s was \"%s\", but only \"%s\" is currently supported.",
@@ -94,7 +93,7 @@ public class StoreController implements StoreApi, IngestApi {
       MultipartFile file,
       String correlationId,
       MultipartFile metacard) {
-    if (!StringUtils.equals(acceptVersion, ingestApiVersion)) {
+    if (!ingestApiVersion.equals(acceptVersion)) {
       throw new UnsupportedOperationException(
           String.format(
               "%s was \"%s\", but only \"%s\" is currently supported.",

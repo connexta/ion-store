@@ -6,8 +6,6 @@
  */
 package com.connexta.store.controllers;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
 import javax.validation.ValidationException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +29,7 @@ public class MultipartFileValidator {
   }
 
   private static void validateNotBlank(String s, String message) {
-    if (isBlank(s)) {
+    if (s == null || s.isBlank()) {
       throw new ValidationException(message);
     }
   }

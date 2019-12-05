@@ -39,7 +39,6 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -134,10 +133,10 @@ public class StoreServiceImpl implements StoreService {
         final String fileName =
             storageAdaptorRetrieveResponse.getMetadata().get(FILE_NAME_METADATA_KEY);
 
-        if (StringUtils.isEmpty(fileName)) {
+        if (fileName == null || fileName.isEmpty()) {
           throw new RetrieveException(
               String.format(
-                  "Expected S3 object to have a non-null metadata value for %s",
+                  "Expected S3 object to have a non-empty metadata value for %s",
                   FILE_NAME_METADATA_KEY));
         }
 
@@ -229,7 +228,7 @@ public class StoreServiceImpl implements StoreService {
     String status = adaptor.getStatus(datasetId);
     // Todo: This should also fail for "staged" statuses once staged retrieval can be locked down to
     // only the Transformation Service
-    if (!(StringUtils.equals(status, STORED) || StringUtils.equals(status, STAGED))) {
+    if (!(STORED.equals(status) || STAGED.equals(status))) {
       log.info("Retrieval failed. Status for datasetId={{}} is not \"stored\".", datasetId);
       throw new RetrieveException(
           String.format("Dataset for Id={%s} has not been stored", datasetId));

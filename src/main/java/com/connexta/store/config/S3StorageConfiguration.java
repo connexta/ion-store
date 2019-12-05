@@ -13,13 +13,13 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.connexta.store.adaptors.S3StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptor;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,7 +74,7 @@ public class S3StorageConfiguration {
     return new AmazonS3Configuration(
         endpoint,
         region,
-        FileUtils.readFileToString(new File(accessKeyFile), StandardCharsets.UTF_8),
-        FileUtils.readFileToString(new File(secretKeyFile), StandardCharsets.UTF_8));
+        Files.readString(Paths.get(accessKeyFile), StandardCharsets.UTF_8),
+        Files.readString(Paths.get(secretKeyFile), StandardCharsets.UTF_8));
   }
 }
