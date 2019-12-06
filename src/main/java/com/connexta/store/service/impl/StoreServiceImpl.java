@@ -6,11 +6,15 @@
  */
 package com.connexta.store.service.impl;
 
+import static com.connexta.store.adaptors.StoreStatus.STAGED;
+import static com.connexta.store.adaptors.StoreStatus.STORED;
+
 import com.connexta.store.adaptors.StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptorRetrieveResponse;
 import com.connexta.store.clients.IndexDatasetClient;
 import com.connexta.store.clients.TransformClient;
 import com.connexta.store.controllers.StoreController;
+import com.connexta.store.exceptions.DatasetNotFoundException;
 import com.connexta.store.exceptions.QuarantineException;
 import com.connexta.store.exceptions.RetrieveException;
 import com.connexta.store.exceptions.StoreException;
@@ -35,11 +39,11 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -73,6 +77,7 @@ public class StoreServiceImpl implements StoreService {
 
     fileStorageAdaptor.store(
         fileSize, mimeType, inputStream, datasetId, Map.of(FILE_NAME_METADATA_KEY, fileName));
+    fileStorageAdaptor.updateStatus(datasetId, STAGED);
 
     URL stagingLocation;
     try {
@@ -91,6 +96,7 @@ public class StoreServiceImpl implements StoreService {
         metacardInputStream,
         datasetId,
         Map.of());
+    metacardStorageAdaptor.updateStatus(datasetId, STAGED);
     final URL metacardLocation;
     try {
       metacardLocation =
@@ -112,15 +118,17 @@ public class StoreServiceImpl implements StoreService {
   public IonData getData(String datasetId, String dataType) {
     switch (dataType) {
       case METACARD_TYPE:
+        verifyStoreStatus(datasetId, metacardStorageAdaptor);
         InputStream metacardInputStream =
             metacardStorageAdaptor.retrieve(datasetId).getInputStream();
-
         return new IonData(
             MediaType.APPLICATION_XML_VALUE, metacardInputStream, "metacard-" + datasetId + ".xml");
       case IRM_TYPE:
+        verifyStoreStatus(datasetId, irmStorageAdaptor);
         InputStream irmInputStream = irmStorageAdaptor.retrieve(datasetId).getInputStream();
         return new IonData("application/dni-tdf+xml", irmInputStream, "irm-" + datasetId + ".xml");
       case FILE_TYPE:
+        verifyStoreStatus(datasetId, fileStorageAdaptor);
         final StorageAdaptorRetrieveResponse storageAdaptorRetrieveResponse =
             fileStorageAdaptor.retrieve(datasetId);
         final String fileName =
@@ -139,7 +147,7 @@ public class StoreServiceImpl implements StoreService {
             fileName);
       default:
         throw new IllegalArgumentException(
-            String.format("Received unsupported dataType %s", dataType));
+            String.format("Received unsupported dataType {%s}", dataType));
     }
   }
 
@@ -161,17 +169,8 @@ public class StoreServiceImpl implements StoreService {
         throw new DetailedResponseStatusException(
             HttpStatus.BAD_REQUEST, "Received invalid metadata URL received.");
       }
-
-      if (metadataResource == null) {
-        throw new DetailedResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "No response received for Metadata.");
-      }
-
-      Resource resource = metadataResource.getBody();
-      if (resource == null) {
-        throw new DetailedResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "No resource received in Metadata request.");
-      }
+      Resource resource = validateMetadataResource(metadataResource);
+      unstage(datasetId);
 
       switch (dataType) {
         case METACARD_TYPE:
@@ -181,6 +180,7 @@ public class StoreServiceImpl implements StoreService {
               resource.getInputStream(),
               datasetId,
               Map.of());
+          metacardStorageAdaptor.updateStatus(datasetId, STORED);
           indexDatasetClient.indexDataset(
               datasetId,
               UriComponentsBuilder.fromUri(storeUrl)
@@ -194,6 +194,7 @@ public class StoreServiceImpl implements StoreService {
               resource.getInputStream(),
               datasetId,
               Map.of());
+          irmStorageAdaptor.updateStatus(datasetId, STORED);
           indexDatasetClient.indexDataset(
               datasetId,
               UriComponentsBuilder.fromUri(storeUrl)
@@ -202,7 +203,7 @@ public class StoreServiceImpl implements StoreService {
           break;
         default:
           throw new IllegalArgumentException(
-              String.format("Received unsupported dataType %s", dataType));
+              String.format("Received unsupported dataType {%s}", dataType));
       }
     }
   }
@@ -215,5 +216,38 @@ public class StoreServiceImpl implements StoreService {
         List.of(fileStorageAdaptor, irmStorageAdaptor, metacardStorageAdaptor)) {
       adaptor.delete(datasetId);
     }
+  }
+
+  @Override
+  public void unstage(final String datasetId) throws DatasetNotFoundException, QuarantineException {
+    fileStorageAdaptor.updateStatus(datasetId, STORED);
+    metacardStorageAdaptor.delete(datasetId);
+    log.info("Unstaged file and deleted staged metacard for datasetId={{}}", datasetId);
+  }
+
+  private void verifyStoreStatus(String datasetId, StorageAdaptor adaptor) {
+    String status = adaptor.getStatus(datasetId);
+    // Todo: This should also fail for "staged" statuses once staged retrieval can be locked down to
+    // only the Transformation Service
+    if (!(StringUtils.equals(status, STORED) || StringUtils.equals(status, STAGED))) {
+      log.info("Retrieval failed. Status for datasetId={{}} is not \"stored\".", datasetId);
+      throw new RetrieveException(
+          String.format("Dataset for Id={%s} has not been stored", datasetId));
+    }
+  }
+
+  @NotNull
+  private Resource validateMetadataResource(ResponseEntity<Resource> metadataResource) {
+    if (metadataResource == null) {
+      throw new DetailedResponseStatusException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "No response received for Metadata.");
+    }
+
+    Resource resource = metadataResource.getBody();
+    if (resource == null) {
+      throw new DetailedResponseStatusException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "No resource received in Metadata request.");
+    }
+    return resource;
   }
 }

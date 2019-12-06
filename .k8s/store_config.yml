@@ -1,5 +1,5 @@
 endpoints:
   store:
-    url: http://ion-store.default.gsp.test/
+    url: http://ion-store.ion-cdr:8080/
   transform:
-    url: http://ion-transform.default.gsp.test/
+    url: http://transform-endpoints-service.ion-transform:9090/
