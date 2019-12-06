@@ -120,7 +120,7 @@ ext.configArgs = [
 configurations.all {
     resolutionStrategy {
         force "com.fasterxml.jackson.core:jackson-databind:[2.10.1,)"
-        force "com.google.guava:guava:[24.1.1,)"
+        force "com.google.guava:guava:[28.1-jre,)"
     }
 }
 
