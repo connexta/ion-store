@@ -36,7 +36,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 
 @Slf4j
@@ -151,7 +150,7 @@ public class S3StorageAdaptor implements StorageAdaptor {
     List<Tag> tags = taggingResult.getTagSet();
 
     Optional<Tag> statusTag =
-        tags.stream().filter(tag -> StringUtils.equals(tag.getKey(), STATUS_KEY)).findFirst();
+        tags.stream().filter(tag -> STATUS_KEY.equals(tag.getKey())).findFirst();
     return statusTag.get().getValue();
   }
 
