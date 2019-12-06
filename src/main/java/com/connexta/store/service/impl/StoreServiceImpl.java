@@ -167,7 +167,6 @@ public class StoreServiceImpl implements StoreService {
             HttpStatus.BAD_REQUEST, "Received invalid metadata URL received.");
       }
       Resource resource = validateMetadataResource(metadataResource);
-      unstage(datasetId);
 
       switch (dataType) {
         case METACARD_TYPE:
@@ -193,6 +192,8 @@ public class StoreServiceImpl implements StoreService {
               String.format("Received unsupported dataType {%s}", dataType));
       }
     }
+
+    unstage(datasetId);
 
     indexClient.indexDataset(
         UUID.fromString(datasetId),

@@ -11,6 +11,7 @@ import static org.awaitility.Awaitility.await;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.connexta.store.config.AmazonS3Configuration;
+import com.connexta.store.config.IndexClientConfiguration;
 import com.connexta.store.config.TransformConfiguration;
 import com.connexta.store.rest.models.QuarantineRequest;
 import java.io.IOException;
@@ -43,11 +44,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.mock.http.client.MockClientHttpResponse;
-import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -127,13 +125,11 @@ class StoreITests {
     }
   }
 
-  private MockRestServiceServer indexMockRestServiceServer;
-
   @Inject private AmazonS3 amazonS3;
 
   @Inject
-  @Named("nonBufferingRestTemplate")
-  private RestTemplate nonBufferingRestTemplate;
+  @Named(IndexClientConfiguration.INDEX_WEB_CLIENT_BEAN)
+  private WebClient indexWebClient;
 
   @Inject
   @Named(TransformConfiguration.TRANSFORM_CLIENT_BEAN)
@@ -172,6 +168,7 @@ class StoreITests {
 
   private MockWebServer mockTransformServer;
   private MockWebServer mockFileServer;
+  private MockWebServer mockIndexServer;
 
   @BeforeEach
   void beforeEach() throws Exception {
@@ -181,7 +178,8 @@ class StoreITests {
     mockFileServer = new MockWebServer();
     mockFileServer.start();
 
-    indexMockRestServiceServer = MockRestServiceServer.createServer(nonBufferingRestTemplate);
+    mockIndexServer = new MockWebServer();
+    mockIndexServer.start();
 
     amazonS3.createBucket(fileBucket);
     amazonS3.createBucket(irmBucket);
@@ -190,8 +188,6 @@ class StoreITests {
 
   @AfterEach
   void afterEach() throws Exception {
-    indexMockRestServiceServer.verify();
-
     cleanBucket(fileBucket);
     cleanBucket(irmBucket);
     cleanBucket(metacardBucket);
@@ -223,10 +219,6 @@ class StoreITests {
   @Test
   void testIngestRequest() throws Exception {
     // setup
-    indexMockRestServiceServer
-        .expect(request -> {})
-        .andRespond(
-            request -> new MockClientHttpResponse("doesntMatter".getBytes(), HttpStatus.OK));
 
     final String transformStatusUrl = transformUrl + "some/location";
     MockResponse transformRequestResponse =
@@ -287,11 +279,6 @@ class StoreITests {
   @Test
   void testQuarantine() throws Exception {
     // setup
-    indexMockRestServiceServer
-        .expect(request -> {})
-        .andRespond(
-            request -> new MockClientHttpResponse("doesntMatter".getBytes(), HttpStatus.OK));
-
     final String transformStatusUrl = transformUrl + "some/location";
     MockResponse transformRequestResponse =
         new MockResponse()

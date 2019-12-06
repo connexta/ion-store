@@ -17,9 +17,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
-public class IndexDatasetClientConfiguration {
+public class IndexClientConfiguration {
 
-  @Bean("indexWebClient")
+  public static final String INDEX_WEB_CLIENT_BEAN = "indexWebClient";
+
+  @Bean(IndexClientConfiguration.INDEX_WEB_CLIENT_BEAN)
   public WebClient indexWebClient(
       @NotBlank @Value("${endpoints.index.url}") final String indexEndpoint,
       @NotBlank @Value("${endpoints.index.version}") final String indexApiVersion) {
@@ -31,7 +33,8 @@ public class IndexDatasetClientConfiguration {
 
   @Bean
   public IndexClient indexDatasetClient(
-      @NotNull @Named("indexWebClient") final WebClient indexWebClient) {
+      @NotNull @Named(IndexClientConfiguration.INDEX_WEB_CLIENT_BEAN)
+          final WebClient indexWebClient) {
     return new IndexClientImpl(indexWebClient);
   }
 }

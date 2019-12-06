@@ -48,6 +48,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
@@ -69,7 +70,8 @@ import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 class StoreServiceImplTest {
-  private static final String DATASET_ID = "341d6c1ce5e0403a99fe86edaed66eea";
+
+  private static final String DATASET_ID = UUID.randomUUID().toString();
   private static final String RESOURCE_RESPONSE =
       "/com/connexta/store/service/impl/resourceResponse.xml";
   private StoreService storeService;
@@ -178,14 +180,22 @@ class StoreServiceImplTest {
   }
 
   @Test
-  void testAddingIrm() throws IOException {
+  void testAddMetadata() throws IOException {
     var mockInputStream = mock(InputStream.class);
     var mockResource = mock(Resource.class);
     var mockTransformWebClient = mockWebClient(mockResource);
-    var resourceUri =
+    var irmResourceUri =
         UriComponentsBuilder.fromUri(storeUrl)
             .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
             .build(DATASET_ID, "irm");
+    var metacardResourceUri =
+        UriComponentsBuilder.fromUri(storeUrl)
+            .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
+            .build(DATASET_ID, "metacard");
+    var fileResourceUri =
+        UriComponentsBuilder.fromUri(storeUrl)
+            .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
+            .build(DATASET_ID, "file");
     var mockStoreService =
         new StoreServiceImpl(
             storeUrl,
@@ -196,13 +206,17 @@ class StoreServiceImplTest {
             transformClient,
             taskQueue,
             mockTransformWebClient);
-    var metadataInfo = new MetadataInfo();
-    metadataInfo.setLocation(new URL("http://location"));
-    metadataInfo.setMetadataType("irm");
+    var irmMetadataInfo = new MetadataInfo();
+    irmMetadataInfo.setLocation(new URL("http://location:1234/irm"));
+    irmMetadataInfo.setMetadataType("irm");
+
+    var metacardMetadataInfo = new MetadataInfo();
+    metacardMetadataInfo.setLocation(new URL("http://location:1234/metacard"));
+    metacardMetadataInfo.setMetadataType("metacard");
 
     when(mockResource.getInputStream()).thenReturn(mockInputStream);
 
-    mockStoreService.addMetadata(DATASET_ID, List.of(metadataInfo));
+    mockStoreService.addMetadata(DATASET_ID, List.of(irmMetadataInfo, metacardMetadataInfo));
 
     verify(irmStorageAdaptor)
         .store(
@@ -211,39 +225,6 @@ class StoreServiceImplTest {
             eq(mockInputStream),
             eq(DATASET_ID),
             eq(Map.of()));
-    verify(fileStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
-    verify(metacardStorageAdaptor).delete(eq(DATASET_ID));
-    verify(irmStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
-    verify(indexClient).indexDataset(DATASET_ID, resourceUri);
-  }
-
-  @Test
-  void testAddingMetacard() throws IOException {
-    var mockInputStream = mock(InputStream.class);
-    var mockResource = mock(Resource.class);
-    var mockTransformWebClient = mockWebClient(mockResource);
-    var resourceUri =
-        UriComponentsBuilder.fromUri(storeUrl)
-            .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
-            .build(DATASET_ID, "metacard");
-    var mockStoreService =
-        new StoreServiceImpl(
-            storeUrl,
-            fileStorageAdaptor,
-            irmStorageAdaptor,
-            metacardStorageAdaptor,
-            indexClient,
-            transformClient,
-            taskQueue,
-            mockTransformWebClient);
-    var metadataInfo = new MetadataInfo();
-    metadataInfo.setLocation(new URL("http://location"));
-    metadataInfo.setMetadataType("metacard");
-
-    when(mockResource.getInputStream()).thenReturn(mockInputStream);
-
-    mockStoreService.addMetadata(DATASET_ID, List.of(metadataInfo));
-
     verify(metacardStorageAdaptor)
         .store(
             anyLong(),
@@ -253,8 +234,14 @@ class StoreServiceImplTest {
             eq(Map.of()));
     verify(fileStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
     verify(metacardStorageAdaptor).delete(eq(DATASET_ID));
-    verify(metacardStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
-    verify(indexClient).indexDataset(DATASET_ID, resourceUri);
+    verify(metacardStorageAdaptor).updateStatus(DATASET_ID, STORED);
+    verify(irmStorageAdaptor).updateStatus(eq(DATASET_ID), eq(STORED));
+    verify(indexClient)
+        .indexDataset(
+            UUID.fromString(DATASET_ID),
+            fileResourceUri.toURL(),
+            irmResourceUri.toURL(),
+            metacardResourceUri.toURL());
   }
 
   @Test
@@ -282,7 +269,7 @@ class StoreServiceImplTest {
   }
 
   @Test
-  void testGettingBadDataType() throws IOException {
+  void testGettingBadDataType() {
     assertThrows(IllegalArgumentException.class, () -> storeService.getData(DATASET_ID, "badType"));
   }
 
