@@ -12,9 +12,8 @@ and irm. A basic dashboard UI is available on port 8055 and a JSON record of all
 * Linux/Mac
 
 ## How to Run
-From this directory:
 ```bash
-./deploy.sh
+groovy deploy.groovy
 ```
 The script should provide appropriate error messages to resolve any issues that may occur while
 setting up the docker network or deploying the images.
@@ -22,7 +21,7 @@ setting up the docker network or deploying the images.
 ## How to Stop
 From this directory:
 ```bash
-./deploy.sh clean
+docker stack rm store-stack
 ```
 
 ## Additional Information
