@@ -56,7 +56,7 @@ public class TransformConfiguration {
     return new TransformPollerFactory(transformWebClient, storeWebClient);
   }
 
-  @Bean(name = "storeWebClient")
+  @Bean(name = TransformConfiguration.STORE_CLIENT_BEAN)
   public WebClient storeWebClient(
       @Value("${endpoints.store.url}") final String storeHost,
       @Value("${endpoints.store.version}") final String storeVersion) {

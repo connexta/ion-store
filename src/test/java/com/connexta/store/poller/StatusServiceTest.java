@@ -17,9 +17,31 @@ import java.net.URL;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.reactive.function.client.WebClient;
 
 class StatusServiceTest {
+
+  @Test
+  void testInterruptedWhileTaking() throws Exception {
+    // setup
+    BlockingQueue taskQueue = mock(BlockingQueue.class);
+    when(taskQueue.take()).thenThrow(InterruptedException.class);
+
+    ExecutorService queueTakeService = mock(ExecutorService.class);
+
+    StatusService statusService =
+        new StatusService(
+            taskQueue, mock(TransformPollerFactory.class), mock(ExecutorService.class), 5L, 12);
+
+    when(queueTakeService.submit(any(Runnable.class)))
+        .thenAnswer(
+            invocation -> {
+              invocation.callRealMethod();
+              return Thread.currentThread().isInterrupted();
+            });
+
+    // when
+    statusService.init();
+  }
 
   @Test
   void testQueueDrainedWhenTasksExceedThreadPoolSize() throws Exception {
@@ -31,8 +53,10 @@ class StatusServiceTest {
       taskQueue.put(task);
     }
 
+    TransformStatusPoller poller = mock(TransformStatusPoller.class);
+    when(poller.run()).thenReturn(true);
     TransformPollerFactory factory = mock(TransformPollerFactory.class);
-    when(factory.newPoller(task)).thenReturn(new TestTransformStatusPoller(false));
+    when(factory.newPoller(task)).thenReturn(poller);
 
     ExecutorService queueTakeService = mock(ExecutorService.class);
 
@@ -103,29 +127,5 @@ class StatusServiceTest {
   @Test
   void testRetryOnException() {
     assert true;
-  }
-
-  private class TestTransformStatusPoller extends TransformStatusPoller {
-
-    private boolean pollerResult = false;
-
-    /** Creates a new TestTransformStatusPoller. */
-    TestTransformStatusPoller(boolean tryAgain) {
-      // this test will not use these null arguments since the run() method is overridden
-      this(null, null, null);
-      this.pollerResult = tryAgain;
-    }
-
-    private TestTransformStatusPoller(
-        TransformStatusTask transformStatusTask,
-        WebClient transformWebClient,
-        WebClient storeWebClient) {
-      super(transformStatusTask, transformWebClient, storeWebClient);
-    }
-
-    @Override
-    public boolean run() {
-      return pollerResult;
-    }
   }
 }
