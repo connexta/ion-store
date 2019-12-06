@@ -64,6 +64,7 @@ public class StatusService {
               submit(transformStatusQueue.take());
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
+              break;
             }
           }
         });

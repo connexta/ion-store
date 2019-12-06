@@ -19,4 +19,10 @@ public class StoreControllerConfiguration {
       @NotBlank @Value("${endpoints.store.version}") String storeApiVersion) {
     return storeApiVersion;
   }
+
+  @Bean
+  public String ingestApiVersion(
+      @NotBlank @Value("${endpoints.ingest.version}") String ingestApiVersion) {
+    return ingestApiVersion;
+  }
 }
