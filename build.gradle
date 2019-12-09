@@ -10,7 +10,7 @@ buildscript {
         indexApiVersion = "0.4.0"
         junitJupiterVersion = "5.5.2"
         lombokVersion = "1.18.10"
-        springBootVersion = "2.2.1.RELEASE"
+        springBootVersion = "2.2.2.RELEASE"
         springfoxSwaggerVersion = "2.9.2"
         storeApiVersion = "0.4.0"
         transformApiVersion = "1.0.0"
