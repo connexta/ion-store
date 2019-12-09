@@ -28,9 +28,6 @@ spec:
             - name: s3-configs
               mountPath: /etc/s3-configs
               readOnly: true
-            - name: transform-configs
-              mountPath: /etc/transform-configs
-              readOnly: true
             - name: s3-access
               mountPath: /etc/access-secret
               readOnly: true
@@ -47,7 +44,6 @@ spec:
             - "--s3.access.file=/etc/access-secret/s3_access.sec"
             - "--spring.config.additional-location=file:/etc/s3-configs/s3_config.yml"
             - "--spring.config.additional-location=file:/etc/store-configs/store_config.yml"
-            - "--spring.config.additional-location=file:/etc/transform-configs/transform_config.yml"
       volumes:
         - name: store-configs
           configMap:
@@ -56,10 +52,6 @@ spec:
         - name: s3-configs
           configMap:
             name: s3-config-map
-            defaultMode: 0755
-        - name: transform-configs
-          configMap:
-            name: transform-config-map
             defaultMode: 0755
         - name: s3-secret
           secret:
