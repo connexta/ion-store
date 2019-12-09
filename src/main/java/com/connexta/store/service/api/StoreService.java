@@ -10,6 +10,7 @@ import com.connexta.store.rest.models.MetadataInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.UUID;
 
 /** Provides operations to take on Datasets. */
 public interface StoreService {
@@ -49,7 +50,7 @@ public interface StoreService {
    * @param metadataInfos list of Metadata info to add
    * @throws IOException if there was an error reading one of the Metadatas
    */
-  void addMetadata(String datasetId, List<MetadataInfo> metadataInfos) throws IOException;
+  void addMetadata(UUID datasetId, List<MetadataInfo> metadataInfos) throws IOException;
 
   /**
    * Quarantines a Dataset and prevents it from being retrieved.

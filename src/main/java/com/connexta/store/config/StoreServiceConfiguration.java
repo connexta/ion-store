@@ -8,7 +8,7 @@ package com.connexta.store.config;
 
 import com.connexta.store.adaptors.S3StorageAdaptor;
 import com.connexta.store.adaptors.StorageAdaptor;
-import com.connexta.store.clients.IndexDatasetClient;
+import com.connexta.store.clients.IndexClient;
 import com.connexta.store.clients.TransformClient;
 import com.connexta.store.poller.TransformStatusTask;
 import com.connexta.store.service.api.StoreService;
@@ -34,7 +34,7 @@ public class StoreServiceConfiguration {
       @NotNull @Named("fileStorageAdaptor") final StorageAdaptor fileStorageAdapter,
       @NotNull @Named("irmStorageAdaptor") final StorageAdaptor irmStorageAdapter,
       @NotNull @Named("metacardStorageAdaptor") final S3StorageAdaptor metacardStorageAdapter,
-      @NotNull final IndexDatasetClient indexDatasetClient,
+      @NotNull final IndexClient indexClient,
       @NotNull final TransformClient transformClient,
       @NotNull final BlockingQueue<TransformStatusTask> transformStatusQueue,
       @Qualifier(value = "transformWebClient") WebClient transformWebClient)
@@ -44,7 +44,7 @@ public class StoreServiceConfiguration {
         fileStorageAdapter,
         irmStorageAdapter,
         metacardStorageAdapter,
-        indexDatasetClient,
+        indexClient,
         transformClient,
         transformStatusQueue,
         transformWebClient);

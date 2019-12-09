@@ -11,7 +11,6 @@ import static org.awaitility.Awaitility.await;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.connexta.store.config.AmazonS3Configuration;
-import com.connexta.store.config.TransformConfiguration;
 import com.connexta.store.rest.models.QuarantineRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
-import javax.inject.Named;
 import junit.framework.AssertionFailedError;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -43,13 +41,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.mock.http.client.MockClientHttpResponse;
-import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
@@ -127,17 +121,7 @@ class StoreITests {
     }
   }
 
-  private MockRestServiceServer indexMockRestServiceServer;
-
   @Inject private AmazonS3 amazonS3;
-
-  @Inject
-  @Named("nonBufferingRestTemplate")
-  private RestTemplate nonBufferingRestTemplate;
-
-  @Inject
-  @Named(TransformConfiguration.TRANSFORM_CLIENT_BEAN)
-  private WebClient transformWebClient;
 
   @Value("${endpoints.store.version}")
   private String storeApiVersion;
@@ -172,16 +156,16 @@ class StoreITests {
 
   private MockWebServer mockTransformServer;
   private MockWebServer mockFileServer;
+  private MockWebServer mockIndexServer;
 
   @BeforeEach
   void beforeEach() throws Exception {
     mockTransformServer = new MockWebServer();
-    mockTransformServer.start(9090);
-
+    mockTransformServer.start(12346);
     mockFileServer = new MockWebServer();
     mockFileServer.start();
-
-    indexMockRestServiceServer = MockRestServiceServer.createServer(nonBufferingRestTemplate);
+    mockIndexServer = new MockWebServer();
+    mockIndexServer.start(12345);
 
     amazonS3.createBucket(fileBucket);
     amazonS3.createBucket(irmBucket);
@@ -190,13 +174,13 @@ class StoreITests {
 
   @AfterEach
   void afterEach() throws Exception {
-    indexMockRestServiceServer.verify();
-
     cleanBucket(fileBucket);
     cleanBucket(irmBucket);
     cleanBucket(metacardBucket);
 
     mockTransformServer.shutdown();
+    mockFileServer.shutdown();
+    mockIndexServer.shutdown();
   }
 
   private void cleanBucket(String bucket) {
@@ -223,11 +207,6 @@ class StoreITests {
   @Test
   void testIngestRequest() throws Exception {
     // setup
-    indexMockRestServiceServer
-        .expect(request -> {})
-        .andRespond(
-            request -> new MockClientHttpResponse("doesntMatter".getBytes(), HttpStatus.OK));
-
     final String transformStatusUrl = transformUrl + "some/location";
     MockResponse transformRequestResponse =
         new MockResponse()
@@ -241,6 +220,9 @@ class StoreITests {
 
     mockTransformServer.enqueue(transformRequestResponse);
     mockTransformServer.enqueue(transformPollDoneResponse);
+
+    MockResponse indexResponse = new MockResponse().setResponseCode(HttpStatus.OK.value());
+    mockIndexServer.enqueue(indexResponse);
 
     final String testFileContent = getResourceAsString(TEST_FILE_PATH);
     mockTransformServer.enqueue(new MockResponse().setResponseCode(200).setBody(testFileContent));
@@ -287,11 +269,6 @@ class StoreITests {
   @Test
   void testQuarantine() throws Exception {
     // setup
-    indexMockRestServiceServer
-        .expect(request -> {})
-        .andRespond(
-            request -> new MockClientHttpResponse("doesntMatter".getBytes(), HttpStatus.OK));
-
     final String transformStatusUrl = transformUrl + "some/location";
     MockResponse transformRequestResponse =
         new MockResponse()
@@ -302,7 +279,6 @@ class StoreITests {
             .setResponseCode(200)
             .setBody(getResourceAsString(TRANSFORM_DONE_RESPONSE_FILE))
             .setHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE);
-
     mockTransformServer.enqueue(transformRequestResponse);
     mockTransformServer.enqueue(transformPollDoneResponse);
 
