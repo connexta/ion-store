@@ -14,16 +14,12 @@ import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @AllArgsConstructor
 public class IndexClientImpl implements IndexClient {
-
-  public static final String ACCEPT_VERSION_HEADER_NAME = "Accept-Version";
 
   @NotNull private final WebClient indexWebClient;
 
@@ -39,11 +35,8 @@ public class IndexClientImpl implements IndexClient {
     ClientResponse response =
         indexWebClient
             .put()
-            .uri(
-                UriComponentsBuilder.fromPath("/index/{datasetId}")
-                    .build(datasetId)
-                    .toASCIIString())
-            .body(BodyInserters.fromValue(indexRequest))
+            .uri("/index/{datasetId}", datasetId)
+            .bodyValue(indexRequest)
             .exchange()
             .block();
 

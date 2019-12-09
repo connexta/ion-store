@@ -78,7 +78,7 @@ public class StoreController implements StoreApi, IngestApi {
     }
 
     try {
-      storeService.addMetadata(datasetId.toString(), addMetadataRequest.getMetadataInfos());
+      storeService.addMetadata(datasetId, addMetadataRequest.getMetadataInfos());
     } catch (IOException e) {
       throw new DetailedResponseStatusException(
           HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving the Metadata.");

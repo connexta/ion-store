@@ -3,7 +3,7 @@ server:
 endpoints:
   transform:
     version: 1.1.1
-    url: http://localhost:9090/
+    url: http://localhost:12346/
   index:
     version: 2.2.2
     url: http://localhost:12345/

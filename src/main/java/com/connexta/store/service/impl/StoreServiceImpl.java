@@ -149,7 +149,7 @@ public class StoreServiceImpl implements StoreService {
   }
 
   @Override
-  public void addMetadata(String datasetId, List<MetadataInfo> metadataInfos) throws IOException {
+  public void addMetadata(UUID datasetId, List<MetadataInfo> metadataInfos) throws IOException {
     for (MetadataInfo metadataInfo : metadataInfos) {
       final String dataType = metadataInfo.getMetadataType();
 
@@ -174,18 +174,18 @@ public class StoreServiceImpl implements StoreService {
               resource.contentLength(),
               MediaType.APPLICATION_XML.toString(),
               resource.getInputStream(),
-              datasetId,
+              datasetId.toString(),
               Map.of());
-          metacardStorageAdaptor.updateStatus(datasetId, STORED);
+          metacardStorageAdaptor.updateStatus(datasetId.toString(), STORED);
           break;
         case IRM_TYPE:
           irmStorageAdaptor.store(
               resource.contentLength(),
               StoreController.IRM_MEDIA_TYPE_VALUE,
               resource.getInputStream(),
-              datasetId,
+              datasetId.toString(),
               Map.of());
-          irmStorageAdaptor.updateStatus(datasetId, STORED);
+          irmStorageAdaptor.updateStatus(datasetId.toString(), STORED);
           break;
         default:
           throw new IllegalArgumentException(
@@ -193,10 +193,10 @@ public class StoreServiceImpl implements StoreService {
       }
     }
 
-    unstage(datasetId);
+    unstage(datasetId.toString());
 
     indexClient.indexDataset(
-        UUID.fromString(datasetId),
+        datasetId,
         UriComponentsBuilder.fromUri(storeUrl)
             .path(StoreController.RETRIEVE_DATA_URL_TEMPLATE)
             .build(datasetId, FILE_TYPE)

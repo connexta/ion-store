@@ -48,8 +48,6 @@ class IndexClientImplTest {
     }
   }
 
-  private IndexClient indexClient;
-
   @Test
   void testIndexDataset() throws Exception {
     // setup

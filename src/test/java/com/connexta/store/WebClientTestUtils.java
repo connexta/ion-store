@@ -24,11 +24,10 @@ public class WebClientTestUtils {
   private WebClientTestUtils() {}
 
   /**
-   * Works by passing in a mock {@link ExchangeFunction}, which is used to capture the {@link ClientRequest}
-   * that is sent through the {@link WebClient}. For example,
+   * Works by passing in a mock {@link ExchangeFunction}, which is used to capture the {@link
+   * ClientRequest} that is sent through the {@link WebClient}. For example,
    *
-   * <pre>
-   * {@code
+   * <pre>{@code
    * ExchangeFunction exchangeFunction = mock(ExchangeFunction.class);
    * WebClient webClient = WebClientTestUtils
    *         .mockEmptyResponseWebClient(HttpStatus.OK, exchangeFunction);
@@ -38,7 +37,7 @@ public class WebClientTestUtils {
    *
    * ClientRequest clientRequest = requestCaptor.getValue();
    * // assert clientRequest
-   * </pre>
+   * }</pre>
    *
    * @param httpStatus the http status code to return in the response
    * @param exchangeFunction the mocked exchange function
