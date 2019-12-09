@@ -4,7 +4,7 @@
 This is an example local deployment of the Store Service that also starts up a Localstack Docker image that provides
 an implementation of the S3 API on port 4572. It also creates 3 S3 buckets: ingest-quarantine, metacard-quarantine,
 and irm. A basic dashboard UI is available on port 8055 and a JSON record of all requests to S3 will be stored in
-<project-root>/.localstack/data/s3_api_calls.json. You will need to create this temp directory if it doesn't exist.
+<project-root>/.localstack/data/s3_api_calls.json.
 
 ## Prerequisites
 * Java 11
