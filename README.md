@@ -1,3 +1,5 @@
+## ion-store is now ARCHIVED
+
 # Store
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=connexta/ion-store)](https://dependabot.com)
 [![Known Vulnerabilities](https://snyk.io/test/github/connexta/ion-store/badge.svg)](https://snyk.io/test/github/connexta/ion-store)
