@@ -35,7 +35,6 @@ if (K8S_CONTEXT != "minikube") {
 header("Creating configMaps for S3 and Store Service...")
 run("kubectl create configmap s3-config-map --from-file=./configs/s3_config.yml")
 run("kubectl create configmap store-config-map --from-file=./.k8s/store_config.yml")
-run("kubectl create configmap transform-config-map --from-file=./configs/transform_config.yml")
 
 header("Creating secrets for S3")
 run("kubectl create secret generic s3-access-secret --from-file=./s3_access.sec")
